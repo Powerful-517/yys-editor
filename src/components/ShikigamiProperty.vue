@@ -34,7 +34,7 @@ import { ref } from "vue";
 
 export default {
   props: {
-    currentHero: {
+    currentShikigami: {
       type: Object,
       default: {},
     },
@@ -58,7 +58,7 @@ export default {
       console.log("=======>>>> ", newVal, oldVal);
       this.show = newVal;
     },
-    currentHero(newVal, oldVal) {
+    currentShikigami(newVal, oldVal) {
         console.log("===item====>>>> ", newVal, oldVal);
         if (newVal.property != undefined) {
           this.form = newVal.property;

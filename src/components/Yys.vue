@@ -1,21 +1,21 @@
 <template>
-  <HeroSelect
-    :showSelectHero="showSelectHero"
-    :currentHero="currentHero"
-    @closeSelectHero="closeSelectHero"
-    @updateHero="updateHero"
+  <ShikigamiSelect
+    :showSelectShikigami="showSelectShikigami"
+    :currentShikigami="currentShikigami"
+    @closeSelectShikigami="closeSelectShikigami"
+    @updateShikigami="updateShikigami"
   />
 
-  <HeroProperty
+  <ShikigamiProperty
     :showProperty="showProperty"
-    :currentHero="currentHero"
+    :currentShikigami="currentShikigami"
     @closeProperty="closeProperty"
     @updateProperty="updateProperty"
   />
   <el-row>
-    <el-col v-for="(item, index) in heroData" :key="index" :span="8">
+    <el-col v-for="(item, index) in shikigamiData" :key="index" :span="8">
       <el-card :body-style="{ padding: '0px' }">
-        <img :src="item.avatar || '111'" class="image" @click="editHero(index, item)" />
+        <img :src="item.avatar || '111'" class="image" @click="editShikigami(index, item)" />
         <div style="padding: 14px">
           <span>{{ item.name || "" }}</span>
           <div v-if="item.properties">
@@ -38,62 +38,63 @@
 </template>
 
 <script>
-import heroData from "../data/shishen.json";
+import shikigamiData from "../data/Shikigami.json";
 
 import { ref, reactive, toRefs } from "vue";
-import HeroSelect from "./ShishenSelect.vue";
-import HeroProperty from "./ShishenProperty.vue";
+import ShikigamiSelect from "./ShikigamiSelect.vue";
+import ShikigamiProperty from "./ShikigamiProperty.vue";
 
-const showSelectHero = ref(false)
+const showSelectShikigami = ref(false)
+const activeName = ref('first')
 
 export default {
   data() {
     return {
-      heroData: heroData,
-      showSelectHero: false,
+      shikigamiData: shikigamiData,
+      showSelectShikigami: false,
       showProperty: false,
       items: [{}, {}, {}],
       index: 0,
-      currentHero: {},
+      currentShikigami: {},
     };
   },
   components: {
-    HeroSelect,
-    HeroProperty,
+    ShikigamiSelect,
+    ShikigamiProperty,
   },
 
   methods: {
-    closeSelectHero() {
+    closeSelectShikigami() {
       console.log("close select ====");
-      this.showSelectHero = false;
-      this.currentHero = {};
+      this.showSelectShikigami = false;
+      this.currentShikigami = {};
     },
-    editHero(index, item) {
-      console.log("==== edit hero ===", index, item);
-      this.currentHero = item;
-      this.showSelectHero = true;
+    editShikigami(index, item) {
+      console.log("==== 选择式神 ===", index, item);
+      this.currentShikigami = item;
+      this.showSelectShikigami = true;
       this.index = index;
     },
-    updateHero(hero) {
-      console.log("parent====> ", hero);
-      this.showSelectHero = false;
-      this.items[this.index].name = hero.name;
-      this.currentHero = {};
+    updateShikigami(shikigami) {
+      console.log("parent====> ", shikigami);
+      this.showSelectShikigami = false;
+      this.items[this.index].name = shikigami.name;
+      this.currentShikigami = {};
     },
     editProperties(index, item) {
       console.log("add properties", index, item);
       this.showProperty = true;
-      this.currentHero = item;
+      this.currentShikigami = item;
     },
     closeProperty() {
       console.log("close property ===");
       this.showProperty = false;
-      this.currentHero = {};
+      this.currentShikigami = {};
     },
     updateProperty(property) {
       console.log("parent property====> ", property);
       this.showProperty = false;
-      this.currentHero = {};
+      this.currentShikigami = {};
       this.items[this.index].properties = property;
     },
   },
