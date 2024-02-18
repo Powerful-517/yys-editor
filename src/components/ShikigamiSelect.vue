@@ -7,24 +7,23 @@
         class="demo-tabs"
         @tab-click="handleClick"
     >
-      <el-tab-pane label="SP" name="first">
-        <div>
-          <el-space wrap>
-            <div v-for="i in 20" :key="i">
-              <el-button text> Text button </el-button>
+      <el-tab-pane
+          v-for="(rarity, index) in rarityLevels"
+          :key="index"
+          :label="rarity"
+          :name="rarity"
+      >
+        <div v-if="['SP', 'SSR', 'SR', 'R', 'N'].includes(rarity)"> <!-- 只在这些级别中显示内容 -->
+          <el-space wrap size="large">
+            <div v-for="i in filterShikigamiByRarity(rarity)" :key="i.name">
+              <el-button style="width: 100px; height: 100px;">
+                <img :src="i.avatar" style="width: 99px; height: 99px;">
+              </el-button>
             </div>
           </el-space>
-          <li v-for="(item, index) in shikigamiData" :key="index" @click.stop="select(item)">
-            <div>
-              <span>{{ item.name }}</span>
-            </div>
-          </li>
         </div>
+
       </el-tab-pane>
-      <el-tab-pane label="SSR" name="second">Config</el-tab-pane>
-      <el-tab-pane label="SR" name="third">Role</el-tab-pane>
-      <el-tab-pane label="R" name="fourth">Task</el-tab-pane>
-      <el-tab-pane label="N" name="fifth">Task</el-tab-pane>
     </el-tabs>
 
     <template #footer>
@@ -42,7 +41,7 @@ import { ref } from "vue";
 import type { TabsPaneContext } from 'element-plus'
 
 
-const activeName = ref('first')
+const activeName = ref('SP')
 
 const handleClick = (tab: TabsPaneContext, event: Event) => {
   console.log(tab, event)
@@ -65,6 +64,7 @@ export default {
       selected: null,
       current: {},
       show: false,
+      rarityLevels: ["SP", "SSR", "SR", "R", "N"],
     };
   },
   watch: {
@@ -90,6 +90,14 @@ export default {
       console.log("confirm====");
       this.$emit("updateShikigami", this.current);
       this.current = {};
+    },
+    filterShikigamiByRarity(rarity) {
+      // 将传入的rarity参数转换为小写
+      const lowerCaseRarity = rarity.toLowerCase();
+      return this.shikigamiData.filter(shikigami =>
+          // 将shikigami对象的rarity属性也转换为小写进行比较
+          shikigami.rarity.toLowerCase() === lowerCaseRarity
+      );
     },
   },
 };

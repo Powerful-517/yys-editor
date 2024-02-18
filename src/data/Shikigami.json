@@ -1,22 +1,27 @@
 [
     {
         "name": "妖刀姬",
+        "rarity": "SSR",
         "avatar":"/assets/Shikigami/ssr/Yoto Hime.png"
     },
     {
         "name": "大狗",
+        "rarity": "SSR",
         "avatar":"/assets/Shikigami/ssr/Ootengu.png"
     },
     {
         "name": "青灯",
+        "rarity": "SSR",
         "avatar":"/assets/Shikigami/ssr/Aoandon.png"
     },
     {
-        "name": "打火机",
+        "name": "座敷童子",
+        "rarity": "R",
         "avatar":"/assets/Shikigami/r/Zashiki.png"
     },
     {
-        "name": "和尚",
+        "name": "独眼小僧",
+        "rarity": "R",
         "avatar":"/assets/Shikigami/r/Hitotsume.png"
     }
 ]
