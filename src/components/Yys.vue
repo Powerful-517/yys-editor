@@ -13,7 +13,7 @@
     @updateProperty="updateProperty"
   />
   <el-row>
-    <el-col v-for="(item, index) in items" :key="index" :span="8">
+    <el-col v-for="(item, index) in heroData" :key="index" :span="8">
       <el-card :body-style="{ padding: '0px' }">
         <img :src="item.avatar || '111'" class="image" @click="editHero(index, item)" />
         <div style="padding: 14px">
@@ -38,11 +38,13 @@
 </template>
 
 <script>
-import heroData from "../data/hero.json";
+import heroData from "../data/shishen.json";
 
 import { ref, reactive, toRefs } from "vue";
-import HeroSelect from "./HeroSelect.vue";
-import HeroProperty from "./HeroProperty.vue";
+import HeroSelect from "./ShishenSelect.vue";
+import HeroProperty from "./ShishenProperty.vue";
+
+const showSelectHero = ref(false)
 
 export default {
   data() {

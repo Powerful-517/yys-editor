@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="show" :visable.sync="show" title="请选择侍神" @cancel="cancel">
+  <el-dialog v-model="show" :visable.sync="show" title="请选择侍神" @cancel="cancel" :before-close="cancel">
     <span>当前选择：{{current.name}}</span>
     <li v-for="(item, index) in heroData" :key="index" @click.stop="select(item)">
       <div>
@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import heroData from "../data/hero.json";
+import heroData from "../data/shishen.json";
 import { ref } from "vue";
 
 export default {
