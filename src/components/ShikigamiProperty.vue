@@ -4,6 +4,7 @@
     :visable.sync="show"
     title="配置属性"
     @cancel="cancel"
+    :before-close="cancel"
   >
     <span>当前选择侍神：{{current.name}}</span>
     <el-form :model="form" label-width="120px">

@@ -1,36 +1,44 @@
 <template>
   <ShikigamiSelect
-    :showSelectShikigami="showSelectShikigami"
-    :currentShikigami="currentShikigami"
-    @closeSelectShikigami="closeSelectShikigami"
-    @updateShikigami="updateShikigami"
+      :showSelectShikigami="showSelectShikigami"
+      :currentShikigami="currentShikigami"
+      @closeSelectShikigami="closeSelectShikigami"
+      @updateShikigami="updateShikigami"
   />
 
   <ShikigamiProperty
-    :showProperty="showProperty"
-    :currentShikigami="currentShikigami"
-    @closeProperty="closeProperty"
-    @updateProperty="updateProperty"
+      :showProperty="showProperty"
+      :currentShikigami="currentShikigami"
+      @closeProperty="closeProperty"
+      @updateProperty="updateProperty"
   />
-  <el-row>
-    <el-col v-for="(item, index) in shikigamiData" :key="index" :span="8">
-      <el-card :body-style="{ padding: '0px' }">
-        <img :src="item.avatar || '111'" class="image" @click="editShikigami(index, item)" />
-        <div style="padding: 14px">
-          <span>{{ item.name || "" }}</span>
-          <div v-if="item.properties">
-            <span>已配置属性：</span>
-            <div v-for="(value, key, index) in item.properties">
-                <span>{{key}}</span> : <span>{{value || '-'}}</span>
-            </div>
-          </div>
-          <div class="bottom">
-            <el-button @click="editProperties(index, item)">配置属性</el-button>
-          </div>
+
+<!--  <el-row :span="10">-->
+    <draggable :list="items" item-key="name" style="display: flex;flex-direction: row">
+      <template #item="{element, index}">
+        <div>
+          <el-col>
+            <el-card :body-style="{ padding: '0px' }">
+              <img :src="element.avatar || '11111'" class="image" @click="editShikigami(index, element)"/>
+              <div style="padding: 14px">
+                <span>{{ element.name || "" }}</span>
+                <div v-if="element.properties">
+                  <span>已配置属性：</span>
+                  <div v-for="(value, key, index) in element.properties">
+                    <span>{{ key }}</span> : <span>{{ value || '-' }}</span>
+                  </div>
+                </div>
+                <div class="bottom">
+                  <el-button @click="editProperties(index, element)">配置属性</el-button>
+                </div>
+              </div>
+            </el-card>
+          </el-col>
         </div>
-      </el-card>
-    </el-col>
-  </el-row>
+
+      </template>
+    </draggable>
+<!--  </el-row>-->
 
   <div style="margin: 20px">
     <span>配置结果</span>
@@ -40,7 +48,9 @@
 <script>
 import shikigamiData from "../data/Shikigami.json";
 
-import { ref, reactive, toRefs } from "vue";
+import {ref, reactive, toRefs} from "vue";
+import draggable from 'vuedraggable';
+
 import ShikigamiSelect from "./ShikigamiSelect.vue";
 import ShikigamiProperty from "./ShikigamiProperty.vue";
 
@@ -53,14 +63,34 @@ export default {
       shikigamiData: shikigamiData,
       showSelectShikigami: false,
       showProperty: false,
-      items: [{}, {}, {}],
+      items: [{}, {}, {}, {}, {}],
+      // items: [
+      //   {
+      //     "name": "妖刀姬",
+      //     "rarity": "SSR",
+      //     "avatar":"/assets/Shikigami/ssr/Yoto Hime.png"
+      //   },
+      //   {
+      //     "name": "妖刀姬",
+      //     "rarity": "SSR",
+      //     "avatar":"/assets/Shikigami/ssr/Yoto Hime.png"
+      //   },
+      //   {
+      //     "name": "妖刀姬",
+      //     "rarity": "SSR",
+      //     "avatar":"/assets/Shikigami/ssr/Yoto Hime.png"
+      //   }
+      // ],
       index: 0,
       currentShikigami: {},
+      drag: false,
     };
   },
   components: {
+    draggable,
     ShikigamiSelect,
     ShikigamiProperty,
+
   },
 
   methods: {
@@ -78,8 +108,9 @@ export default {
     updateShikigami(shikigami) {
       console.log("parent====> ", shikigami);
       this.showSelectShikigami = false;
-      this.items[this.index].name = shikigami.name;
-      this.currentShikigami = {};
+      this.items[this.index] = shikigami;
+      // this.items[this.index].name = shikigami.name;
+      // this.currentShikigami = {};
     },
     editProperties(index, item) {
       console.log("add properties", index, item);

@@ -16,7 +16,7 @@
         <div v-if="['SP', 'SSR', 'SR', 'R', 'N'].includes(rarity)"> <!-- 只在这些级别中显示内容 -->
           <el-space wrap size="large">
             <div v-for="i in filterShikigamiByRarity(rarity)" :key="i.name">
-              <el-button style="width: 100px; height: 100px;">
+              <el-button style="width: 100px; height: 100px;" @click.stop="confirm(i)">
                 <img :src="i.avatar" style="width: 99px; height: 99px;">
               </el-button>
             </div>
@@ -26,12 +26,12 @@
       </el-tab-pane>
     </el-tabs>
 
-    <template #footer>
-      <span class="dialog-footer">
-        <el-button @click.stop="cancel">Cancel</el-button>
-        <el-button type="primary" @click.stop="confirm"> Confirm </el-button>
-      </span>
-    </template>
+<!--    <template #footer>-->
+<!--      <span class="dialog-footer">-->
+<!--        <el-button @click.stop="cancel">Cancel</el-button>-->
+<!--        <el-button type="primary" @click.stop="confirm"> Confirm </el-button>-->
+<!--      </span>-->
+<!--    </template>-->
   </el-dialog>
 </template>
 
@@ -86,10 +86,10 @@ export default {
       console.log("cancel====");
       this.$emit("closeSelectShikigami");
     },
-    confirm() {
+    confirm(i) {
       console.log("confirm====");
-      this.$emit("updateShikigami", this.current);
-      this.current = {};
+      this.$emit("updateShikigami", i);
+      // this.current = {};
     },
     filterShikigamiByRarity(rarity) {
       // 将传入的rarity参数转换为小写
