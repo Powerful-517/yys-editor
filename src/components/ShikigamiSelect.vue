@@ -10,12 +10,12 @@
       <el-tab-pane
           v-for="(rarity, index) in rarityLevels"
           :key="index"
-          :label="rarity"
-          :name="rarity"
+          :label="rarity.label"
+          :name="rarity.name"
       >
-        <div v-if="['SP', 'SSR', 'SR', 'R', 'N'].includes(rarity)"> <!-- 只在这些级别中显示内容 -->
+        <div v-if="rarityLevels.includes(rarity)"> <!-- 只在这些级别中显示内容 -->
           <el-space wrap size="large">
-            <div v-for="i in filterShikigamiByRarity(rarity)" :key="i.name">
+            <div v-for="i in filterShikigamiByRarity(rarity.name)" :key="i.name">
               <el-button style="width: 100px; height: 100px;" @click.stop="confirm(i)">
                 <img :src="i.avatar" style="width: 99px; height: 99px;">
               </el-button>
@@ -64,7 +64,36 @@ export default {
       selected: null,
       current: {},
       show: false,
-      rarityLevels: ["SP", "SSR", "SR", "R", "N"],
+      rarityLevels: [
+        {
+          "label":"SP",
+          "name":"SP"
+        },
+        {
+          "label":"SSR",
+          "name":"SSR"
+        },
+        {
+          "label":"SR",
+          "name":"SR"
+        },
+        {
+          "label":"R",
+          "name":"R"
+        },
+        {
+          "label":"N",
+          "name":"N"
+        },
+        {
+          "label":"联动",
+          "name":"L"
+        },
+        {
+          "label":"呱太",
+          "name":"G"
+        },
+      ],
     };
   },
   watch: {
