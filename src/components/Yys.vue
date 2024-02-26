@@ -116,6 +116,7 @@ export default {
       console.log("add properties", index, item);
       this.showProperty = true;
       this.currentShikigami = item;
+      this.index = index;
     },
     closeProperty() {
       console.log("close property ===");

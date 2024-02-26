@@ -117,7 +117,7 @@ export default {
     },
     confirm(i) {
       console.log("confirm====");
-      this.$emit("updateShikigami", i);
+      this.$emit("updateShikigami", JSON.parse(JSON.stringify(i)))
       // this.current = {};
     },
     filterShikigamiByRarity(rarity) {
