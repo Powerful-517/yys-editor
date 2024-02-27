@@ -19,7 +19,7 @@
         <div>
           <el-col>
             <el-card :body-style="{ padding: '0px' }">
-              <img :src="element.avatar || '11111'" class="image" @click="editShikigami(index, element)"/>
+              <img :src="element.avatar || '/assets/Shikigami/default.png'" class="image" @click="editShikigami(index, element)"/>
               <div style="padding: 14px">
                 <span>{{ element.name || "" }}</span>
                 <div v-if="element.properties">
