@@ -32,9 +32,72 @@
           </el-select>
         </div>
       </el-form-item>
-      <el-form-item label="速度">
-        <el-input v-model="shikigami.speed"/>
-      </el-form-item>
+      <div style="display: flex; flex-direction: row; width: 100%;">
+        <div style="display: flex; flex-direction: column; width: 50%;">
+          <el-form-item label="御魂指定">
+            <!--            <el-input v-model="shikigami.speed"/>-->
+          </el-form-item>
+          <el-form-item label="御魂套装">
+            <el-select>
+              <el-option label="*" value="*"/>
+              <el-option label="1" value="1"/>
+              <el-option label="2" value="2"/>
+              <el-option label="3" value="3"/>
+              <el-option label="4" value="4"/>
+              <el-option label="5" value="5"/>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="效果指标">
+            <el-select placeholder="伤害输出" v-model="shikigami.yuhun.target">
+              <el-option label="伤害输出" value="1"/>
+              <el-option label="效果命中" value="2"/>
+              <el-option label="效果抵抗" value="3"/>
+              <el-option label="生命" value="4"/>
+              <el-option label="攻击" value="5"/>
+              <el-option label="防御" value="6"/>
+              <el-option label="速度" value="7"/>
+              <el-option label="暴击" value="8"/>
+              <el-option label="暴击伤害" value="9"/>
+              <el-option label="治疗量" value="10"/>
+              <el-option label="命抗双修" value="11"/>
+              <el-option label="防御输出" value="12"/>
+            </el-select>
+          </el-form-item>
+          <el-form-item  label="2号位主属性">
+            <el-select multiple collapse-tags collapse-tags-tooltip placeholder="伤害输出" v-model="shikigami.yuhun.property2">
+              <el-option label="攻击加成" value="5"/>
+              <el-option label="防御加成" value="6"/>
+              <el-option label="生命加成" value="4"/>
+              <el-option label="速度" value="7"/>
+            </el-select>
+          </el-form-item>
+          <el-form-item  label="4号位主属性">
+            <el-select multiple collapse-tags collapse-tags-tooltip placeholder="伤害输出" v-model="shikigami.yuhun.property4">
+              <el-option label="攻击加成" value="5"/>
+              <el-option label="防御加成" value="6"/>
+              <el-option label="生命加成" value="4"/>
+              <el-option label="效果命中" value="7"/>
+              <el-option label="效果抵抗" value="8"/>
+            </el-select>
+          </el-form-item><el-form-item  label="6号位主属性">
+          <el-select multiple collapse-tags collapse-tags-tooltip placeholder="伤害输出" v-model="shikigami.yuhun.property6">
+            <el-option label="攻击加成" value="5"/>
+            <el-option label="防御加成" value="6"/>
+            <el-option label="生命加成" value="4"/>
+            <el-option label="暴击" value="7"/>
+            <el-option label="暴击伤害" value="8"/>
+          </el-select>
+        </el-form-item>
+        </div>
+        <div style="display: flex; flex-direction: column; width: 50%;">
+          <el-form-item label="高级定制">
+            <!--            <el-input v-model="shikigami.speed"/>-->
+          </el-form-item>
+          <el-form-item label="属性限制">
+            <!--            <el-input v-model="shikigami.speed"/>-->
+          </el-form-item>
+        </div>
+      </div>
       <el-form-item label="Activity form">
         <el-input v-model="shikigami.desc" type="textarea"/>
       </el-form-item>
@@ -66,6 +129,12 @@ export default {
       propertyData: propertyData,
       shikigami: {
         edit: false,
+        yuhun: {
+          target: "伤害输出",
+          property2: "",
+          property4: "",
+          property6: "",
+        },
         levelRequired: "40",
         speed: "",
         skillRequiredMode: "all",
@@ -102,8 +171,8 @@ export default {
       console.log("confirm====" + JSON.stringify(this.shikigami.edit))
       // if (null == this.shikigami[this.index].properties) {
       this.shikigami.edit = true
-        this.$emit("updateProperty", JSON.parse(JSON.stringify(this.shikigami)));
-        Object.assign(this.$data, this.$options.data())
+      this.$emit("updateProperty", JSON.parse(JSON.stringify(this.shikigami)));
+      Object.assign(this.$data, this.$options.data())
       console.log("confirm====" + JSON.stringify(this.shikigami.edit))
 
       // }
@@ -117,3 +186,4 @@ export default {
   },
 };
 </script>
+
