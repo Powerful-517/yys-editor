@@ -1,4 +1,12 @@
 <template>
+
+  <YuhunSelect
+      :showYuhunSelect="showYuhunSelect"
+      :currentShikigami="currentShikigami"
+      @closeYuhunSelect="closeYuhunSelect"
+      @updateShikigami="updateShikigami"
+  />
+
   <el-dialog
       v-model="show"
       :visable.sync="show"
@@ -38,14 +46,11 @@
             <!--            <el-input v-model="shikigami.speed"/>-->
           </el-form-item>
           <el-form-item label="御魂套装">
-            <el-select>
-              <el-option label="*" value="*"/>
-              <el-option label="1" value="1"/>
-              <el-option label="2" value="2"/>
-              <el-option label="3" value="3"/>
-              <el-option label="4" value="4"/>
-              <el-option label="5" value="5"/>
-            </el-select>
+            <el-button type="primary" @click="editShikigami()">
+              <el-icon :size="20"><CirclePlus /></el-icon>
+            </el-button>
+
+
           </el-form-item>
           <el-form-item label="效果指标">
             <el-select placeholder="伤害输出" v-model="shikigami.yuhun.target">
@@ -63,31 +68,35 @@
               <el-option label="防御输出" value="12"/>
             </el-select>
           </el-form-item>
-          <el-form-item  label="2号位主属性">
-            <el-select multiple collapse-tags collapse-tags-tooltip placeholder="伤害输出" v-model="shikigami.yuhun.property2">
+          <el-form-item label="2号位主属性">
+            <el-select multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="2" placeholder="伤害输出"
+                       v-model="shikigami.yuhun.property2">
               <el-option label="攻击加成" value="5"/>
               <el-option label="防御加成" value="6"/>
               <el-option label="生命加成" value="4"/>
               <el-option label="速度" value="7"/>
             </el-select>
           </el-form-item>
-          <el-form-item  label="4号位主属性">
-            <el-select multiple collapse-tags collapse-tags-tooltip placeholder="伤害输出" v-model="shikigami.yuhun.property4">
+          <el-form-item label="4号位主属性">
+            <el-select multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="2" placeholder="伤害输出"
+                       v-model="shikigami.yuhun.property4">
               <el-option label="攻击加成" value="5"/>
               <el-option label="防御加成" value="6"/>
               <el-option label="生命加成" value="4"/>
               <el-option label="效果命中" value="7"/>
               <el-option label="效果抵抗" value="8"/>
             </el-select>
-          </el-form-item><el-form-item  label="6号位主属性">
-          <el-select multiple collapse-tags collapse-tags-tooltip placeholder="伤害输出" v-model="shikigami.yuhun.property6">
-            <el-option label="攻击加成" value="5"/>
-            <el-option label="防御加成" value="6"/>
-            <el-option label="生命加成" value="4"/>
-            <el-option label="暴击" value="7"/>
-            <el-option label="暴击伤害" value="8"/>
-          </el-select>
-        </el-form-item>
+          </el-form-item>
+          <el-form-item label="6号位主属性">
+            <el-select multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="2" placeholder="伤害输出"
+                       v-model="shikigami.yuhun.property6">
+              <el-option label="攻击加成" value="5"/>
+              <el-option label="防御加成" value="6"/>
+              <el-option label="生命加成" value="4"/>
+              <el-option label="暴击" value="7"/>
+              <el-option label="暴击伤害" value="8"/>
+            </el-select>
+          </el-form-item>
         </div>
         <div style="display: flex; flex-direction: column; width: 50%;">
           <el-form-item label="高级定制">
@@ -112,8 +121,12 @@
 <script>
 import propertyData from "../data/property.json";
 import {ref} from "vue";
+import ShikigamiSelect from "@/components/ShikigamiSelect.vue";
+import YuhunSelect from "@/components/YuhunSelect.vue";
+// import YuhunSelect from "./YuhunSelect.vue";
 
 export default {
+  components: {YuhunSelect, ShikigamiSelect},
   props: {
     currentShikigami: {
       type: Object,
@@ -126,6 +139,7 @@ export default {
 
   data() {
     return {
+      showYuhunSelect:false,
       propertyData: propertyData,
       shikigami: {
         edit: false,
@@ -146,7 +160,7 @@ export default {
   },
   watch: {
     showProperty(newVal, oldVal) {
-      console.log("=======>>>> ", newVal, oldVal);
+      console.log("==aaaaaaa=====>>>> ", newVal, oldVal);
       this.show = newVal;
     },
     currentShikigami(newVal, oldVal) {
@@ -162,6 +176,18 @@ export default {
     },
   },
   methods: {
+    editShikigami() {
+      console.log("==== 选择御魂 ===");
+      // this.currentShikigami = item;
+      this.showYuhunSelect = true;
+      // this.index = index;
+    },
+    closeYuhunSelect() {
+      console.log("==== 选择御魂 ===");
+      // this.currentShikigami = item;
+      this.showYuhunSelect = false;
+      // this.index = index;
+    },
     cancel() {
       console.log("cancel====");
       this.$emit("closeProperty");

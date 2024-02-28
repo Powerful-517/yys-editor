@@ -26,12 +26,12 @@
       </el-tab-pane>
     </el-tabs>
 
-<!--    <template #footer>-->
-<!--      <span class="dialog-footer">-->
-<!--        <el-button @click.stop="cancel">Cancel</el-button>-->
-<!--        <el-button type="primary" @click.stop="confirm"> Confirm </el-button>-->
-<!--      </span>-->
-<!--    </template>-->
+    <!--    <template #footer>-->
+    <!--      <span class="dialog-footer">-->
+    <!--        <el-button @click.stop="cancel">Cancel</el-button>-->
+    <!--        <el-button type="primary" @click.stop="confirm"> Confirm </el-button>-->
+    <!--      </span>-->
+    <!--    </template>-->
   </el-dialog>
 </template>
 
@@ -52,7 +52,7 @@ export default {
       type: Object,
       default: {},
     },
-    showSelectShikigami: {
+    showYuhunSelect: {
       type: Boolean,
     },
   },
@@ -70,27 +70,27 @@ export default {
           "name":"ALL"
         },
         {
-          "label":"SP",
+          "label":"攻击加成",
           "name":"SP"
         },
         {
-          "label":"SSR",
+          "label":"暴击",
           "name":"SSR"
         },
         {
-          "label":"SR",
+          "label":"生命加成",
           "name":"SR"
         },
         {
-          "label":"R",
+          "label":"防御加成",
           "name":"R"
         },
         {
-          "label":"N",
+          "label":"效果命中",
           "name":"N"
         },
         {
-          "label":"联动",
+          "label":"效果抵抗",
           "name":"L"
         },
         {
@@ -101,23 +101,23 @@ export default {
     };
   },
   watch: {
-    showSelectShikigami(newVal, oldVal) {
-      console.log("=======>>>> ", newVal, oldVal);
+    showYuhunSelect(newVal, oldVal) {
+      console.log("=======aaaaaaa>>>> ", newVal, oldVal);
       this.show = newVal;
     },
     currentShikigami(newVal, oldVal) {
-        console.log("===item====>>>> ", newVal, oldVal);
+      console.log("===item====>>>> ", newVal, oldVal);
       this.current = newVal;
     },
 
   },
   methods: {
     select(item) {
-        this.current = item;
+      this.current = item;
     },
     cancel() {
       console.log("cancel====");
-      this.$emit("closeSelectShikigami");
+      this.$emit("closeYuhunSelect");
     },
     confirm(i) {
       console.log("confirm====");

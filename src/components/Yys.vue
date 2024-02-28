@@ -50,12 +50,14 @@ import shikigamiData from "../data/Shikigami.json";
 
 import {ref, reactive, toRefs} from "vue";
 import draggable from 'vuedraggable';
+import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
 import ShikigamiSelect from "./ShikigamiSelect.vue";
 import ShikigamiProperty from "./ShikigamiProperty.vue";
 
 const showSelectShikigami = ref(false)
 const activeName = ref('first')
+
 
 export default {
   data() {

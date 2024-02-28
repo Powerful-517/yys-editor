@@ -11,6 +11,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
     "element-plus": "^2.4.3",
     "vue": "^3.3.10",
     "vuedraggable": "^4.1.0"
