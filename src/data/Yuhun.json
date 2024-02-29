@@ -1,0 +1,276 @@
+[
+  {
+    "name": "隐念",
+    "type": "attack",
+    "avatar": "/assets/Yuhun/隐念.png"
+  },
+  {
+    "name": "贝吹坊",
+    "type": "attack",
+    "avatar": "/assets/Yuhun/贝吹坊.png"
+  },
+  {
+    "name": "兵主部",
+    "type": "attack",
+    "avatar": "/assets/Yuhun/兵主部.png"
+  },
+  {
+    "name": "狂骨",
+    "type": "attack",
+    "avatar": "/assets/Yuhun/狂骨.png"
+  },
+  {
+    "name": "阴摩罗",
+    "type": "attack",
+    "avatar": "/assets/Yuhun/阴摩罗.png"
+  },
+  {
+    "name": "心眼",
+    "type": "attack",
+    "avatar": "/assets/Yuhun/心眼.png"
+  },
+  {
+    "name": "鸣屋",
+    "type": "attack",
+    "avatar": "/assets/Yuhun/鸣屋.png"
+  },
+  {
+    "name": "狰",
+    "type": "attack",
+    "avatar": "/assets/Yuhun/狰.png"
+  },
+  {
+    "name": "轮入道",
+    "type": "attack",
+    "avatar": "/assets/Yuhun/轮入道.png"
+  },
+  {
+    "name": "蝠翼",
+    "type": "attack",
+    "avatar": "/assets/Yuhun/蝠翼.png"
+  },
+  {
+    "name": "应声虫",
+    "type": "Crit",
+    "avatar": "/assets/Yuhun/应声虫.png"
+  },
+  {
+    "name": "海月火玉",
+    "type": "Crit",
+    "avatar": "/assets/Yuhun/海月火玉.png"
+  },
+  {
+    "name": "青女房",
+    "type": "Crit",
+    "avatar": "/assets/Yuhun/青女房.png"
+  },
+  {
+    "name": "针女",
+    "type": "Crit",
+    "avatar": "/assets/Yuhun/针女.png"
+  },
+  {
+    "name": "镇墓兽",
+    "type": "Crit",
+    "avatar": "/assets/Yuhun/镇墓兽.png"
+  },
+  {
+    "name": "破势",
+    "type": "Crit",
+    "avatar": "/assets/Yuhun/破势.png"
+  },
+  {
+    "name": "伤魂鸟",
+    "type": "Crit",
+    "avatar": "/assets/Yuhun/伤魂鸟.png"
+  },
+  {
+    "name": "网切",
+    "type": "Crit",
+    "avatar": "/assets/Yuhun/网切.png"
+  },
+  {
+    "name": "三味",
+    "type": "Crit",
+    "avatar": "/assets/Yuhun/三味.png"
+  },
+  {
+    "name": "叠叩",
+    "type": "Health",
+    "avatar": "/assets/Yuhun/叠叩.png"
+  },
+  {
+    "name": "恶楼",
+    "type": "Health",
+    "avatar": "/assets/Yuhun/恶楼.png"
+  },
+  {
+    "name": "涂佛",
+    "type": "Health",
+    "avatar": "/assets/Yuhun/涂佛.png"
+  },
+  {
+    "name": "树妖",
+    "type": "Health",
+    "avatar": "/assets/Yuhun/树妖.png"
+  },
+  {
+    "name": "薙魂",
+    "type": "Health",
+    "avatar": "/assets/Yuhun/薙魂.png"
+  },
+  {
+    "name": "钟灵",
+    "type": "Health",
+    "avatar": "/assets/Yuhun/钟灵.png"
+  },
+  {
+    "name": "镜姬",
+    "type": "Health",
+    "avatar": "/assets/Yuhun/镜姬.png"
+  },
+  {
+    "name": "被服",
+    "type": "Health",
+    "avatar": "/assets/Yuhun/被服.png"
+  },
+  {
+    "name": "涅槃之火",
+    "type": "Health",
+    "avatar": "/assets/Yuhun/涅槃之火.png"
+  },
+  {
+    "name": "地藏像",
+    "type": "Health",
+    "avatar": "/assets/Yuhun/地藏像.png"
+  },
+  {
+    "name": "火之车",
+    "type": "Defense",
+    "avatar": "/assets/Yuhun/火之车.png"
+  },
+  {
+    "name": "出世螺",
+    "type": "Defense",
+    "avatar": "/assets/Yuhun/出世螺.png"
+  },
+  {
+    "name": "魅妖",
+    "type": "Defense",
+    "avatar": "/assets/Yuhun/魅妖.png"
+  },
+  {
+    "name": "珍珠",
+    "type": "Defense",
+    "avatar": "/assets/Yuhun/珍珠.png"
+  },
+  {
+    "name": "木魅",
+    "type": "Defense",
+    "avatar": "/assets/Yuhun/木魅.png"
+  },
+  {
+    "name": "日女巳时",
+    "type": "Defense",
+    "avatar": "/assets/Yuhun/日女巳时.png"
+  },
+  {
+    "name": "反枕",
+    "type": "Defense",
+    "avatar": "/assets/Yuhun/反枕.png"
+  },
+  {
+    "name": "招财猫",
+    "type": "Defense",
+    "avatar": "/assets/Yuhun/招财猫.png"
+  },
+  {
+    "name": "雪幽魂",
+    "type": "Defense",
+    "avatar": "/assets/Yuhun/雪幽魂.png"
+  },
+  {
+    "name": "元兴寺",
+    "type": "ControlHit",
+    "avatar": "/assets/Yuhun/元兴寺.png"
+  },
+  {
+    "name": "遗念火",
+    "type": "ControlHit",
+    "avatar": "/assets/Yuhun/遗念火.png"
+  },
+  {
+    "name": "飞缘魔",
+    "type": "ControlHit",
+    "avatar": "/assets/Yuhun/飞缘魔.png"
+  },
+  {
+    "name": "蚌精",
+    "type": "ControlHit",
+    "avatar": "/assets/Yuhun/蚌精.png"
+  },
+  {
+    "name": "火灵",
+    "type": "ControlHit",
+    "avatar": "/assets/Yuhun/火灵.png"
+  },
+  {
+    "name": "钓瓶火",
+    "type": "ControlMiss",
+    "avatar": "/assets/Yuhun/钓瓶火.png"
+  },
+  {
+    "name": "共潜",
+    "type": "ControlMiss",
+    "avatar": "/assets/Yuhun/共潜.png"
+  },
+  {
+    "name": "幽谷响",
+    "type": "ControlMiss",
+    "avatar": "/assets/Yuhun/幽谷响.png"
+  },
+  {
+    "name": "返魂香",
+    "type": "ControlMiss",
+    "avatar": "/assets/Yuhun/返魂香.png"
+  },
+  {
+    "name": "骰子鬼",
+    "type": "ControlMiss",
+    "avatar": "/assets/Yuhun/骰子鬼.png"
+  },
+  {
+    "name": "魍魉之匣",
+    "type": "ControlMiss",
+    "avatar": "/assets/Yuhun/魍魉之匣.png"
+  },
+  {
+    "name": "鬼灵歌伎",
+    "type": "PVE",
+    "avatar": "/assets/Yuhun/鬼灵歌伎.png"
+  },
+  {
+    "name": "蜃气楼",
+    "type": "PVE",
+    "avatar": "/assets/Yuhun/蜃气楼.png"
+  },
+  {
+    "name": "地震鲶",
+    "type": "PVE",
+    "avatar": "/assets/Yuhun/地震鲶.png"
+  },
+  {
+    "name": "荒骷髅",
+    "type": "PVE",
+    "avatar": "/assets/Yuhun/荒骷髅.png"
+  },
+  {
+    "name": "胧车",
+    "type": "PVE",
+    "avatar": "/assets/Yuhun/胧车.png"
+  },{
+  "name": "土蜘蛛",
+  "type": "PVE",
+  "avatar": "/assets/Yuhun/土蜘蛛.png"
+}
+]

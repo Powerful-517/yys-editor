@@ -8,14 +8,14 @@
         @tab-click="handleClick"
     >
       <el-tab-pane
-          v-for="(rarity, index) in rarityLevels"
+          v-for="(yuhunType, index) in yuhunTypes"
           :key="index"
-          :label="rarity.label"
-          :name="rarity.name"
+          :label="yuhunType.label"
+          :name="yuhunType.name"
       >
-        <div v-if="rarityLevels.includes(rarity)"> <!-- 只在这些级别中显示内容 -->
+        <div v-if="yuhunTypes.includes(yuhunType)"> <!-- 只在这些级别中显示内容 -->
           <el-space wrap size="large">
-            <div v-for="i in filterShikigamiByRarity(rarity.name)" :key="i.name">
+            <div v-for="i in filterShikigamiByRarity(yuhunType.name)" :key="i.name">
               <el-button style="width: 100px; height: 100px;" @click.stop="confirm(i)">
                 <img :src="i.avatar" style="width: 99px; height: 99px;">
               </el-button>
@@ -37,6 +37,7 @@
 
 <script  lang="ts">
 import shikigamiData from "../data/Shikigami.json";
+import yuhunData from "../data/Yuhun.json";
 import { ref } from "vue";
 import type { TabsPaneContext } from 'element-plus'
 
@@ -60,42 +61,42 @@ export default {
   data() {
     return {
       activeName:activeName,
-      shikigamiData: shikigamiData,
+      yuhunData: yuhunData,
       selected: null,
       current: {},
       show: false,
-      rarityLevels: [
+      yuhunTypes: [
         {
           "label":"全部",
           "name":"ALL"
         },
         {
           "label":"攻击加成",
-          "name":"SP"
+          "name":"Attack"
         },
         {
           "label":"暴击",
-          "name":"SSR"
+          "name":"Crit"
         },
         {
           "label":"生命加成",
-          "name":"SR"
+          "name":"Health"
         },
         {
           "label":"防御加成",
-          "name":"R"
+          "name":"Defense"
         },
         {
           "label":"效果命中",
-          "name":"N"
+          "name":"ControlHit"
         },
         {
           "label":"效果抵抗",
-          "name":"L"
+          "name":"ControlMiss"
         },
         {
-          "label":"呱太",
-          "name":"G"
+          "label":"首领御魂",
+          "name":"PVE"
         },
       ],
     };
@@ -124,14 +125,14 @@ export default {
       this.$emit("updateShikigami", JSON.parse(JSON.stringify(i)))
       // this.current = {};
     },
-    filterShikigamiByRarity(rarity) {
-      if(rarity.toLowerCase() == "all")
-        return this.shikigamiData
+    filterShikigamiByRarity(yuhunType) {
+      if(yuhunType.toLowerCase() == "all")
+        return this.yuhunData
       // 将传入的rarity参数转换为小写
-      const lowerCaseRarity = rarity.toLowerCase();
-      return this.shikigamiData.filter(shikigami =>
+      const lowerCaseYuhunType = yuhunType.toLowerCase();
+      return this.yuhunData.filter(yuhun =>
           // 将shikigami对象的rarity属性也转换为小写进行比较
-          shikigami.rarity.toLowerCase() === lowerCaseRarity
+          yuhun.type.toLowerCase() === lowerCaseYuhunType
       );
     },
   },
