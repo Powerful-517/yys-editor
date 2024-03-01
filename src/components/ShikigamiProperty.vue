@@ -4,7 +4,7 @@
       :showYuhunSelect="showYuhunSelect"
       :currentShikigami="currentShikigami"
       @closeYuhunSelect="closeYuhunSelect"
-      @updateShikigami="updateShikigami"
+      @updateYuhunSelect="updateYuhunSelect"
   />
 
   <el-dialog
@@ -46,8 +46,15 @@
             <!--            <el-input v-model="shikigami.speed"/>-->
           </el-form-item>
           <el-form-item label="御魂套装">
+            <img style="width: 50px;height: 50px" v-if="this.shikigami.yuhun.yuhunSetEffect.length>0"
+                 :src="this.shikigami.yuhun.yuhunSetEffect[0].avatar" class="image"/>
+            <img style="width: 50px;height: 50px"  v-if="this.shikigami.yuhun.yuhunSetEffect.length>1"
+                 :src="this.shikigami.yuhun.yuhunSetEffect[1].avatar" class="image"/>
+
             <el-button type="primary" @click="editShikigami()">
-              <el-icon :size="20"><CirclePlus /></el-icon>
+              <el-icon :size="20">
+                <CirclePlus/>
+              </el-icon>
             </el-button>
 
 
@@ -139,11 +146,12 @@ export default {
 
   data() {
     return {
-      showYuhunSelect:false,
+      showYuhunSelect: false,
       propertyData: propertyData,
       shikigami: {
         edit: false,
         yuhun: {
+          yuhunSetEffect: [],
           target: "伤害输出",
           property2: "",
           property4: "",
@@ -183,10 +191,21 @@ export default {
       // this.index = index;
     },
     closeYuhunSelect() {
-      console.log("==== 选择御魂 ===");
+      console.log("==== 关闭御魂选择 ===");
       // this.currentShikigami = item;
       this.showYuhunSelect = false;
       // this.index = index;
+    },
+    updateYuhunSelect(yuhun) {
+      this.showYuhunSelect = false;
+      console.log("==== 完成御魂选择 ===");
+      console.log(yuhun);
+      console.log(this.shikigami.yuhun.yuhunSetEffect);
+      let length = this.shikigami.yuhun.yuhunSetEffect.length;
+      this.shikigami.yuhun.yuhunSetEffect.push(JSON.parse(JSON.stringify(yuhun)))
+      console.log(this.shikigami.yuhun.yuhunSetEffect);
+      console.log(this.shikigami.yuhun.yuhunSetEffect[0]);
+
     },
     cancel() {
       console.log("cancel====");

@@ -122,7 +122,7 @@ export default {
     },
     confirm(i) {
       console.log("confirm====");
-      this.$emit("updateShikigami", JSON.parse(JSON.stringify(i)))
+      this.$emit("updateYuhunSelect", JSON.parse(JSON.stringify(i)))
       // this.current = {};
     },
     filterShikigamiByRarity(yuhunType) {
