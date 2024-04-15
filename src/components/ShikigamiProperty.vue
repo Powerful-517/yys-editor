@@ -48,7 +48,7 @@
           <el-form-item label="御魂套装">
             <img style="width: 50px;height: 50px" v-if="this.shikigami.yuhun.yuhunSetEffect.length>0"
                  :src="this.shikigami.yuhun.yuhunSetEffect[0].avatar" class="image"/>
-            <img style="width: 50px;height: 50px"  v-if="this.shikigami.yuhun.yuhunSetEffect.length>1"
+            <img style="width: 50px;height: 50px" v-if="this.shikigami.yuhun.yuhunSetEffect.length>1"
                  :src="this.shikigami.yuhun.yuhunSetEffect[1].avatar" class="image"/>
 
             <el-button type="primary" @click="editShikigami()">
@@ -76,32 +76,32 @@
             </el-select>
           </el-form-item>
           <el-form-item label="2号位主属性">
-            <el-select multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="2" placeholder="伤害输出"
+            <el-select multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="2"
                        v-model="shikigami.yuhun.property2">
-              <el-option label="攻击加成" value="5"/>
-              <el-option label="防御加成" value="6"/>
-              <el-option label="生命加成" value="4"/>
-              <el-option label="速度" value="7"/>
+              <el-option label="攻击加成" value="Attack"/>
+              <el-option label="防御加成" value="Defense"/>
+              <el-option label="生命加成" value="Health"/>
+              <el-option label="速度" value="Speed"/>
             </el-select>
           </el-form-item>
           <el-form-item label="4号位主属性">
-            <el-select multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="2" placeholder="伤害输出"
+            <el-select multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="2"
                        v-model="shikigami.yuhun.property4">
-              <el-option label="攻击加成" value="5"/>
-              <el-option label="防御加成" value="6"/>
-              <el-option label="生命加成" value="4"/>
-              <el-option label="效果命中" value="7"/>
-              <el-option label="效果抵抗" value="8"/>
+              <el-option label="攻击加成" value="Attack"/>
+              <el-option label="防御加成" value="Defense"/>
+              <el-option label="生命加成" value="Health"/>
+              <el-option label="效果命中" value="ControlHit"/>
+              <el-option label="效果抵抗" value="ControlMiss"/>
             </el-select>
           </el-form-item>
           <el-form-item label="6号位主属性">
-            <el-select multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="2" placeholder="伤害输出"
+            <el-select multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="2"
                        v-model="shikigami.yuhun.property6">
-              <el-option label="攻击加成" value="5"/>
-              <el-option label="防御加成" value="6"/>
-              <el-option label="生命加成" value="4"/>
-              <el-option label="暴击" value="7"/>
-              <el-option label="暴击伤害" value="8"/>
+              <el-option label="攻击加成" value="Attack"/>
+              <el-option label="防御加成" value="Defense"/>
+              <el-option label="生命加成" value="Health"/>
+              <el-option label="暴击" value="Crit"/>
+              <el-option label="暴击伤害" value="CritDamage"/>
             </el-select>
           </el-form-item>
         </div>
@@ -153,9 +153,9 @@ export default {
         yuhun: {
           yuhunSetEffect: [],
           target: "伤害输出",
-          property2: "",
-          property4: "",
-          property6: "",
+          property2: ["Attack"],
+          property4: ["Attack"],
+          property6: ["Crit", "CritDamage"],
         },
         levelRequired: "40",
         speed: "",
@@ -182,6 +182,104 @@ export default {
       }
       this.current = newVal;
     },
+    'shikigami.yuhun.target': {
+      handler(newVal, oldVal) {
+        console.log(newVal)
+        console.log(JSON.stringify(this.shikigami.yuhun))
+        switch (newVal) {
+            //<el-option label="伤害输出" value="1"/>
+          case "1": {
+            this.shikigami.yuhun.property2 = ["Attack"];
+            this.shikigami.yuhun.property4 = ["Attack"];
+            this.shikigami.yuhun.property6 = ["Crit", "CritDamage"];
+            break;
+          }
+            //<el-option label="效果命中" value="2"/>
+          case "2": {
+            this.shikigami.yuhun.property2 = ["Speed"];
+            this.shikigami.yuhun.property4 = ["ControlHit"];
+            this.shikigami.yuhun.property6 = ["Attack", "Defense", "Health", "Crit", "CritDamage"];
+            break;
+          }
+            //<el-option label="效果抵抗" value="3"/>
+          case "3": {
+            this.shikigami.yuhun.property2 = ["Speed"];
+            this.shikigami.yuhun.property4 = ["ControlMiss"];
+            this.shikigami.yuhun.property6 = ["Attack", "Defense", "Health", "Crit", "CritDamage"];
+            break;
+          }
+            //<el-option label="生命" value="4"/>
+          case "4": {
+            this.shikigami.yuhun.property2 = ["Health"];
+            this.shikigami.yuhun.property4 = ["Health"];
+            this.shikigami.yuhun.property6 = ["Health"];
+            break;
+          }
+            //<el-option label="攻击" value="5"/>
+          case "5": {
+            this.shikigami.yuhun.property2 = ["Attack"];
+            this.shikigami.yuhun.property4 = ["Attack"];
+            this.shikigami.yuhun.property6 = ["Attack"];
+            break;
+          }
+            //<el-option label="防御" value="6"/>
+          case "6": {
+            this.shikigami.yuhun.property2 = ["Defense"];
+            this.shikigami.yuhun.property4 = ["Defense"];
+            this.shikigami.yuhun.property6 = ["Defense"];
+            break;
+          }
+            //<el-option label="速度" value="7"/>
+          case "7": {
+            this.shikigami.yuhun.property2 = ["Speed"];
+            this.shikigami.yuhun.property4 = ["Attack", "Defense", "Health", "ControlHit", "ControlMiss"];
+            this.shikigami.yuhun.property6 = ["Attack", "Defense", "Health", "Crit", "CritDamage"];
+            break;
+          }
+            //<el-option label="暴击" value="8"/>
+          case "8": {
+            this.shikigami.yuhun.property2 = ["Attack", "Defense", "Health", "Speed"];
+            this.shikigami.yuhun.property4 = ["Attack", "Defense", "Health", "ControlHit", "ControlMiss"];
+            this.shikigami.yuhun.property6 = ["Crit"];
+            break;
+          }
+            //<el-option label="暴击伤害" value="9"/>
+          case "9": {
+            this.shikigami.yuhun.property2 = ["Attack", "Defense", "Health", "Speed"];
+            this.shikigami.yuhun.property4 = ["Attack", "Defense", "Health", "ControlHit", "ControlMiss"];
+            this.shikigami.yuhun.property6 = ["CritDamage"];
+            break;
+          }
+            //<el-option label="治疗量" value="10"/>
+          case "10": {
+            this.shikigami.yuhun.property2 = ["Speed"];
+            this.shikigami.yuhun.property4 = ["Health"];
+            this.shikigami.yuhun.property6 = ["Crit","CritDamage"];
+            break;
+          }
+            //<el-option label="命抗双修" value="11"/>
+          case "11": {
+            this.shikigami.yuhun.property2 = ["Speed"];
+            this.shikigami.yuhun.property4 = ["ControlHit", "ControlMiss"];
+            this.shikigami.yuhun.property6 = ["Attack", "Defense", "Health", "Crit", "CritDamage"];
+            break;
+          }
+            //<el-option label="防御输出" value="12"/>
+          case "12": {
+            this.shikigami.yuhun.property2 = ["Defense"];
+            this.shikigami.yuhun.property4 = ["Defense"];
+            this.shikigami.yuhun.property6 = ["Crit", "CritDamage"];
+            break;
+          }
+        }
+      },
+      deep: true //为true，表示深度监听，这时候就能监测到a值变化
+      /**
+       * <el-option label="治疗量" value="10"/>
+       * <el-option label="命抗双修" value="11"/>
+       * <el-option label="防御输出" value="12"/>
+       */
+    }
   },
   methods: {
     editShikigami() {
