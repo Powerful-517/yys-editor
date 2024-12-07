@@ -168,15 +168,11 @@ export default {
   },
   watch: {
     showProperty(newVal, oldVal) {
-      console.log("==aaaaaaa=====>>>> ", newVal, oldVal);
+      // this.shikigami = this.currentShikigami;
+          console.log("currentShikigami", JSON.stringify(this.currentShikigami));
       this.show = newVal;
     },
     currentShikigami(newVal, oldVal) {
-      console.log("confirm====" + JSON.stringify(newVal))
-
-      console.log("confirm====" + JSON.stringify(oldVal))
-
-      console.log("===item====>>>> ", newVal, oldVal);
       if (newVal.properties != undefined && newVal.properties.edit == true) {
         this.shikigami = newVal.properties;
       }
@@ -184,8 +180,6 @@ export default {
     },
     'shikigami.yuhun.target': {
       handler(newVal, oldVal) {
-        console.log(newVal)
-        console.log(JSON.stringify(this.shikigami.yuhun))
         switch (newVal) {
             //<el-option label="伤害输出" value="1"/>
           case "1": {
@@ -283,48 +277,35 @@ export default {
   },
   methods: {
     editShikigami() {
-      console.log("==== 选择御魂 ===");
       // this.currentShikigami = item;
       this.showYuhunSelect = true;
       // this.index = index;
     },
     closeYuhunSelect() {
-      console.log("==== 关闭御魂选择 ===");
       // this.currentShikigami = item;
       this.showYuhunSelect = false;
       // this.index = index;
     },
     updateYuhunSelect(yuhun) {
       this.showYuhunSelect = false;
-      console.log("==== 完成御魂选择 ===");
-      console.log(yuhun);
-      console.log(this.shikigami.yuhun.yuhunSetEffect);
       let length = this.shikigami.yuhun.yuhunSetEffect.length;
       this.shikigami.yuhun.yuhunSetEffect.push(JSON.parse(JSON.stringify(yuhun)))
-      console.log(this.shikigami.yuhun.yuhunSetEffect);
-      console.log(this.shikigami.yuhun.yuhunSetEffect[0]);
 
     },
     cancel() {
-      console.log("cancel====");
       this.$emit("closeProperty");
+      Object.assign(this.$data, this.$options.data())
     },
     confirm() {
-      console.log("confirm====");
-      console.log("confirm====" + JSON.stringify(this.shikigami.edit))
       // if (null == this.shikigami[this.index].properties) {
       this.shikigami.edit = true
       this.$emit("updateProperty", JSON.parse(JSON.stringify(this.shikigami)));
       Object.assign(this.$data, this.$options.data())
-      console.log("confirm====" + JSON.stringify(this.shikigami.edit))
 
       // }
     },
     updateSkillRequired(index, value) {
-      console.log(index)
-      console.log(value)
       this.shikigami.skillRequired[index] = value;
-      console.log(this.shikigami.skillRequired)
     },
   },
 };
