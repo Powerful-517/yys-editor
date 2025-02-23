@@ -1,18 +1,18 @@
 <template>
   <ShikigamiSelect
-      :showSelectShikigami="showSelectShikigami"
-      :currentShikigami="currentShikigami"
+      :showSelectShikigami="state.showSelectShikigami"
+      :currentShikigami="state.currentShikigami"
       @closeSelectShikigami="closeSelectShikigami"
       @updateShikigami="updateShikigami"
   />
 
   <ShikigamiProperty
-      :showProperty="showProperty"
-      :currentShikigami="currentShikigami"
+      :showProperty="state.showProperty"
+      :currentShikigami="state.currentShikigami"
       @closeProperty="closeProperty"
       @updateProperty="updateProperty"
   />
-  <draggable :list="groups" item-key="group" style="display: flex; flex-direction: column; width: 100%;"
+  <draggable :list="state.groups" item-key="group" style="display: flex; flex-direction: column; width: 100%;"
              handle=".drag-handle">
 
     <template #item="{ element: group, index: groupIndex }">
@@ -71,115 +71,145 @@
     <!--    </el-row>-->
   </draggable>
   <div style="margin: 20px">
-    <span>配置结果</span>
+
+    <!-- 现有的代码 -->
+    <div style="margin: 20px">
+      <span>配置结果</span>
+      <!-- 触发截图的按钮 -->
+      <button @click="prepareCapture">生成截图</button>
+    </div>
+
+    <!-- 预览弹窗 -->
+    <el-dialog id="preview-container" v-model="state.previewVisible" width="50%" :before-close="handleClose">
+      <img v-if="state.previewImage" :src="state.previewImage" alt="Preview" style="width: 100%; height: auto;" />
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="state.previewVisible = false">取 消</el-button>
+        <el-button type="primary" @click="downloadImage">下 载</el-button>
+      </span>
+    </el-dialog>
+
   </div>
 </template>
 
-<script>
-import shikigamiData from "../data/Shikigami.json";
-
-import {ref, reactive, toRefs} from "vue";
+<script setup>
+import { ref, reactive, toRefs } from 'vue';
 import draggable from 'vuedraggable';
+import ShikigamiSelect from './ShikigamiSelect.vue';
+import ShikigamiProperty from './ShikigamiProperty.vue';
+import html2canvas from 'html2canvas';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+import shikigamiData from '../data/Shikigami.json';
+const dialogTableVisible = ref(false)
+// 定义响应式数据
+const state = reactive({
+  showSelectShikigami: false,
+  showProperty: false,
+  groups: [
+    [{}, {}, {}, {}, {}],
+    [{}, {}, {}, {}, {}]
+  ],
+  groupIndex: 0,
+  positionIndex: 0,
+  currentShikigami: {},
+  previewImage: null, // 用于存储预览图像的数据URL
+  previewVisible: false, // 控制预览弹窗的显示状态
+});
 
-import ShikigamiSelect from "./ShikigamiSelect.vue";
-import ShikigamiProperty from "./ShikigamiProperty.vue";
+// 定义方法
+const closeSelectShikigami = () => {
+  console.log("close select ====");
+  state.showSelectShikigami = false;
+  state.currentShikigami = {};
+};
 
-const showSelectShikigami = ref(false)
-const activeName = ref('first')
+const editShikigami = (groupIndex, positionIndex) => {
+  console.log("==== 选择式神 ===", groupIndex, positionIndex);
+  state.showSelectShikigami = true;
+  state.groupIndex = groupIndex;
+  state.positionIndex = positionIndex;
+};
 
+const updateShikigami = (shikigami) => {
+  console.log("parent====> ", shikigami);
+  state.showSelectShikigami = false;
 
-export default {
-  data() {
-    return {
-      showSelectShikigami: false,
-      showProperty: false,
-      groups: [
-        [{}, {}, {}, {}, {}],
-        [{}, {}, {}, {}, {}]
-      ],
-      // items: [
-      //   {
-      //     "name": "妖刀姬",
-      //     "rarity": "SSR",
-      //     "avatar":"/assets/Shikigami/ssr/Yoto Hime.png"
-      //   },
-      //   {
-      //     "name": "妖刀姬",
-      //     "rarity": "SSR",
-      //     "avatar":"/assets/Shikigami/ssr/Yoto Hime.png"
-      //   },
-      //   {
-      //     "name": "妖刀姬",
-      //     "rarity": "SSR",
-      //     "avatar":"/assets/Shikigami/ssr/Yoto Hime.png"
-      //   }
-      // ],
-      groupIndex: 0,
-      positionIndex: 0,
-      currentShikigami: {},
-      drag: false,
-    };
-  },
-  components: {
-    draggable,
-    ShikigamiSelect,
-    ShikigamiProperty,
+  const oldProperties = state.groups[state.groupIndex][state.positionIndex].properties;
+  state.groups[state.groupIndex][state.positionIndex] = shikigami;
+  state.groups[state.groupIndex][state.positionIndex].properties = oldProperties;
+};
 
-  },
+const editProperties = (groupIndex, positionIndex) => {
+  state.showProperty = true;
+  state.groupIndex = groupIndex;
+  state.positionIndex = positionIndex;
+  state.currentShikigami = state.groups[groupIndex][positionIndex];
+  console.log("currentShikigami", JSON.stringify(state.currentShikigami));
+};
 
-  methods: {
-    closeSelectShikigami() {
-      console.log("close select ====");
-      this.showSelectShikigami = false;
-      this.currentShikigami = {};
-    },
-    editShikigami(groupIndex, positionIndex) {
-      console.log("==== 选择式神 ===", groupIndex, positionIndex);
-      this.showSelectShikigami = true;
-      this.groupIndex = groupIndex;
-      this.positionIndex = positionIndex;
-    },
-    updateShikigami(shikigami) {
-      console.log("parent====> ", shikigami);
-      this.showSelectShikigami = false;
+const closeProperty = () => {
+  state.showProperty = false;
+  state.currentShikigami = state.groups[state.groupIndex][state.positionIndex];
+};
 
-      const oldProperties = this.groups[this.groupIndex][this.positionIndex].properties;
-      this.groups[this.groupIndex][this.positionIndex] = shikigami;
-      this.groups[this.groupIndex][this.positionIndex].properties = oldProperties;
-      // this.items[this.index].name = shikigami.name;
-      // this.currentShikigami = {};
-    },
-    editProperties(groupIndex, positionIndex) {
+const updateProperty = (property) => {
+  state.showProperty = false;
+  state.currentShikigami = {};
+  state.groups[state.groupIndex][state.positionIndex].properties = property;
+};
 
-      this.showProperty = true;
-      this.groupIndex = groupIndex;
-      this.positionIndex = positionIndex;
-      this.currentShikigami = this.groups[this.groupIndex][this.positionIndex];
-      console.log("currentShikigami", JSON.stringify(this.currentShikigami));
-    },
-    closeProperty() {
-      this.showProperty = false;
-      this.currentShikigami = this.groups[this.groupIndex][this.positionIndex];
-    },
-    updateProperty(property) {
-      this.showProperty = false;
-      this.currentShikigami = {};
-      this.groups[this.groupIndex][this.positionIndex].properties = property;
-    },
-    removeGroupElement(groupIndex, positionIndex) {
-      this.groups[groupIndex].splice(positionIndex, 1);
-    },
-    removeGroup(groupIndex) {
-      this.groups.splice(groupIndex, 1);
-    },
-    addGroup() {
-      this.groups.push([{}, {}, {}, {}, {}]);
-    },
-    addGroupElement(groupIndex) {
-      this.groups[groupIndex].push({});
-    },
-  },
+const removeGroupElement = (groupIndex, positionIndex) => {
+  state.groups[groupIndex].splice(positionIndex, 1);
+};
+
+const removeGroup = (groupIndex) => {
+  state.groups.splice(groupIndex, 1);
+};
+
+const addGroup = () => {
+  state.groups.push([{}, {}, {}, {}, {}]);
+};
+
+const addGroupElement = (groupIndex) => {
+  state.groups[groupIndex].push({});
+};
+
+const prepareCapture = async () => {
+  state.previewVisible = true; // 显示预览弹窗
+
+  // 捕获页面元素并生成图片
+  try {
+    const element = document.querySelector('#main-container'); // 替换为要捕获的元素选择器
+    if (!element) {
+      console.error('Element with ID "main-container" not found.');
+      state.previewVisible = false;
+      return;
+    }
+
+    const canvas = await html2canvas(element);
+    state.previewImage = canvas.toDataURL();
+    if (!state.previewImage) {
+      console.error('Failed to generate image data URL.');
+      state.previewVisible = false;
+    }
+  } catch (error) {
+    console.error('Failed to capture screenshot', error);
+    state.previewVisible = false;
+  }
+};
+
+const downloadImage = () => {
+  if (state.previewImage) {
+    const link = document.createElement('a');
+    link.href = state.previewImage;
+    link.download = 'screenshot.png'; // 设置下载的文件名
+    link.click();
+    state.previewVisible = false; // 关闭预览弹窗
+  }
+};
+
+const handleClose = (done) => {
+  state.previewImage = null; // 清除预览图像
+  done(); // 关闭弹窗
 };
 </script>
 

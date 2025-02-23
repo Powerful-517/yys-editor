@@ -3,7 +3,7 @@ import Yys from './components/Yys.vue'
 </script>
 
 <template>
-  <main>
+  <main id="main-container">
     <Yys />
   </main>
 </template>
