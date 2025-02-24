@@ -30,6 +30,12 @@
                 <div>
                   <el-col>
                     <el-card :body-style="{ padding: '0px' } ">
+
+
+                      <!-- Add delete button here -->
+                      <el-button type="danger" icon="Delete" circle
+                                 @click="removeGroupElement(groupIndex, positionIndex)"></el-button>
+                      <el-button type="primary" icon="Plus" circle @click="addGroupElement(groupIndex)"></el-button>
                       <img :src="position.avatar || '/assets/Shikigami/default.png'" class="image"
                            @click="editShikigami(groupIndex,positionIndex)"/>
                       <div style="padding: 14px; width: 95px">
@@ -41,10 +47,13 @@
                         <!--                        properties-->
                         <!--                        {"edit":true,"yuhun":{"yuhunSetEffect":[{"name":"狰","type":"attack","avatar":"/assets/Yuhun/狰.png"}],"target":"伤害输出","property2":["Attack"],"property4":["Attack"],"property6":["Crit","CritDamage"]},"levelRequired":"40","speed":"","skillRequiredMode":"all","skillRequired":["技能一","技能二","技能三"]}-->
                         <div v-if="position.properties">
-                          <span>已配置属性：</span>
                           <div>
-                            <span>{{ position.properties.yuhun.yuhunSetEffect.map(item => item.name).join(' ') }}</span>
-
+                            <span style="display: inline-block; width: 100px; height: 25px; background-color: #666; border-top-left-radius: 5px; border-top-right-radius: 5px; margin-right: 5px; color: white; text-align: center; white-space: pre-wrap ">
+                              {{ position.properties.yuhun.yuhunSetEffect.map(item => item.name).join(' ') }}
+                            </span>
+                            <span style="display: inline-block; width: 100px; height: 25px; background-color: #666; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; margin-right: 5px; color: white; text-align: center; white-space: pre-wrap ">
+                              {{ position.properties.yuhun.target}}·
+                            </span>
                           </div>
                           <div v-for="(value, key, index) in position.properties">
                             <span>{{ key }}</span> : <span>{{ value || '-' }}</span>
@@ -53,10 +62,6 @@
                       </div>
                     </el-card>
                   </el-col>
-                  <!-- Add delete button here -->
-                  <el-button type="danger" icon="Delete" circle
-                             @click="removeGroupElement(groupIndex, positionIndex)"></el-button>
-                  <el-button type="primary" icon="Plus" circle @click="addGroupElement(groupIndex)"></el-button>
                 </div>
               </template>
             </draggable>
