@@ -18,15 +18,15 @@
     <el-form :model="shikigami" label-width="120px">
       <el-form-item label="等级要求">
         <el-radio-group v-model="shikigami.levelRequired" class="ml-4">
-          <el-radio label="40" size="large">40</el-radio>
-          <el-radio label="0" size="large">献祭</el-radio>
+          <el-radio value="40" size="large">40</el-radio>
+          <el-radio value="0" size="large">献祭</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="技能要求">
         <el-radio-group v-model="shikigami.skillRequiredMode" class="ml-4">
-          <el-radio label="all" size="large">全满</el-radio>
-          <el-radio label="111" size="large">111</el-radio>
-          <el-radio label="custom" size="large">自定义</el-radio>
+          <el-radio value="all" size="large">全满</el-radio>
+          <el-radio value="111" size="large">111</el-radio>
+          <el-radio value="custom" size="large">自定义</el-radio>
         </el-radio-group>
         <div v-if="shikigami.skillRequiredMode === 'custom'" style="display: flex; flex-direction: row; width: 100%;">
           <el-select v-for="(value, key, index) in shikigami.skillRequired" :placeholder="value"
@@ -54,10 +54,10 @@
                 class="image"
                 @click="openYuhunSelect(index)"
             />
-<!--            <img style="width: 50px;height: 50px" v-if="shikigami.yuhun.yuhunSetEffect.length>0"-->
-<!--                 :src="shikigami.yuhun.yuhunSetEffect[0].avatar" class="image"/>-->
-<!--            <img style="width: 50px;height: 50px" v-if="shikigami.yuhun.yuhunSetEffect.length>1"-->
-<!--                 :src="shikigami.yuhun.yuhunSetEffect[1].avatar" class="image"/>-->
+            <!--            <img style="width: 50px;height: 50px" v-if="shikigami.yuhun.yuhunSetEffect.length>0"-->
+            <!--                 :src="shikigami.yuhun.yuhunSetEffect[0].avatar" class="image"/>-->
+            <!--            <img style="width: 50px;height: 50px" v-if="shikigami.yuhun.yuhunSetEffect.length>1"-->
+            <!--                 :src="shikigami.yuhun.yuhunSetEffect[1].avatar" class="image"/>-->
 
             <el-button type="primary" @click="openYuhunSelect(-1)">
               <el-icon :size="20">
@@ -281,12 +281,22 @@ const openYuhunSelect = (index) => {
 const closeYuhunSelect = () => showYuhunSelect.value = false
 
 
-const updateYuhunSelect = (yuhun) => {
+const updateYuhunSelect = (yuhun, operator) => {
   showYuhunSelect.value = false
-  if(yuhunIndex.value >=0)
-    shikigami.value.yuhun.yuhunSetEffect[yuhunIndex.value] = (JSON.parse(JSON.stringify(yuhun)))
-  else
-    shikigami.value.yuhun.yuhunSetEffect.push(JSON.parse(JSON.stringify(yuhun)))
+  //Update
+  if (operator == "Update") {
+    if (yuhunIndex.value >= 0)
+      shikigami.value.yuhun.yuhunSetEffect[yuhunIndex.value] = (JSON.parse(JSON.stringify(yuhun)))
+    else
+      shikigami.value.yuhun.yuhunSetEffect.push(JSON.parse(JSON.stringify(yuhun)))
+  }
+  //Delete
+  else if (operator == "Remove") {
+    if (yuhunIndex.value >= 0) {
+      // 使用splice方法移除指定位置的御魂
+      shikigami.value.yuhun.yuhunSetEffect.splice(yuhunIndex.value, 1);
+    }
+  }
 }
 
 const cancel = () => {

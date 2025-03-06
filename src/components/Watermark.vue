@@ -1,5 +1,8 @@
 <template>
-  <div ref="watermarkContainer" class="watermark-container"></div>
+  <div class="watermark-container">
+    <!-- 插槽内容（即 Yys 组件） -->
+    <slot></slot>
+  </div>
 </template>
 
 <script setup>
@@ -12,7 +15,7 @@ const props = defineProps({
   },
   font: {
     type: String,
-    default: '20px Arial'
+    default: '30px Arial'
   },
   color: {
     type: String,
@@ -24,14 +27,11 @@ const props = defineProps({
   }
 });
 
-const watermarkContainer = ref(null);
-
 onMounted(() => {
   createWatermark();
 });
 
 const createWatermark = () => {
-  const container = watermarkContainer.value;
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
 
@@ -65,29 +65,43 @@ const createWatermark = () => {
   // 将 canvas 转换为 base64 图像
   const watermarkUrl = canvas.toDataURL('image/png');
 
-  // 创建一个 div 并设置背景图
-  const watermarkDiv = document.createElement('div');
-  watermarkDiv.style.position = 'absolute';
-  watermarkDiv.style.top = '0';
-  watermarkDiv.style.left = '0';
-  watermarkDiv.style.width = '100%';
-  watermarkDiv.style.height = '100%';
-  watermarkDiv.style.backgroundImage = `url(${watermarkUrl})`;
-  watermarkDiv.style.backgroundRepeat = 'repeat';
-  watermarkDiv.style.pointerEvents = 'none'; // 确保水印不会干扰用户交互
+  // 获取父容器并应用背景图
+  const container = document.querySelector('.watermark-container');
+  container.style.backgroundImage = `url(${watermarkUrl})`;
+  container.style.backgroundRepeat = 'repeat';
 
-  // 将水印 div 添加到容器中
-  container.appendChild(watermarkDiv);
+  // 在生成水印后添加 resize 监听
+  // const observer = new ResizeObserver(entries => {
+  //   entries.forEach(entry => {
+  //     container.style.backgroundImage = `url(${watermarkUrl})`;
+  //   });
+  // });
+  // observer.observe(container);
 };
 </script>
 
 <style scoped>
 .watermark-container {
-  position: absolute; /* 使用绝对定位 */
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 100vh; /* 基础高度 */
+  display: flex;
+  flex-direction: column;
+}
+
+/* 使用伪元素添加水印背景 */
+.watermark-container::before {
+  content: '';
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  background-image: inherit;
+  background-repeat: repeat;
   pointer-events: none; /* 确保水印不会干扰用户交互 */
+  z-index: 9999; /* 确保水印在最顶层 */
+  //background-attachment: fixed; /* 增强覆盖效果 */
 }
 </style>
