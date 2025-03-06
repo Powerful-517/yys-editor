@@ -12,6 +12,11 @@
       @closeProperty="closeProperty"
       @updateProperty="updateProperty"
   />
+  <!-- 现有的代码 -->
+  <div style="margin: 20px" data-html2canvas-ignore="true">
+    <!-- 触发截图的按钮 -->
+    <el-button type="primary" @click="prepareCapture">{{ t('prepareCapture') }}</el-button>
+  </div>
 
   <draggable :list="state.groups" item-key="group" style="display: flex; flex-direction: column; width: 100%;"
              handle=".drag-handle">
@@ -49,7 +54,8 @@
               <template #item="{element : position, index:positionIndex}">
                 <div>
                   <el-col>
-                    <el-card :body-style="{ padding: '0px', display: 'flex', 'flex-direction': 'column', 'justify-content': 'center', 'align-items': 'center' }">
+                    <el-card shadow="never"
+                             :body-style="{ display: 'flex', 'flex-direction': 'column', 'justify-content': 'center', 'align-items': 'center' }">
 
                       <div>
                         <!-- Add delete button here -->
@@ -117,11 +123,7 @@
   </draggable>
   <div style="margin: 20px">
 
-    <!-- 现有的代码 -->
-    <div style="margin: 20px" data-html2canvas-ignore="true">
-      <!-- 触发截图的按钮 -->
-      <el-button type="primary" @click="prepareCapture">{{ t('prepareCapture') }}</el-button>
-    </div>
+
 
     <!-- 预览弹窗 -->
     <el-dialog id="preview-container" v-model="state.previewVisible" width="80%" :before-close="handleClose">
@@ -279,6 +281,15 @@ const ignoreElements = (element) => {
 const prepareCapture = async () => {
   state.previewVisible = true; // 显示预览弹窗
 
+  // 创建临时样式
+  const style = document.createElement('style')
+  style.id = 'capture-style'
+  style.textContent = `
+    .ql-container.ql-snow {
+      border: none !important;
+    }
+  `
+  document.head.appendChild(style)
   // 捕获页面元素并生成图片
   try {
     const element = document.querySelector('#main-container'); // 替换为要捕获的元素选择器
@@ -290,17 +301,21 @@ const prepareCapture = async () => {
 
     const canvas = await html2canvas(element, {
           ignoreElements: ignoreElements,
-          height: element.scrollHeight
+          height: element.scrollHeight,
         }
     );
     state.previewImage = canvas.toDataURL();
     if (!state.previewImage) {
       console.error('Failed to generate image data URL.');
       state.previewVisible = false;
+      state.previewVisible = false;
     }
   } catch (error) {
     console.error('Failed to capture screenshot', error);
     state.previewVisible = false;
+  }finally {
+    // 清除临时样式
+    document.getElementById('capture-style')?.remove()
   }
 };
 
@@ -335,23 +350,29 @@ const handleClose = (done) => {
 
 /* 正方形容器 */
 .avatar-wrapper {
-  width: 100px;         /* 正方形边长 */
-  height: 100px;        /* 与宽度相同 */
+  width: 100px; /* 正方形边长 */
+  height: 100px; /* 与宽度相同 */
   position: relative;
-  overflow: hidden;     /* 隐藏超出部分 */
-  border-radius: 50%;   /* 圆形裁剪 */
-  //border: 2px solid #fff; /* 可选：添加边框 */
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* 可选：添加阴影 */
+  overflow: hidden; /* 隐藏超出部分 */
+  border-radius: 50%; /* 圆形裁剪 */
+//border: 2px solid #fff; /* 可选：添加边框 */ //box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* 可选：添加阴影 */
 }
 
 /* 图片样式 */
 .avatar-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;    /* 关键属性：保持比例填充容器 */
+  object-fit: cover; /* 关键属性：保持比例填充容器 */
   object-position: center; /* 居中显示 */
   display: block;
   cursor: pointer;
+}
+
+
+
+
+.el-card {
+  border: 0;
 }
 
 
