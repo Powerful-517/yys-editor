@@ -12,11 +12,7 @@
       @closeProperty="closeProperty"
       @updateProperty="updateProperty"
   />
-  <!-- 现有的代码 -->
-  <div style="margin: 20px" data-html2canvas-ignore="true">
-    <!-- 触发截图的按钮 -->
-    <el-button type="primary" @click="prepareCapture">{{ t('prepareCapture') }}</el-button>
-  </div>
+
 
   <draggable :list="state.groups" item-key="group" style="display: flex; flex-direction: column; width: 100%;"
              handle=".drag-handle">
@@ -125,17 +121,7 @@
 
 
 
-    <!-- 预览弹窗 -->
-    <el-dialog id="preview-container" v-model="state.previewVisible" width="80%" :before-close="handleClose">
-      <div style="max-height: 500px; overflow-y: auto;">
-        <img v-if="state.previewImage" :src="state.previewImage" alt="Preview" style="width: 100%; display: block;"/>
-      </div>
-      <!--      <img v-if="state.previewImage" :src="state.previewImage" alt="Preview" style="width: 100%; height: auto;" />-->
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="state.previewVisible = false">取 消</el-button>
-        <el-button type="primary" @click="downloadImage">下 载</el-button>
-      </span>
-    </el-dialog>
+
 
   </div>
 </template>
@@ -224,6 +210,7 @@ const editShikigami = (groupIndex, positionIndex) => {
   state.showSelectShikigami = true;
   state.groupIndex = groupIndex;
   state.positionIndex = positionIndex;
+  state.currentShikigami = state.groups[groupIndex].groupInfo[positionIndex];
 };
 
 const updateShikigami = (shikigami) => {
@@ -274,65 +261,11 @@ const addGroupElement = (groupIndex) => {
   state.groups[groupIndex].groupInfo.push({});
 };
 
-const ignoreElements = (element) => {
-  return element.classList.contains('ql-toolbar');
-}
 
-const prepareCapture = async () => {
-  state.previewVisible = true; // 显示预览弹窗
 
-  // 创建临时样式
-  const style = document.createElement('style')
-  style.id = 'capture-style'
-  style.textContent = `
-    .ql-container.ql-snow {
-      border: none !important;
-    }
-  `
-  document.head.appendChild(style)
-  // 捕获页面元素并生成图片
-  try {
-    const element = document.querySelector('#main-container'); // 替换为要捕获的元素选择器
-    if (!element) {
-      console.error('Element with ID "main-container" not found.');
-      state.previewVisible = false;
-      return;
-    }
 
-    const canvas = await html2canvas(element, {
-          ignoreElements: ignoreElements,
-          height: element.scrollHeight,
-        }
-    );
-    state.previewImage = canvas.toDataURL();
-    if (!state.previewImage) {
-      console.error('Failed to generate image data URL.');
-      state.previewVisible = false;
-      state.previewVisible = false;
-    }
-  } catch (error) {
-    console.error('Failed to capture screenshot', error);
-    state.previewVisible = false;
-  }finally {
-    // 清除临时样式
-    document.getElementById('capture-style')?.remove()
-  }
-};
 
-const downloadImage = () => {
-  if (state.previewImage) {
-    const link = document.createElement('a');
-    link.href = state.previewImage;
-    link.download = 'screenshot.png'; // 设置下载的文件名
-    link.click();
-    state.previewVisible = false; // 关闭预览弹窗
-  }
-};
 
-const handleClose = (done) => {
-  state.previewImage = null; // 清除预览图像
-  done(); // 关闭弹窗
-};
 </script>
 
 <style scoped>

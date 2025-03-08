@@ -157,7 +157,7 @@ let shikigami = ref({
   edit: false,
   yuhun: {
     yuhunSetEffect: [],
-    target: "伤害输出",
+    target: "1",
     property2: ["Attack"],
     property4: ["Attack"],
     property6: ["Crit", "CritDamage"],
@@ -175,7 +175,9 @@ watch(() => props.currentShikigami, (newVal) => {
   if (newVal.properties != undefined && newVal.properties.edit == true) {
     shikigami.value = newVal.properties
   }
+  console.log("ShikigamiProperty.vue" + current.value.name)
   current.value = newVal
+  console.log("ShikigamiProperty.vue" + current.value.name)
 }, {deep: true})
 
 watch(() => props.showProperty, (newVal) => {
