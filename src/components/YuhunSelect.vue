@@ -6,13 +6,15 @@
     </div>
     <el-tabs v-model="activeName" type="card" class="demo-tabs" @tab-click="handleTabClick">
       <el-tab-pane v-for="type in yuhunTypes" :key="type.name" :label="type.label" :name="type.name">
-        <el-space wrap size="large">
+        <div style="max-height: 500px; overflow-y: auto;">
+        <el-space wrap size="large" style="">
           <div v-for="yuhun in filterYuhunByType(activeName)" :key="yuhun.name">
             <el-button style="width: 100px; height: 100px;" @click="confirm(yuhun)">
               <img :src="yuhun.avatar" style="width: 99px; height: 99px;">
             </el-button>
           </div>
         </el-space>
+        </div>
       </el-tab-pane>
     </el-tabs>
   </el-dialog>
@@ -48,6 +50,7 @@ const yuhunTypes = [
   {label: '防御加成', name: 'Defense'},
   {label: '效果命中', name: 'ControlHit'},
   {label: '效果抵抗', name: 'ControlMiss'},
+  {label: '暴击伤害', name: 'CritDamage'},
   {label: '首领御魂', name: 'PVE'}
 ];
 

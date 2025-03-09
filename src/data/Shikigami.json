@@ -1,1152 +1,1237 @@
 [
     {
-        "name": "桃花妖",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/200.png"
+        "avatar": "/assets/Shikigami/ssr/581.png",
+        "name": "歌留多",
+        "rarity": "SSR"
     },
     {
-        "name": "雪女",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/201.png"
+        "avatar": "/assets/Shikigami/sp/580.png",
+        "name": "晴思日和坊",
+        "rarity": "SP"
     },
     {
-        "name": "三尾狐",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/202.png"
+        "avatar": "/assets/Shikigami/sp/579.png",
+        "name": "瑶音紧那罗",
+        "rarity": "SP"
     },
     {
-        "name": "灯笼鬼",
-        "rarity": "N",
-        "avatar": "/assets/Shikigami/n/203.png"
+        "avatar": "/assets/Shikigami/sp/578.png",
+        "name": "神酿星熊童子",
+        "rarity": "SP"
     },
     {
-        "name": "座敷童子",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/205.png"
+        "avatar": "/assets/Shikigami/ssr/577.png",
+        "name": "鬼金羊",
+        "rarity": "SSR"
     },
     {
-        "name": "鲤鱼精",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/206.png"
+        "avatar": "/assets/Shikigami/l/576.png",
+        "name": "夏目&猫老师",
+        "rarity": "L"
     },
     {
-        "name": "九命猫",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/207.png"
+        "avatar": "/assets/Shikigami/ssr/575.png",
+        "name": "封阳君",
+        "rarity": "SSR"
     },
     {
-        "name": "狸猫",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/208.png"
+        "avatar": "/assets/Shikigami/sp/574.png",
+        "name": "心友犬神",
+        "rarity": "SP"
     },
     {
-        "name": "河童",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/209.png"
+        "avatar": "/assets/Shikigami/ssr/573.png",
+        "name": "龙珏",
+        "rarity": "SSR"
     },
     {
-        "name": "鬼使白",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/210.png"
+        "avatar": "/assets/Shikigami/sp/572.png",
+        "name": "遥念烟烟罗",
+        "rarity": "SP"
     },
     {
-        "name": "鬼使黑",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/211.png"
+        "avatar": "/assets/Shikigami/ssr/570.png",
+        "name": "祸津神",
+        "rarity": "SSR"
     },
     {
-        "name": "童男",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/212.png"
+        "avatar": "/assets/Shikigami/ssr/569.png",
+        "name": "猫川",
+        "rarity": "SSR"
     },
     {
-        "name": "童女",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/213.png"
+        "avatar": "/assets/Shikigami/sp/568.png",
+        "name": "龙吟铃鹿御前",
+        "rarity": "SP"
     },
     {
-        "name": "饿鬼",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/214.png"
+        "avatar": "/assets/Shikigami/l/567.png",
+        "name": "申屠子夜",
+        "rarity": "L"
     },
     {
-        "name": "孟婆",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/215.png"
+        "avatar": "/assets/Shikigami/sp/566.png",
+        "name": "晨晖惠比寿",
+        "rarity": "SP"
     },
     {
-        "name": "巫蛊师",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/216.png"
-    },
-    {
-        "name": "大天狗",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/217.png"
-    },
-    {
-        "name": "鸦天狗",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/218.png"
-    },
-    {
-        "name": "酒吞童子",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/219.png"
-    },
-    {
-        "name": "犬神",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/220.png"
-    },
-    {
-        "name": "食发鬼",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/221.png"
-    },
-    {
-        "name": "武士之灵",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/222.png"
-    },
-    {
-        "name": "骨女",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/223.png"
-    },
-    {
-        "name": "雨女",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/224.png"
-    },
-    {
-        "name": "跳跳弟弟",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/225.png"
-    },
-    {
-        "name": "跳跳妹妹",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/226.png"
-    },
-    {
-        "name": "兵俑",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/227.png"
-    },
-    {
-        "name": "丑时之女",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/228.png"
-    },
-    {
-        "name": "独眼小僧",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/230.png"
-    },
-    {
-        "name": "鬼女红叶",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/231.png"
-    },
-    {
-        "name": "铁鼠",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/232.png"
-    },
-    {
-        "name": "跳跳哥哥",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/233.png"
-    },
-    {
-        "name": "椒图",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/234.png"
-    },
-    {
-        "name": "管狐",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/236.png"
-    },
-    {
-        "name": "山兔",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/237.png"
-    },
-    {
-        "name": "萤草",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/238.png"
-    },
-    {
-        "name": "蝴蝶精",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/241.png"
-    },
-    {
-        "name": "傀儡师",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/242.png"
-    },
-    {
-        "name": "山童",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/243.png"
-    },
-    {
-        "name": "首无",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/244.png"
-    },
-    {
-        "name": "提灯小僧",
-        "rarity": "N",
-        "avatar": "/assets/Shikigami/n/245.png"
-    },
-    {
-        "name": "赤舌",
-        "rarity": "N",
-        "avatar": "/assets/Shikigami/n/246.png"
-    },
-    {
-        "name": "海坊主",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/247.png"
-    },
-    {
-        "name": "荒川之主",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/248.png"
-    },
-    {
-        "name": "觉",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/249.png"
-    },
-    {
-        "name": "青蛙瓷器",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/250.png"
-    },
-    {
-        "name": "判官",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/251.png"
-    },
-    {
-        "name": "凤凰火",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/252.png"
-    },
-    {
-        "name": "吸血姬",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/253.png"
-    },
-    {
-        "name": "妖狐",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/254.png"
-    },
-    {
-        "name": "阎魔",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/255.png"
-    },
-    {
-        "name": "妖琴师",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/256.png"
-    },
-    {
-        "name": "食梦貘",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/257.png"
-    },
-    {
-        "name": "两面佛",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/258.png"
-    },
-    {
-        "name": "小鹿男",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/259.png"
-    },
-    {
-        "name": "清姬",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/260.png"
-    },
-    {
-        "name": "镰鼬",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/261.png"
-    },
-    {
-        "name": "姑获鸟",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/262.png"
-    },
-    {
-        "name": "二口女",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/263.png"
-    },
-    {
-        "name": "白狼",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/264.png"
-    },
-    {
-        "name": "茨木童子",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/265.png"
-    },
-    {
-        "name": "青行灯",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/266.png"
-    },
-    {
-        "name": "樱花妖",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/267.png"
-    },
-    {
-        "name": "惠比寿",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/268.png"
-    },
-    {
-        "name": "妖刀姬",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/269.png"
-    },
-    {
-        "name": "络新妇",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/270.png"
-    },
-    {
-        "name": "般若",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/271.png"
-    },
-    {
-        "name": "一目连",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/272.png"
-    },
-    {
-        "name": "青坊主",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/273.png"
-    },
-    {
-        "name": "古笼火",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/274.png"
-    },
-    {
-        "name": "万年竹",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/275.png"
-    },
-    {
-        "name": "夜叉",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/276.png"
-    },
-    {
-        "name": "黑童子",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/277.png"
-    },
-    {
-        "name": "白童子",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/278.png"
-    },
-    {
-        "name": "花鸟卷",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/279.png"
-    },
-    {
-        "name": "辉夜姬",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/280.png"
-    },
-    {
-        "name": "烟烟罗",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/281.png"
-    },
-    {
-        "name": "金鱼姬",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/282.png"
-    },
-    {
-        "name": "荒",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/283.png"
-    },
-    {
-        "name": "鸩",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/285.png"
-    },
-    {
-        "name": "以津真天",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/286.png"
-    },
-    {
-        "name": "匣中少女",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/287.png"
-    },
-    {
-        "name": "彼岸花",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/288.png"
-    },
-    {
-        "name": "兔丸",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/289.png"
-    },
-    {
-        "name": "小松丸",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/290.png"
-    },
-    {
-        "name": "书翁",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/291.png"
-    },
-    {
-        "name": "雪童子",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/292.png"
-    },
-    {
-        "name": "百目鬼",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/293.png"
-    },
-    {
-        "name": "奴良陆生",
-        "rarity": "L",
-        "avatar": "/assets/Shikigami/l/294.png"
-    },
-    {
-        "name": "追月神",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/295.png"
-    },
-    {
-        "name": "山风",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/296.png"
-    },
-    {
-        "name": "日和坊",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/297.png"
-    },
-    {
-        "name": "薰",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/298.png"
-    },
-    {
-        "name": "玉藻前",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/300.png"
-    },
-    {
-        "name": "数珠",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/301.png"
-    },
-    {
-        "name": "小袖之手",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/302.png"
-    },
-    {
-        "name": "弈",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/303.png"
-    },
-    {
-        "name": "御馔津",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/304.png"
-    },
-    {
-        "name": "卖药郎",
-        "rarity": "L",
-        "avatar": "/assets/Shikigami/l/305.png"
-    },
-    {
-        "name": "虫师",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/306.png"
-    },
-    {
-        "name": "猫掌柜",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/307.png"
-    },
-    {
-        "name": "鬼灯",
-        "rarity": "L",
-        "avatar": "/assets/Shikigami/l/308.png"
-    },
-    {
-        "name": "阿香",
-        "rarity": "L",
-        "avatar": "/assets/Shikigami/l/309.png"
-    },
-    {
-        "name": "蜜桃&芥子",
-        "rarity": "L",
-        "avatar": "/assets/Shikigami/l/310.png"
-    },
-    {
-        "name": "面灵气",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/311.png"
-    },
-    {
-        "name": "鬼切",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/312.png"
-    },
-    {
-        "name": "犬夜叉",
-        "rarity": "L",
-        "avatar": "/assets/Shikigami/l/313.png"
-    },
-    {
-        "name": "杀生丸",
-        "rarity": "L",
-        "avatar": "/assets/Shikigami/l/314.png"
-    },
-    {
-        "name": "少羽大天狗",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/315.png"
-    },
-    {
-        "name": "白藏主",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/316.png"
-    },
-    {
-        "name": "人面树",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/317.png"
-    },
-    {
-        "name": "於菊虫",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/318.png"
-    },
-    {
-        "name": "桔梗",
-        "rarity": "L",
-        "avatar": "/assets/Shikigami/l/319.png"
-    },
-    {
-        "name": "一反木绵",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/320.png"
-    },
-    {
-        "name": "入殓师",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/321.png"
-    },
-    {
-        "name": "化鲸",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/324.png"
-    },
-    {
-        "name": "海忍",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/329.png"
-    },
-    {
-        "name": "炼狱茨木童子",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/322.png"
-    },
-    {
-        "name": "天井下",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/323.png"
-    },
-    {
-        "name": "八岐大蛇",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/325.png"
-    },
-    {
-        "name": "不知火",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/330.png"
-    },
-    {
-        "name": "御怨般若",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/331.png"
-    },
-    {
-        "name": "久次良",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/332.png"
-    },
-    {
-        "name": "稻荷神御馔津",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/326.png"
-    },
-    {
-        "name": "苍风一目连",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/327.png"
-    },
-    {
-        "name": "赤影妖刀姬",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/328.png"
-    },
-    {
-        "name": "大岳丸",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/333.png"
-    },
-    {
-        "name": "骁浪荒川之主",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/334.png"
-    },
-    {
-        "name": "蟹姬",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/335.png"
-    },
-    {
-        "name": "朽木露琪亚",
-        "rarity": "L",
-        "avatar": "/assets/Shikigami/l/336.png"
-    },
-    {
-        "name": "黑崎一护",
-        "rarity": "L",
-        "avatar": "/assets/Shikigami/l/337.png"
-    },
-    {
-        "name": "泷夜叉姬",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/338.png"
-    },
-    {
-        "name": "烬天玉藻前",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/339.png"
-    },
-    {
-        "name": "纸舞",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/340.png"
-    },
-    {
-        "name": "鬼王酒吞童子",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/341.png"
-    },
-    {
-        "name": "星熊童子",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/342.png"
-    },
-    {
-        "name": "天剑韧心鬼切",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/343.png"
-    },
-    {
-        "name": "云外镜",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/344.png"
-    },
-    {
-        "name": "鬼童丸",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/345.png"
-    },
-    {
-        "name": "聆海金鱼姬",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/346.png"
-    },
-    {
-        "name": "缘结神",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/347.png"
-    },
-    {
-        "name": "浮世青行灯",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/348.png"
-    },
-    {
-        "name": "风狸",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/349.png"
-    },
-    {
-        "name": "蝎女",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/350.png"
-    },
-    {
-        "name": "铃鹿御前",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/351.png"
-    },
-    {
-        "name": "缚骨清姬",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/352.png"
-    },
-    {
-        "name": "紧那罗",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/353.png"
-    },
-    {
-        "name": "待宵姑获鸟",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/354.png"
-    },
-    {
-        "name": "麓铭大岳丸",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/355.png"
-    },
-    {
-        "name": "千姬",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/356.png"
-    },
-    {
-        "name": "初翎山风",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/357.png"
-    },
-    {
-        "name": "夜溟彼岸花",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/358.png"
-    },
-    {
-        "name": "灶门炭治郎",
-        "rarity": "L",
-        "avatar": "/assets/Shikigami/l/359.png"
-    },
-    {
-        "name": "灶门祢豆子",
-        "rarity": "L",
-        "avatar": "/assets/Shikigami/l/360.png"
-    },
-    {
-        "name": "垢尝",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/361.png"
-    },
-    {
-        "name": "蝉冰雪女",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/362.png"
-    },
-    {
-        "name": "帝释天",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/363.png"
-    },
-    {
-        "name": "阿修罗",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/364.png"
-    },
-    {
-        "name": "入内雀",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/365.png"
-    },
-    {
-        "name": "空相面灵气",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/366.png"
-    },
-    {
-        "name": "绘世花鸟卷",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/367.png"
-    },
-    {
-        "name": "饴细工",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/368.png"
-    },
-    {
-        "name": "食灵",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/369.png"
-    },
-    {
-        "name": "饭笥",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/370.png"
-    },
-    {
-        "name": "川猿",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/371.png"
-    },
-    {
-        "name": "因幡辉夜姬",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/372.png"
-    },
-    {
-        "name": "夜刀神",
-        "rarity": "L",
-        "avatar": "/assets/Shikigami/l/373.png"
-    },
-    {
-        "name": "影鳄",
-        "rarity": "R",
-        "avatar": "/assets/Shikigami/r/375.png"
-    },
-    {
-        "name": "铃彦姬",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/376.png"
-    },
-    {
-        "name": "梦寻山兔",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/377.png"
-    },
-    {
-        "name": "迦楼罗",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/378.png"
-    },
-    {
-        "name": "不见岳",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/379.png"
-    },
-    {
-        "name": "灵海蝶",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/382.png"
-    },
-    {
-        "name": "神堕八岐大蛇",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/383.png"
-    },
-    {
-        "name": "粉婆婆",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/384.png"
-    },
-    {
-        "name": "大夜摩天阎魔",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/385.png"
-    },
-    {
-        "name": "我妻善逸",
-        "rarity": "L",
-        "avatar": "/assets/Shikigami/l/386.png"
-    },
-    {
-        "name": "嘴平伊之助",
-        "rarity": "L",
-        "avatar": "/assets/Shikigami/l/387.png"
-    },
-    {
-        "name": "心狩鬼女红叶",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/388.png"
-    },
-    {
-        "name": "须佐之男",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/389.png"
-    },
-    {
-        "name": "神启荒",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/390.png"
-    },
-    {
-        "name": "寻香行",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/391.png"
-    },
-    {
-        "name": "季",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/392.png"
-    },
-    {
-        "name": "禅心云外镜",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/393.png"
-    },
-    {
-        "name": "月读",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/394.png"
-    },
-    {
-        "name": "流光追月神",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/395.png"
-    },
-    {
-        "name": "修罗鬼童丸",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/396.png"
-    },
-    {
-        "name": "坂田银时",
-        "rarity": "L",
-        "avatar": "/assets/Shikigami/l/397.png"
-    },
-    {
-        "name": "天逆每",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/398.png"
-    },
-    {
-        "name": "言灵",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/399.png"
-    },
-    {
-        "name": "盗墓小鬼",
-        "rarity": "N",
-        "avatar": "/assets/Shikigami/n/400.png"
-    },
-    {
-        "name": "寄生魂",
-        "rarity": "N",
-        "avatar": "/assets/Shikigami/n/401.png"
-    },
-    {
-        "name": "唐纸伞妖",
-        "rarity": "N",
-        "avatar": "/assets/Shikigami/n/403.png"
-    },
-    {
-        "name": "天邪鬼绿",
-        "rarity": "N",
-        "avatar": "/assets/Shikigami/n/404.png"
-    },
-    {
-        "name": "天邪鬼赤",
-        "rarity": "N",
-        "avatar": "/assets/Shikigami/n/405.png"
-    },
-    {
-        "name": "天邪鬼黄",
-        "rarity": "N",
-        "avatar": "/assets/Shikigami/n/406.png"
-    },
-    {
-        "name": "天邪鬼青",
-        "rarity": "N",
-        "avatar": "/assets/Shikigami/n/407.png"
-    },
-    {
-        "name": "帚神",
-        "rarity": "N",
-        "avatar": "/assets/Shikigami/n/408.png"
-    },
-    {
-        "name": "涂壁",
-        "rarity": "N",
-        "avatar": "/assets/Shikigami/n/409.png"
-    },
-    {
-        "name": "大天狗呱",
-        "rarity": "G",
-        "avatar": "/assets/Shikigami/g/414.png"
-    },
-    {
-        "name": "酒吞呱",
-        "rarity": "G",
-        "avatar": "/assets/Shikigami/g/415.png"
-    },
-    {
-        "name": "荒川呱",
-        "rarity": "G",
-        "avatar": "/assets/Shikigami/g/416.png"
-    },
-    {
-        "name": "阎魔呱",
-        "rarity": "G",
-        "avatar": "/assets/Shikigami/g/417.png"
-    },
-    {
-        "name": "两面佛呱",
-        "rarity": "G",
-        "avatar": "/assets/Shikigami/g/418.png"
-    },
-    {
-        "name": "小鹿男呱",
-        "rarity": "G",
-        "avatar": "/assets/Shikigami/g/419.png"
-    },
-    {
-        "name": "茨木呱",
-        "rarity": "G",
-        "avatar": "/assets/Shikigami/g/420.png"
-    },
-    {
-        "name": "青行灯呱",
-        "rarity": "G",
-        "avatar": "/assets/Shikigami/g/421.png"
-    },
-    {
-        "name": "妖刀姬呱",
-        "rarity": "G",
-        "avatar": "/assets/Shikigami/g/422.png"
-    },
-    {
-        "name": "一目连呱",
-        "rarity": "G",
-        "avatar": "/assets/Shikigami/g/423.png"
-    },
-    {
-        "name": "花鸟卷呱",
-        "rarity": "G",
-        "avatar": "/assets/Shikigami/g/424.png"
-    },
-    {
-        "name": "辉夜姬呱",
-        "rarity": "G",
-        "avatar": "/assets/Shikigami/g/425.png"
-    },
-    {
-        "name": "荒呱",
-        "rarity": "G",
-        "avatar": "/assets/Shikigami/g/426.png"
-    },
-    {
-        "name": "彼岸花呱",
-        "rarity": "G",
-        "avatar": "/assets/Shikigami/g/427.png"
-    },
-    {
-        "name": "雪童子呱",
-        "rarity": "G",
-        "avatar": "/assets/Shikigami/g/428.png"
-    },
-    {
-        "name": "玉藻前呱",
-        "rarity": "G",
-        "avatar": "/assets/Shikigami/g/429.png"
-    },
-    {
-        "name": "御馔津呱",
-        "rarity": "G",
-        "avatar": "/assets/Shikigami/g/430.png"
-    },
-    {
-        "name": "神乐&定春",
-        "rarity": "L",
-        "avatar": "/assets/Shikigami/l/500.png"
-    },
-    {
-        "name": "八岐大蛇",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/550.png"
-    },
-    {
-        "name": "孔雀明王",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/551.png"
-    },
-    {
-        "name": "慧明灯",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/552.png"
-    },
-    {
-        "name": "闻人翊悬",
-        "rarity": "L",
-        "avatar": "/assets/Shikigami/l/553.png"
-    },
-    {
-        "name": "纺愿缘结神",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/554.png"
-    },
-    {
-        "name": "渺念萤草",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/555.png"
-    },
-    {
-        "name": "天照",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/556.png"
-    },
-    {
-        "name": "伊邪那美",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/557.png"
-    },
-    {
-        "name": "盗人神",
-        "rarity": "SR",
-        "avatar": "/assets/Shikigami/sr/558.png"
-    },
-    {
-        "name": "本真三尾狐",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/559.png"
-    },
-    {
-        "name": "泷",
-        "rarity": "SSR",
-        "avatar": "/assets/Shikigami/ssr/561.png"
-    },
-    {
-        "name": "鲸汐千姬",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/562.png"
-    },
-    {
+        "avatar": "/assets/Shikigami/sp/565.png",
         "name": "福悦座敷童子",
-        "rarity": "SP",
-        "avatar": "/assets/Shikigami/sp/565.png"
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/l/564.png",
+        "name": "镜音铃·连",
+        "rarity": "L"
+    },
+    {
+        "avatar": "/assets/Shikigami/l/563.png",
+        "name": "初音未来",
+        "rarity": "L"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/562.png",
+        "name": "鲸汐千姬",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/561.png",
+        "name": "泷",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/559.png",
+        "name": "本真三尾狐",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/558.png",
+        "name": "盗人神",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/557.png",
+        "name": "伊邪那美",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/556.png",
+        "name": "天照",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/555.png",
+        "name": "渺念萤草",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/554.png",
+        "name": "纺愿缘结神",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/l/553.png",
+        "name": "闻人翊悬",
+        "rarity": "L"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/552.png",
+        "name": "慧明灯",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/551.png",
+        "name": "孔雀明王",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/550.png",
+        "name": "八岐大蛇",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/l/500.png",
+        "name": "神乐&定春",
+        "rarity": "L"
+    },
+    {
+        "avatar": "/assets/Shikigami/g/430.png",
+        "name": "御馔津呱",
+        "rarity": "G"
+    },
+    {
+        "avatar": "/assets/Shikigami/g/429.png",
+        "name": "玉藻前呱",
+        "rarity": "G"
+    },
+    {
+        "avatar": "/assets/Shikigami/g/428.png",
+        "name": "雪童子呱",
+        "rarity": "G"
+    },
+    {
+        "avatar": "/assets/Shikigami/g/427.png",
+        "name": "彼岸花呱",
+        "rarity": "G"
+    },
+    {
+        "avatar": "/assets/Shikigami/g/426.png",
+        "name": "荒呱",
+        "rarity": "G"
+    },
+    {
+        "avatar": "/assets/Shikigami/g/425.png",
+        "name": "辉夜姬呱",
+        "rarity": "G"
+    },
+    {
+        "avatar": "/assets/Shikigami/g/424.png",
+        "name": "花鸟卷呱",
+        "rarity": "G"
+    },
+    {
+        "avatar": "/assets/Shikigami/g/423.png",
+        "name": "一目连呱",
+        "rarity": "G"
+    },
+    {
+        "avatar": "/assets/Shikigami/g/422.png",
+        "name": "妖刀姬呱",
+        "rarity": "G"
+    },
+    {
+        "avatar": "/assets/Shikigami/g/421.png",
+        "name": "青行灯呱",
+        "rarity": "G"
+    },
+    {
+        "avatar": "/assets/Shikigami/g/420.png",
+        "name": "茨木呱",
+        "rarity": "G"
+    },
+    {
+        "avatar": "/assets/Shikigami/g/419.png",
+        "name": "小鹿男呱",
+        "rarity": "G"
+    },
+    {
+        "avatar": "/assets/Shikigami/g/418.png",
+        "name": "两面佛呱",
+        "rarity": "G"
+    },
+    {
+        "avatar": "/assets/Shikigami/g/417.png",
+        "name": "阎魔呱",
+        "rarity": "G"
+    },
+    {
+        "avatar": "/assets/Shikigami/g/416.png",
+        "name": "荒川呱",
+        "rarity": "G"
+    },
+    {
+        "avatar": "/assets/Shikigami/g/415.png",
+        "name": "酒吞呱",
+        "rarity": "G"
+    },
+    {
+        "avatar": "/assets/Shikigami/g/414.png",
+        "name": "大天狗呱",
+        "rarity": "G"
+    },
+    {
+        "avatar": "/assets/Shikigami/n/409.png",
+        "name": "涂壁",
+        "rarity": "N"
+    },
+    {
+        "avatar": "/assets/Shikigami/n/408.png",
+        "name": "帚神",
+        "rarity": "N"
+    },
+    {
+        "avatar": "/assets/Shikigami/n/407.png",
+        "name": "天邪鬼青",
+        "rarity": "N"
+    },
+    {
+        "avatar": "/assets/Shikigami/n/406.png",
+        "name": "天邪鬼黄",
+        "rarity": "N"
+    },
+    {
+        "avatar": "/assets/Shikigami/n/405.png",
+        "name": "天邪鬼赤",
+        "rarity": "N"
+    },
+    {
+        "avatar": "/assets/Shikigami/n/404.png",
+        "name": "天邪鬼绿",
+        "rarity": "N"
+    },
+    {
+        "avatar": "/assets/Shikigami/n/403.png",
+        "name": "唐纸伞妖",
+        "rarity": "N"
+    },
+    {
+        "avatar": "/assets/Shikigami/n/401.png",
+        "name": "寄生魂",
+        "rarity": "N"
+    },
+    {
+        "avatar": "/assets/Shikigami/n/400.png",
+        "name": "盗墓小鬼",
+        "rarity": "N"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/399.png",
+        "name": "言灵",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/398.png",
+        "name": "天逆每",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/l/397.png",
+        "name": "坂田银时",
+        "rarity": "L"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/396.png",
+        "name": "修罗鬼童丸",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/395.png",
+        "name": "流光追月神",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/394.png",
+        "name": "月读",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/393.png",
+        "name": "禅心云外镜",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/392.png",
+        "name": "季",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/391.png",
+        "name": "寻香行",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/390.png",
+        "name": "神启荒",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/389.png",
+        "name": "须佐之男",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/388.png",
+        "name": "心狩鬼女红叶",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/l/387.png",
+        "name": "嘴平伊之助",
+        "rarity": "L"
+    },
+    {
+        "avatar": "/assets/Shikigami/l/386.png",
+        "name": "我妻善逸",
+        "rarity": "L"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/385.png",
+        "name": "大夜摩天阎魔",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/384.png",
+        "name": "粉婆婆",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/383.png",
+        "name": "神堕八岐大蛇",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/382.png",
+        "name": "灵海蝶",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/379.png",
+        "name": "不见岳",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/378.png",
+        "name": "迦楼罗",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/377.png",
+        "name": "梦寻山兔",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/376.png",
+        "name": "铃彦姬",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/375.png",
+        "name": "影鳄",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/l/373.png",
+        "name": "夜刀神",
+        "rarity": "L"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/372.png",
+        "name": "因幡辉夜姬",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/371.png",
+        "name": "川猿",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/370.png",
+        "name": "饭笥",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/369.png",
+        "name": "食灵",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/368.png",
+        "name": "饴细工",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/367.png",
+        "name": "绘世花鸟卷",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/366.png",
+        "name": "空相面灵气",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/365.png",
+        "name": "入内雀",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/364.png",
+        "name": "阿修罗",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/363.png",
+        "name": "帝释天",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/362.png",
+        "name": "蝉冰雪女",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/361.png",
+        "name": "垢尝",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/l/360.png",
+        "name": "灶门祢豆子",
+        "rarity": "L"
+    },
+    {
+        "avatar": "/assets/Shikigami/l/359.png",
+        "name": "灶门炭治郎",
+        "rarity": "L"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/358.png",
+        "name": "夜溟彼岸花",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/357.png",
+        "name": "初翎山风",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/356.png",
+        "name": "千姬",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/355.png",
+        "name": "麓铭大岳丸",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/354.png",
+        "name": "待宵姑获鸟",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/353.png",
+        "name": "紧那罗",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/352.png",
+        "name": "缚骨清姬",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/351.png",
+        "name": "铃鹿御前",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/350.png",
+        "name": "蝎女",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/349.png",
+        "name": "风狸",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/348.png",
+        "name": "浮世青行灯",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/347.png",
+        "name": "缘结神",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/346.png",
+        "name": "聆海金鱼姬",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/345.png",
+        "name": "鬼童丸",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/344.png",
+        "name": "云外镜",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/343.png",
+        "name": "天剑韧心鬼切",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/342.png",
+        "name": "星熊童子",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/341.png",
+        "name": "鬼王酒吞童子",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/340.png",
+        "name": "纸舞",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/339.png",
+        "name": "烬天玉藻前",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/338.png",
+        "name": "泷夜叉姬",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/l/337.png",
+        "name": "黑崎一护",
+        "rarity": "L"
+    },
+    {
+        "avatar": "/assets/Shikigami/l/336.png",
+        "name": "朽木露琪亚",
+        "rarity": "L"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/335.png",
+        "name": "蟹姬",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/334.png",
+        "name": "骁浪荒川之主",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/333.png",
+        "name": "大岳丸",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/332.png",
+        "name": "久次良",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/331.png",
+        "name": "御怨般若",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/330.png",
+        "name": "不知火",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/329.png",
+        "name": "海忍",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/328.png",
+        "name": "赤影妖刀姬",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/327.png",
+        "name": "苍风一目连",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/326.png",
+        "name": "稻荷神御馔津",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/325.png",
+        "name": "八岐大蛇",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/324.png",
+        "name": "化鲸",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/323.png",
+        "name": "天井下",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/322.png",
+        "name": "炼狱茨木童子",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/321.png",
+        "name": "入殓师",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/320.png",
+        "name": "一反木绵",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/l/319.png",
+        "name": "桔梗",
+        "rarity": "L"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/318.png",
+        "name": "於菊虫",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/317.png",
+        "name": "人面树",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/316.png",
+        "name": "白藏主",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/315.png",
+        "name": "少羽大天狗",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/l/314.png",
+        "name": "杀生丸",
+        "rarity": "L"
+    },
+    {
+        "avatar": "/assets/Shikigami/l/313.png",
+        "name": "犬夜叉",
+        "rarity": "L"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/312.png",
+        "name": "鬼切",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/311.png",
+        "name": "面灵气",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/l/310.png",
+        "name": "蜜桃&芥子",
+        "rarity": "L"
+    },
+    {
+        "avatar": "/assets/Shikigami/l/309.png",
+        "name": "阿香",
+        "rarity": "L"
+    },
+    {
+        "avatar": "/assets/Shikigami/l/308.png",
+        "name": "鬼灯",
+        "rarity": "L"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/307.png",
+        "name": "猫掌柜",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/306.png",
+        "name": "虫师",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/l/305.png",
+        "name": "卖药郎",
+        "rarity": "L"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/304.png",
+        "name": "御馔津",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/303.png",
+        "name": "弈",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/302.png",
+        "name": "小袖之手",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/301.png",
+        "name": "数珠",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/300.png",
+        "name": "玉藻前",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/298.png",
+        "name": "薰",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/297.png",
+        "name": "日和坊",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/296.png",
+        "name": "山风",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/295.png",
+        "name": "追月神",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/l/294.png",
+        "name": "奴良陆生",
+        "rarity": "L"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/293.png",
+        "name": "百目鬼",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/292.png",
+        "name": "雪童子",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/291.png",
+        "name": "书翁",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/290.png",
+        "name": "小松丸",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/289.png",
+        "name": "兔丸",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/288.png",
+        "name": "彼岸花",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/287.png",
+        "name": "匣中少女",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/286.png",
+        "name": "以津真天",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/285.png",
+        "name": "鸩",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/283.png",
+        "name": "荒",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/282.png",
+        "name": "金鱼姬",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/281.png",
+        "name": "烟烟罗",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/280.png",
+        "name": "辉夜姬",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/279.png",
+        "name": "花鸟卷",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/278.png",
+        "name": "白童子",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/277.png",
+        "name": "黑童子",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/276.png",
+        "name": "夜叉",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/275.png",
+        "name": "万年竹",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/274.png",
+        "name": "古笼火",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/273.png",
+        "name": "青坊主",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/272.png",
+        "name": "一目连",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/271.png",
+        "name": "般若",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/270.png",
+        "name": "络新妇",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/269.png",
+        "name": "妖刀姬",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/268.png",
+        "name": "惠比寿",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/267.png",
+        "name": "樱花妖",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/266.png",
+        "name": "青行灯",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/265.png",
+        "name": "茨木童子",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/264.png",
+        "name": "白狼",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/263.png",
+        "name": "二口女",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/262.png",
+        "name": "姑获鸟",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/261.png",
+        "name": "镰鼬",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/260.png",
+        "name": "清姬",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/259.png",
+        "name": "小鹿男",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/258.png",
+        "name": "两面佛",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/257.png",
+        "name": "食梦貘",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/256.png",
+        "name": "妖琴师",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/255.png",
+        "name": "阎魔",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/254.png",
+        "name": "妖狐",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/253.png",
+        "name": "吸血姬",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/252.png",
+        "name": "凤凰火",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/251.png",
+        "name": "判官",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/250.png",
+        "name": "青蛙瓷器",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/249.png",
+        "name": "觉",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/248.png",
+        "name": "荒川之主",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/247.png",
+        "name": "海坊主",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/n/246.png",
+        "name": "赤舌",
+        "rarity": "N"
+    },
+    {
+        "avatar": "/assets/Shikigami/n/245.png",
+        "name": "提灯小僧",
+        "rarity": "N"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/244.png",
+        "name": "首无",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/243.png",
+        "name": "山童",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/242.png",
+        "name": "傀儡师",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/241.png",
+        "name": "蝴蝶精",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/238.png",
+        "name": "萤草",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/237.png",
+        "name": "山兔",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/236.png",
+        "name": "管狐",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/234.png",
+        "name": "椒图",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/233.png",
+        "name": "跳跳哥哥",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/232.png",
+        "name": "铁鼠",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/231.png",
+        "name": "鬼女红叶",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/230.png",
+        "name": "独眼小僧",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/228.png",
+        "name": "丑时之女",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/227.png",
+        "name": "兵俑",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/226.png",
+        "name": "跳跳妹妹",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/225.png",
+        "name": "跳跳弟弟",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/224.png",
+        "name": "雨女",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/223.png",
+        "name": "骨女",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/222.png",
+        "name": "武士之灵",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/221.png",
+        "name": "食发鬼",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/220.png",
+        "name": "犬神",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/219.png",
+        "name": "酒吞童子",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/218.png",
+        "name": "鸦天狗",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/217.png",
+        "name": "大天狗",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/216.png",
+        "name": "巫蛊师",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/215.png",
+        "name": "孟婆",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/214.png",
+        "name": "饿鬼",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/213.png",
+        "name": "童女",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/212.png",
+        "name": "童男",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/211.png",
+        "name": "鬼使黑",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/210.png",
+        "name": "鬼使白",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/209.png",
+        "name": "河童",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/208.png",
+        "name": "狸猫",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/207.png",
+        "name": "九命猫",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/206.png",
+        "name": "鲤鱼精",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/205.png",
+        "name": "座敷童子",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/n/203.png",
+        "name": "灯笼鬼",
+        "rarity": "N"
+    },
+    {
+        "avatar": "/assets/Shikigami/r/202.png",
+        "name": "三尾狐",
+        "rarity": "R"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/201.png",
+        "name": "雪女",
+        "rarity": "SR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/200.png",
+        "name": "桃花妖",
+        "rarity": "SR"
     }
 ]

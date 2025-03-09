@@ -40,11 +40,6 @@
             <QuillEditor v-model:content="group.shortDescription" contentType="html" theme="snow"
                          :toolbar="toolbarOptions"/>
           </div>
-          <!--          <div style="display: flex; justify-content: flex-end;" data-html2canvas-ignore="true">-->
-          <!--            <el-button class="drag-handle" type="primary" icon="Rank" circle></el-button>-->
-          <!--            <el-button type="danger" icon="Delete" circle @click="removeGroup(groupIndex)"></el-button>-->
-          <!--            <el-button type="primary" icon="Plus" circle @click="addGroup"></el-button>-->
-          <!--          </div>-->
           <div>
             <draggable :list="group.groupInfo" item-key="name" style="display: flex; flex-direction: row; width: 20%;">
               <template #item="{element : position, index:positionIndex}">
@@ -53,41 +48,49 @@
                     <el-card shadow="never"
                              :body-style="{ display: 'flex', 'flex-direction': 'column', 'justify-content': 'center', 'align-items': 'center' }">
 
-                      <div>
+                      <div data-html2canvas-ignore="true">
                         <!-- Add delete button here -->
-                        <el-button type="danger" icon="Delete" circle
-                                   @click="removeGroupElement(groupIndex, positionIndex)"
-                                   data-html2canvas-ignore="true"></el-button>
-                        <el-button type="primary" icon="Plus" circle @click="addGroupElement(groupIndex)"
-                                   data-html2canvas-ignore="true"></el-button>
+                        <el-button type="danger" icon="Delete" circle @click="removeGroupElement(groupIndex, positionIndex)"/>
+                        <el-button type="primary" icon="Plus" circle @click="addGroupElement(groupIndex)"/>
                       </div>
-                      <div class="avatar-wrapper">
+                      <div style="position: relative; display: inline-block;">
+                        <!-- 头像图片 -->
                         <img :src="position.avatar || '/assets/Shikigami/default.png'"
+                             style="cursor: pointer; vertical-align: bottom;"
                              class="avatar-image"
-                             @click="editShikigami(groupIndex,positionIndex)"/>
-                      </div>
-                      <div style="padding: 14px; width: 95px">
+                             @click="editShikigami(groupIndex, positionIndex)"/>
 
-                        <span>{{ position.name || "" }}</span>
-                        <div class="bottom" data-html2canvas-ignore="true">
+                        <!-- 文字图层 -->
+                        <span v-if="position.properties"
+                              style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%) translateY(50%);
+               font-size: 24px; color: white; text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black;
+               white-space: nowrap; padding: 0 8px; margin: 0; display: flex; align-items: center; justify-content: center;">
+    {{ position.properties.levelRequired }}级 {{ position.properties.skillRequired.join('') }}
+  </span>
+                      </div>
+                      <div style="padding: 14px; width: 120px;">
+
+                        <div style="display: flex; justify-content: center;" data-html2canvas-ignore="true">
+                          <span>{{ position.name || "" }}</span>
+                        </div>
+                        <div style="display: flex; justify-content: center;" class="bottom" data-html2canvas-ignore="true">
                           <el-button @click="editProperty(groupIndex,positionIndex)">{{ t('editProperties') }}
                           </el-button>
                         </div>
-                        <!--                        properties-->
-                        <!--                        {"edit":true,"yuhun":{"yuhunSetEffect":[{"name":"狰","type":"attack","avatar":"/assets/Yuhun/狰.png"}],"target":"伤害输出","property2":["Attack"],"property4":["Attack"],"property6":["Crit","CritDamage"]},"levelRequired":"40","speed":"","skillRequiredMode":"all","skillRequired":["技能一","技能二","技能三"]}-->
                         <div v-if="position.properties">
-                          <div>
+                          <div style="display: flex; justify-content: center;">
                             <span
-                                style="display: inline-block; width: 100px; height: 25px; background-color: #666; border-top-left-radius: 5px; border-top-right-radius: 5px; margin-right: 5px; color: white; text-align: center; white-space: pre-wrap ">
-                              {{ position.properties.yuhun.yuhunSetEffect.map(item => item.name).join(' ') }}
-                            </span>
-                            <span
-                                style="display: inline-block; width: 100px; height: 25px; background-color: #666; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; margin-right: 5px; color: white; text-align: center; white-space: pre-wrap ">
-                              {{ t('yuhun_target.' + position.properties.yuhun.target) }}·
+                                style="width: 100px;height: 50px;background-color: #666;
+                                border-radius: 5px; margin-right: 5px; color: white;
+                                text-align: center; white-space: pre-wrap; display: flex; align-items: center; justify-content: center; flex-direction: column ">
+                              {{getYuhunNames(position.properties.yuhun.yuhunSetEffect)}}<br/>{{ t('yuhun_target.shortName.' + position.properties.yuhun.target) }}·{{ getYuhunPropertyNames(position.properties.yuhun) }}
                             </span>
                           </div>
-                          <div v-for="(value, key, index) in position.properties" data-html2canvas-ignore="true">
-                            <span>{{ key }}</span> : <span>{{ value || '-' }}</span>
+                          <div>
+                            <span
+                                style="display: inline-block; width: 100px; height: 30px;  border-radius: 5px; margin-right: 5px; color: red; text-align: center; white-space: pre-wrap; display: flex; align-items: center; justify-content: center; flex-direction: column ">
+                              {{ position.properties.desc }}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -118,9 +121,6 @@
     <!--    </el-row>-->
   </draggable>
   <div style="margin: 20px">
-
-
-
 
 
   </div>
@@ -227,7 +227,6 @@ const editProperty = (groupIndex, positionIndex) => {
   state.groupIndex = groupIndex;
   state.positionIndex = positionIndex;
   state.currentShikigami = state.groups[groupIndex].groupInfo[positionIndex];
-  console.log("currentShikigami", JSON.stringify(state.currentShikigami));
 };
 
 const closeProperty = () => {
@@ -262,9 +261,72 @@ const addGroupElement = (groupIndex) => {
 };
 
 
+const exportGroups = () => {
+  const dataStr = JSON.stringify(state.groups, null, 2);
+  const blob = new Blob([dataStr], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `yys-export-${Date.now()}.json`;
+  link.click();
+  URL.revokeObjectURL(url);
+};
 
+const getYuhunNames =(yuhunSetEffect) =>{
+  const names = yuhunSetEffect.map(item => item.name).join('');
+  if (names.length <= 6) {
+    return names;
+  } else {
+    return yuhunSetEffect.map(item => item.shortName || item.name).join('');
+  }
+}
 
+const getYuhunPropertyNames = (yuhun) =>{
+  // 根据条件处理 yuhun.property2
+  let property2Value,property4Value,property6Value;
+  if (yuhun.property2.length >= 4) {
+    property2Value = 'X';
+  } else {
+    property2Value = t('yuhun_property.shortName.' + yuhun.property2[0]);
+  }
 
+  if (yuhun.property4.length >= 5) {
+    property4Value = 'X';
+  } else {
+    property4Value = t('yuhun_property.shortName.' + yuhun.property4[0]);
+  }
+
+  if (yuhun.property6.length >= 5) {
+    property6Value = 'X';
+  } else {
+    property6Value = t('yuhun_property.shortName.' + yuhun.property6[0]);
+  }
+  // 构建 propertyNames 字符串
+  const propertyNames =
+      property2Value + property4Value + property6Value
+
+  return propertyNames;
+}
+
+const importGroups = (file) => {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const importedData = JSON.parse(e.target.result);
+      state.groups = importedData;
+      ElMessage.success('导入成功');
+    } catch (error) {
+      ElMessage.error('文件格式错误');
+    }
+  };
+  reader.readAsText(file);
+};
+
+// 暴露方法给父组件
+defineExpose({
+  exportGroups,
+  importGroups
+});
 
 </script>
 
@@ -288,7 +350,7 @@ const addGroupElement = (groupIndex) => {
   position: relative;
   overflow: hidden; /* 隐藏超出部分 */
   border-radius: 50%; /* 圆形裁剪 */
-//border: 2px solid #fff; /* 可选：添加边框 */ //box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* 可选：添加阴影 */
+  //border: 2px solid #fff; /* 可选：添加边框 */ //box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* 可选：添加阴影 */
 }
 
 /* 图片样式 */
@@ -300,8 +362,6 @@ const addGroupElement = (groupIndex) => {
   display: block;
   cursor: pointer;
 }
-
-
 
 
 .el-card {

@@ -1,111 +1,139 @@
 [
   {
+    "name": "散件",
+    "shortName": "散件",
+    "type": "attack",
+    "avatar": "/assets/Yuhun/散件.png"
+  },
+  {
     "name": "隐念",
+    "shortName": "隐",
     "type": "attack",
     "avatar": "/assets/Yuhun/隐念.png"
   },
   {
     "name": "贝吹坊",
+    "shortName": "贝",
     "type": "attack",
     "avatar": "/assets/Yuhun/贝吹坊.png"
   },
   {
     "name": "兵主部",
+    "shortName": "兵",
     "type": "attack",
     "avatar": "/assets/Yuhun/兵主部.png"
   },
   {
     "name": "狂骨",
+    "shortName": "狂",
     "type": "attack",
     "avatar": "/assets/Yuhun/狂骨.png"
   },
   {
     "name": "阴摩罗",
+    "shortName": "阴",
     "type": "attack",
     "avatar": "/assets/Yuhun/阴摩罗.png"
   },
   {
     "name": "心眼",
+    "shortName": "心",
     "type": "attack",
     "avatar": "/assets/Yuhun/心眼.png"
   },
   {
     "name": "鸣屋",
+    "shortName": "鸣",
     "type": "attack",
     "avatar": "/assets/Yuhun/鸣屋.png"
   },
   {
     "name": "狰",
+    "shortName": "狰",
     "type": "attack",
     "avatar": "/assets/Yuhun/狰.png"
   },
   {
     "name": "轮入道",
+    "shortName": "轮",
     "type": "attack",
     "avatar": "/assets/Yuhun/轮入道.png"
   },
   {
     "name": "蝠翼",
+    "shortName": "蝠",
     "type": "attack",
     "avatar": "/assets/Yuhun/蝠翼.png"
   },
   {
     "name": "应声虫",
+    "shortName": "应",
     "type": "Crit",
     "avatar": "/assets/Yuhun/应声虫.png"
   },
   {
     "name": "海月火玉",
+    "shortName": "海",
     "type": "Crit",
     "avatar": "/assets/Yuhun/海月火玉.png"
   },
   {
     "name": "青女房",
+    "shortName": "房",
     "type": "Crit",
     "avatar": "/assets/Yuhun/青女房.png"
   },
   {
     "name": "针女",
+    "shortName": "针",
     "type": "Crit",
     "avatar": "/assets/Yuhun/针女.png"
   },
   {
     "name": "镇墓兽",
+    "shortName": "镇",
     "type": "Crit",
     "avatar": "/assets/Yuhun/镇墓兽.png"
   },
   {
     "name": "破势",
+    "shortName": "破",
     "type": "Crit",
     "avatar": "/assets/Yuhun/破势.png"
   },
   {
     "name": "伤魂鸟",
+    "shortName": "伤",
     "type": "Crit",
     "avatar": "/assets/Yuhun/伤魂鸟.png"
   },
   {
     "name": "网切",
+    "shortName": "网",
     "type": "Crit",
     "avatar": "/assets/Yuhun/网切.png"
   },
   {
     "name": "三味",
+    "shortName": "三",
     "type": "Crit",
     "avatar": "/assets/Yuhun/三味.png"
   },
   {
     "name": "叠叩",
+    "shortName": "叠",
     "type": "Health",
     "avatar": "/assets/Yuhun/叠叩.png"
   },
   {
     "name": "恶楼",
+    "shortName": "恶",
     "type": "Health",
     "avatar": "/assets/Yuhun/恶楼.png"
   },
   {
     "name": "涂佛",
+    "shortName": "涂",
     "type": "Health",
     "avatar": "/assets/Yuhun/涂佛.png"
   },
@@ -136,11 +164,13 @@
   },
   {
     "name": "涅槃之火",
+    "shortName": "涅槃火",
     "type": "Health",
     "avatar": "/assets/Yuhun/涅槃之火.png"
   },
   {
     "name": "地藏像",
+    "shortName": "地藏",
     "type": "Health",
     "avatar": "/assets/Yuhun/地藏像.png"
   },
@@ -171,6 +201,7 @@
   },
   {
     "name": "日女巳时",
+    "shortName": "日女",
     "type": "Defense",
     "avatar": "/assets/Yuhun/日女巳时.png"
   },
@@ -181,6 +212,7 @@
   },
   {
     "name": "招财猫",
+    "shortName": "招财",
     "type": "Defense",
     "avatar": "/assets/Yuhun/招财猫.png"
   },
@@ -241,16 +273,19 @@
   },
   {
     "name": "魍魉之匣",
+    "shortName": "魍魉",
     "type": "ControlMiss",
     "avatar": "/assets/Yuhun/魍魉之匣.png"
   },
   {
     "name": "鬼灵歌伎",
+    "shortName": "歌伎",
     "type": "PVE",
     "avatar": "/assets/Yuhun/鬼灵歌伎.png"
   },
   {
     "name": "蜃气楼",
+    "shortName": "蜃",
     "type": "PVE",
     "avatar": "/assets/Yuhun/蜃气楼.png"
   },
@@ -261,16 +296,35 @@
   },
   {
     "name": "荒骷髅",
+    "shortName": "荒",
     "type": "PVE",
     "avatar": "/assets/Yuhun/荒骷髅.png"
   },
   {
     "name": "胧车",
+    "shortName": "胧",
     "type": "PVE",
     "avatar": "/assets/Yuhun/胧车.png"
-  },{
-  "name": "土蜘蛛",
-  "type": "PVE",
-  "avatar": "/assets/Yuhun/土蜘蛛.png"
-}
+  },
+  {
+    "name": "土蜘蛛",
+    "shortName": "土",
+    "type": "PVE",
+    "avatar": "/assets/Yuhun/土蜘蛛.png"
+  },
+  {
+    "name": "夜荒魂",
+    "type": "PVE",
+    "avatar": "/assets/Yuhun/夜荒魂.png"
+  },
+  {
+    "name": "奉海图",
+    "type": "Defense",
+    "avatar": "/assets/Yuhun/奉海图.png"
+  },
+  {
+    "name": "无刀取",
+    "type": "CritDamage",
+    "avatar": "/assets/Yuhun/无刀取.png"
+  }
 ]

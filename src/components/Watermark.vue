@@ -6,7 +6,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted,watch, ref } from 'vue';
 
 const props = defineProps({
   text: {
@@ -30,6 +30,8 @@ const props = defineProps({
 onMounted(() => {
   createWatermark();
 });
+
+
 
 const createWatermark = () => {
   const canvas = document.createElement('canvas');
@@ -78,6 +80,9 @@ const createWatermark = () => {
   // });
   // observer.observe(container);
 };
+
+// 响应props变化
+watch(() => [props.text, props.font, props.color, props.angle], createWatermark);
 </script>
 
 <style scoped>
