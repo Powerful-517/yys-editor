@@ -137,6 +137,7 @@ import {QuillEditor} from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css' // 引入样式文件
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import shikigamiData from '../data/Shikigami.json';
+import _ from 'lodash';
 
 const dialogTableVisible = ref(false)
 // 定义响应式数据
@@ -230,7 +231,7 @@ const updateShikigami = (shikigami) => {
   state.showSelectShikigami = false;
 
   const oldProperties = state.groups[state.groupIndex].groupInfo[state.positionIndex].properties;
-  state.groups[state.groupIndex].groupInfo[state.positionIndex] = shikigami;
+  state.groups[state.groupIndex].groupInfo[state.positionIndex] = _.cloneDeep(shikigami);
   state.groups[state.groupIndex].groupInfo[state.positionIndex].properties = oldProperties;
 };
 
@@ -249,7 +250,7 @@ const closeProperty = () => {
 const updateProperty = (property) => {
   state.showProperty = false;
   state.currentShikigami = {};
-  state.groups[state.groupIndex].groupInfo[state.positionIndex].properties = property;
+  state.groups[state.groupIndex].groupInfo[state.positionIndex].properties = _.cloneDeep(property);
 };
 
 const removeGroupElement = (groupIndex, positionIndex) => {
