@@ -5,7 +5,7 @@ import ProjectExplorer from './components/ProjectExplorer.vue';
 import { computed, ref, onMounted, onUnmounted } from "vue";
 import { useFilesStore } from "@/stores/files";
 import Vue3DraggableResizable from 'vue3-draggable-resizable';
-import {TabPaneName, TabsPaneContext} from "element-plus";
+import { TabPaneName, TabsPaneContext } from "element-plus";
 
 const filesStore = useFilesStore();
 
@@ -21,12 +21,49 @@ const onResizing = (x, y, width, height) => {
   height.value = height;
 };
 
-const onHandleInport = (file) => {
-  yysRef.value.importGroups(file);
+const handleExport = () => {
+  const dataStr = JSON.stringify(filesStore.fileList, null, 2);
+  const blob = new Blob([dataStr], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'files.json';
+  link.click();
+  URL.revokeObjectURL(url);
 };
 
+const onHandleInport = (file) => {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result as string);
+      if (data[0].visible === true) {
+        // 新版本格式：直接替换 fileList
+        filesStore.$patch({ fileList: data });
+      } else  {
+        // 旧版本格式：仅包含 groups 数组
+        const newFile = {
+          label: `File ${filesStore.fileList.length + 1}`,
+          name: String(filesStore.fileList.length + 1),
+          visible: true,
+          groups: data
+        };
+        filesStore.addFile(newFile);
+      }
+    } catch (error) {
+      console.error('Failed to import file', error);
+    }
+  };
+  reader.readAsText(file);
+};
+
+// const onHandleInport = (file) => {
+//
+//   handleImport(file);
+// };
+
 const onHandleExport = () => {
-  yysRef.value.exportGroups();
+  handleExport();
 };
 
 const element = ref({
@@ -39,20 +76,18 @@ const element = ref({
 
 const handleFileSelected = (fileId) => {
   filesStore.setActiveFile(fileId);
+  filesStore.setVisible(fileId, true);
 };
 
 const handleTabsEdit = (
-    targetName: TabPaneName | undefined,
+    targetName: String | undefined,
     action: 'remove' | 'add'
-)=> {
-  const tabIndex = filesStore.fileList.findIndex(file => file.name === parseInt(name.toString()));
-  if (tabIndex !== -1) {
-    filesStore.fileList.splice(tabIndex, 1);
-    if (filesStore.fileList.length > 0) {
-      filesStore.setActiveFile(filesStore.fileList[0].name);
-    } else {
-      filesStore.setActiveFile(-1); // 或者其他适当的值表示没有活动文件
-    }
+) => {
+  if (action === 'remove') {
+    filesStore.closeTab(targetName);
+  } else if (action === 'add') {
+    const newFileName = `File ${filesStore.fileList.length + 1}`;
+    filesStore.addFile({ label: newFileName, name: newFileName });
   }
 };
 
@@ -67,6 +102,11 @@ onUnmounted(() => {
     windowHeight.value = window.innerHeight;
   });
 });
+
+const activeFileGroups = computed(() => {
+  const activeFile = filesStore.fileList.find(file => file.name === filesStore.activeFile);
+  return activeFile ? activeFile.groups : [];
+});
 </script>
 
 <template>
@@ -77,7 +117,7 @@ onUnmounted(() => {
     <div class="main-content">
       <!-- 侧边栏 -->
       <aside class="sidebar">
-        <ProjectExplorer :files="filesStore.fileList" @file-selected="handleFileSelected" />
+        <ProjectExplorer :allFiles="filesStore.fileList" @file-selected="handleFileSelected" />
       </aside>
 
       <!-- 工作区 -->
@@ -91,12 +131,12 @@ onUnmounted(() => {
               @edit="handleTabsEdit"
           >
             <el-tab-pane
-                v-for="(file, index) in filesStore.fileList"
+                v-for="(file, index) in filesStore.visibleFiles"
                 :key="index"
                 :label="file.label"
                 :name="file.name.toString()"
             >
-              <Yys ref="yysRef" />
+              <Yys :groups="activeFileGroups" ref="yysRef" />
             </el-tab-pane>
           </el-tabs>
         </main>

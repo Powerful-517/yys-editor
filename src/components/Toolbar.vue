@@ -8,14 +8,37 @@
           t('setWatermark')
         }}
       </el-button>
+      <!-- 新增的按钮 -->
+      <el-button type="info" @click="showUpdateLog">更新日志</el-button>
+      <el-button type="warning" @click="showFeedbackForm">问题反馈</el-button>
     </div>
 
+    <!-- 更新日志对话框 -->
+    <el-dialog v-model="state.showUpdateLogDialog" title="更新日志" width="60%">
+      <ul>
+        <li v-for="(log, index) in updateLogs" :key="index">
+          <strong>版本 {{ log.version }} - {{ log.date }}</strong>
+          <ul>
+            <li v-for="(change, idx) in log.changes" :key="idx">{{ change }}</li>
+          </ul>
+        </li>
+      </ul>
+    </el-dialog>
+
+    <!-- 更新日志对话框 -->
+    <el-dialog v-model="state.showFeedbackFormDialog" title="更新日志" width="60%">
+      <span style="font-size: 24px;">备注阴阳师</span>
+      <br/>
+      <img src="/assets/Other/Contact.png"
+           style="cursor: pointer; vertical-align: bottom; width: 200px; height: auto;"/>
+    </el-dialog>
+
     <!-- 预览弹窗 -->
-    <el-dialog id="preview-container" v-model="state.previewVisible" width="80%" height="80%" :before-close="handleClose">
+    <el-dialog id="preview-container" v-model="state.previewVisible" width="80%" height="80%"
+               :before-close="handleClose">
       <div style="max-height: 500px; overflow-y: auto;">
         <img v-if="state.previewImage" :src="state.previewImage" alt="Preview" style="width: 100%; display: block;"/>
       </div>
-      <!--      <img v-if="state.previewImage" :src="state.previewImage" alt="Preview" style="width: 100%; height: auto;" />-->
       <span slot="footer" class="dialog-footer">
         <el-button @click="state.previewVisible = false">取 消</el-button>
         <el-button type="primary" @click="downloadImage">下 载</el-button>
@@ -62,14 +85,45 @@ import {useI18n} from 'vue-i18n';
 
 // 获取当前的 i18n 实例
 const {t} = useI18n();
-const emit = defineEmits(['handleExport', 'handleImport'])
+const emit = defineEmits(['handleExport', 'handleImport']);
 
 // 定义响应式数据
 const state = reactive({
   previewImage: null, // 用于存储预览图像的数据URL
   previewVisible: false, // 控制预览弹窗的显示状态
-  showWatermarkDialog: false, // 控制水印设置弹窗的显示状态
+  showWatermarkDialog: false, // 控制水印设置弹窗的显示状态,
+  showUpdateLogDialog: false, // 控制更新日志对话框的显示状态
+  showFeedbackFormDialog: false, // 控制反馈表单对话框的显示状态
 });
+
+// 版本记录数据
+const updateLogs = [
+  {
+    version: '2.0.0',
+    date: '2025-03-16',
+    changes: [
+      '修复了相同式神不能正确设置属性的问题',
+      '支持了多文件编辑',
+      'PS:当前导出截图宽度无法'
+    ]
+  },
+  {
+    version: '1.0.0',
+    date: '2025-03-09',
+    changes: [
+      '首次发布'
+    ]
+  },
+
+];
+
+const showUpdateLog = () => {
+  state.showUpdateLogDialog = !state.showUpdateLogDialog;
+};
+
+const showFeedbackForm = () => {
+  state.showFeedbackFormDialog = !state.showFeedbackFormDialog;
+};
 
 const handleExport = () => {
   emit('handleExport');
@@ -85,7 +139,6 @@ const handleImport = () => {
   };
   input.click();
 };
-
 
 const watermark = reactive({
   text: '示例水印',
@@ -149,7 +202,6 @@ function calculateVisualHeight(selector) {
   // 4. 累加每行最大高度
   return rows.reduce((sum, row) => sum + row.maxHeight, 0);
 }
-
 
 const ignoreElements = (element) => {
   return element.classList.contains('ql-toolbar') || element.classList.contains('el-tabs__header');
@@ -248,6 +300,7 @@ const prepareCapture = async () => {
     document.head.removeChild(style);
   }
 };
+
 const downloadImage = () => {
   if (state.previewImage) {
     const link = document.createElement('a');
@@ -272,7 +325,6 @@ const handleClose = (done) => {
   right: 0;
   height: 48px;
   background: #f8f8f8;
-  //border-bottom: 1px solid #eee; display: flex;
   align-items: center;
   padding: 0 8px;
   z-index: 100;

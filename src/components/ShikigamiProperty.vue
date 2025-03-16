@@ -130,6 +130,7 @@ import YuhunSelect from "@/components/YuhunSelect.vue";
 import {useI18n} from 'vue-i18n'
 // import YuhunSelect from "./YuhunSelect.vue";
 
+
 // 获取当前的 i18n 实例
 const {t} = useI18n()
 
@@ -339,7 +340,7 @@ const cancel = () => {
 
 const confirm = () => {
   shikigami.value.edit = true
-  emit('updateProperty', JSON.parse(JSON.stringify(shikigami.value)))
+  emit('updateProperty', shikigami.value);
   resetData()
 }
 

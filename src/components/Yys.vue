@@ -14,7 +14,7 @@
   />
 
 
-  <draggable :list="state.groups" item-key="group" style="display: flex; flex-direction: column; width: 100%;"
+  <draggable :list="groups" item-key="group" style="display: flex; flex-direction: column; width: 100%;"
              handle=".drag-handle">
 
 
@@ -126,7 +126,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {ref, reactive, toRefs} from 'vue';
 import draggable from 'vuedraggable';
 import ShikigamiSelect from './ShikigamiSelect.vue';
@@ -139,35 +139,15 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import shikigamiData from '../data/Shikigami.json';
 import _ from 'lodash';
 
+const props = defineProps<{
+  groups: any[];
+}>();
+
 const dialogTableVisible = ref(false)
 // 定义响应式数据
 const state = reactive({
   showSelectShikigami: false,
   showProperty: false,
-  groups: [
-    {
-      shortDescription: '',
-      groupInfo: [{}, {}, {}, {}, {}],
-      details: ''
-    },
-    {
-      shortDescription: '',
-      groupInfo: [{}, {}, {}, {}, {}],
-      details: ''
-    },{
-      shortDescription: '',
-      groupInfo: [{}, {}, {}, {}, {}],
-      details: ''
-    },{
-      shortDescription: '',
-      groupInfo: [{}, {}, {}, {}, {}],
-      details: ''
-    },{
-      shortDescription: '',
-      groupInfo: [{}, {}, {}, {}, {}],
-      details: ''
-    },
-  ],
   groupIndex: 0,
   positionIndex: 0,
   currentShikigami: {},
@@ -187,9 +167,9 @@ const copy = (str) => {
 
 const paste = (groupIndex, type) => {
   if ('shortDescription' == type)
-    state.groups[groupIndex].shortDescription = clipboard.value
+    props.groups[groupIndex].shortDescription = clipboard.value
   else if ('details' == type)
-    state.groups[groupIndex].details = clipboard.value
+    props.groups[groupIndex].details = clipboard.value
 }
 
 // 定义工具栏选项
@@ -223,23 +203,23 @@ const editShikigami = (groupIndex, positionIndex) => {
   state.showSelectShikigami = true;
   state.groupIndex = groupIndex;
   state.positionIndex = positionIndex;
-  state.currentShikigami = state.groups[groupIndex].groupInfo[positionIndex];
+  state.currentShikigami = props.groups[groupIndex].groupInfo[positionIndex];
 };
 
 const updateShikigami = (shikigami) => {
   console.log("parent====> ", shikigami);
   state.showSelectShikigami = false;
 
-  const oldProperties = state.groups[state.groupIndex].groupInfo[state.positionIndex].properties;
-  state.groups[state.groupIndex].groupInfo[state.positionIndex] = _.cloneDeep(shikigami);
-  state.groups[state.groupIndex].groupInfo[state.positionIndex].properties = oldProperties;
+  const oldProperties = props.groups[state.groupIndex].groupInfo[state.positionIndex].properties;
+  props.groups[state.groupIndex].groupInfo[state.positionIndex] = _.cloneDeep(shikigami);
+  props.groups[state.groupIndex].groupInfo[state.positionIndex].properties = oldProperties;
 };
 
 const editProperty = (groupIndex, positionIndex) => {
   state.showProperty = true;
   state.groupIndex = groupIndex;
   state.positionIndex = positionIndex;
-  state.currentShikigami = state.groups[groupIndex].groupInfo[positionIndex];
+  state.currentShikigami = props.groups[groupIndex].groupInfo[positionIndex];
 };
 
 const closeProperty = () => {
@@ -250,19 +230,19 @@ const closeProperty = () => {
 const updateProperty = (property) => {
   state.showProperty = false;
   state.currentShikigami = {};
-  state.groups[state.groupIndex].groupInfo[state.positionIndex].properties = _.cloneDeep(property);
+  props.groups[state.groupIndex].groupInfo[state.positionIndex].properties = _.cloneDeep(property);
 };
 
 const removeGroupElement = (groupIndex, positionIndex) => {
-  state.groups[groupIndex].groupInfo.splice(positionIndex, 1);
+  props.groups[groupIndex].groupInfo.splice(positionIndex, 1);
 };
 
 const removeGroup = (groupIndex) => {
-  state.groups.splice(groupIndex, 1);
+  props.groups.splice(groupIndex, 1);
 };
 
 const addGroup = () => {
-  state.groups.push({
+  props.groups.push({
     shortDescription: '',
     groupInfo: [{}, {}, {}, {}, {}],
     details: ''
@@ -270,12 +250,12 @@ const addGroup = () => {
 };
 
 const addGroupElement = (groupIndex) => {
-  state.groups[groupIndex].groupInfo.push({});
+  props.groups[groupIndex].groupInfo.push({});
 };
 
 
 const exportGroups = () => {
-  const dataStr = JSON.stringify(state.groups, null, 2);
+  const dataStr = JSON.stringify(props.groups, null, 2);
   const blob = new Blob([dataStr], {type: 'application/json'});
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -326,7 +306,7 @@ const importGroups = (file) => {
   reader.onload = (e) => {
     try {
       const importedData = JSON.parse(e.target.result);
-      state.groups = importedData;
+      props.groups = importedData;
       ElMessage.success('导入成功');
     } catch (error) {
       ElMessage.error('文件格式错误');

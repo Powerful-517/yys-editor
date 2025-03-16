@@ -1,7 +1,7 @@
 <template>
   <div class="project-explorer">
     <el-tree
-        :data="files"
+        :data="allFiles"
         :props="defaultProps"
         @node-click="handleNodeClick"
     />
@@ -9,10 +9,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { defineProps, defineEmits } from 'vue';
 
 const props = defineProps({
-  files: {
+  allFiles: {
     type: Array,
     required: true,
   },
