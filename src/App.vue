@@ -87,7 +87,24 @@ const handleTabsEdit = (
     filesStore.closeTab(targetName);
   } else if (action === 'add') {
     const newFileName = `File ${filesStore.fileList.length + 1}`;
-    filesStore.addFile({ label: newFileName, name: newFileName });
+
+    filesStore.addFile({
+      label: newFileName,
+      name: newFileName,
+      visible: true,
+      groups:[
+        {
+          shortDescription: '',
+          groupInfo: [{}, {}, {}, {}, {}],
+          details: ''
+        },
+        {
+          shortDescription: '',
+          groupInfo: [{}, {}, {}, {}, {}],
+          details: ''
+        }
+      ]
+    });
   }
 };
 
@@ -181,5 +198,8 @@ const activeFileGroups = computed(() => {
   position: relative;
   height: 100%; /* 确保内容区域占满父容器 */
   overflow-y: auto; /* 允许内容滚动 */
+  min-height: 100vh; /* 允许容器扩展 */
+  display: inline-block;
+  max-width: 100%;
 }
 </style>

@@ -42,7 +42,7 @@ export const useFilesStore = defineStore('files', {
         visibleFiles: (state) => state.fileList.filter(file => file.visible),
     },
     actions: {
-        addFile(file: { label: string; name: number }) {
+        addFile(file) {
             this.fileList.push({...file, visible: true});
             this.activeFile = file.name;
         },
