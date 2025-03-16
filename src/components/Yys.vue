@@ -153,6 +153,18 @@ const state = reactive({
       shortDescription: '',
       groupInfo: [{}, {}, {}, {}, {}],
       details: ''
+    },{
+      shortDescription: '',
+      groupInfo: [{}, {}, {}, {}, {}],
+      details: ''
+    },{
+      shortDescription: '',
+      groupInfo: [{}, {}, {}, {}, {}],
+      details: ''
+    },{
+      shortDescription: '',
+      groupInfo: [{}, {}, {}, {}, {}],
+      details: ''
     },
   ],
   groupIndex: 0,

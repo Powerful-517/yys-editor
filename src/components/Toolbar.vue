@@ -152,7 +152,7 @@ function calculateVisualHeight(selector) {
 
 
 const ignoreElements = (element) => {
-  return element.classList.contains('ql-toolbar');
+  return element.classList.contains('ql-toolbar') || element.classList.contains('el-tabs__header');
 };
 
 const prepareCapture = async () => {
@@ -163,19 +163,34 @@ const prepareCapture = async () => {
   style.textContent = `.ql-container.ql-snow { border: none !important; }`;
   document.head.appendChild(style);
 
+  // 获取目标元素
+  const element = document.querySelector('#main-container');
+  if (!element) {
+    console.error('Element not found');
+    return;
+  }
+
+  // 保存原始 overflow 样式
+  const originalOverflow = element.style.overflow;
+
   try {
-    const element = document.querySelector('#main-container');
+    // 临时隐藏 overflow 样式
+    element.style.overflow = 'visible';
+
+    // 计算需要忽略的元素高度
     let totalHeight = calculateVisualHeight('[data-html2canvas-ignore]') + calculateVisualHeight('.ql-toolbar');
     console.log('所有携带指定属性的元素高度之和:', totalHeight);
-    if (!element) {
-      console.error('Element not found');
-      return;
-    }
+
+    console.log('主元素宽度', element.scrollWidth);
+    console.log('主元素高度', element.scrollHeight);
 
     // 1. 生成原始截图
     const canvas = await html2canvas(element, {
       ignoreElements: ignoreElements,
-      height: element.scrollHeight - totalHeight
+      scrollX: 0,
+      scrollY: 0,
+      width: element.scrollWidth,
+      height: element.scrollHeight - totalHeight,
     });
 
     // 2. 创建新Canvas添加水印
@@ -220,16 +235,19 @@ const prepareCapture = async () => {
     }
 
     ctx.restore(); // 恢复原始状态
+
     // 3. 存储带水印的图片
     state.previewImage = watermarkedCanvas.toDataURL();
-
   } catch (error) {
     console.error('Capture failed', error);
   } finally {
+    // 恢复原始 overflow 样式
+    element.style.overflow = originalOverflow;
+
+    // 移除临时样式
     document.head.removeChild(style);
   }
 };
-
 const downloadImage = () => {
   if (state.previewImage) {
     const link = document.createElement('a');
