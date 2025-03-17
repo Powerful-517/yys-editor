@@ -78,14 +78,17 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {ref, reactive} from 'vue';
 import html2canvas from "html2canvas";
 import {useI18n} from 'vue-i18n';
+import updateLogs from "../data/updateLog.json"
+import {useFilesStore} from "@/stores/files";
+
+const filesStore = useFilesStore();
 
 // 获取当前的 i18n 实例
 const {t} = useI18n();
-const emit = defineEmits(['handleExport', 'handleImport']);
 
 // 定义响应式数据
 const state = reactive({
@@ -96,26 +99,6 @@ const state = reactive({
   showFeedbackFormDialog: false, // 控制反馈表单对话框的显示状态
 });
 
-// 版本记录数据
-const updateLogs = [
-  {
-    version: '2.0.0',
-    date: '2025-03-16',
-    changes: [
-      '修复了相同式神不能正确设置属性的问题',
-      '支持了多文件编辑',
-      'PS:当前导出截图宽度无法'
-    ]
-  },
-  {
-    version: '1.0.0',
-    date: '2025-03-09',
-    changes: [
-      '首次发布'
-    ]
-  },
-
-];
 
 const showUpdateLog = () => {
   state.showUpdateLogDialog = !state.showUpdateLogDialog;
@@ -126,7 +109,14 @@ const showFeedbackForm = () => {
 };
 
 const handleExport = () => {
-  emit('handleExport');
+  const dataStr = JSON.stringify(filesStore.fileList, null, 2);
+  const blob = new Blob([dataStr], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'files.json';
+  link.click();
+  URL.revokeObjectURL(url);
 };
 
 const handleImport = () => {
@@ -135,7 +125,30 @@ const handleImport = () => {
   input.accept = '.json';
   input.onchange = (e) => {
     const file = e.target.files[0];
-    if (file) emit('handleImport', file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result as string);
+          if (data[0].visible === true) {
+            // 新版本格式：直接替换 fileList
+            filesStore.$patch({ fileList: data });
+          } else  {
+            // 旧版本格式：仅包含 groups 数组
+            const newFile = {
+              label: `File ${filesStore.fileList.length + 1}`,
+              name: String(filesStore.fileList.length + 1),
+              visible: true,
+              groups: data
+            };
+            filesStore.addFile(newFile);
+          }
+        } catch (error) {
+          console.error('Failed to import file', error);
+        }
+      };
+      reader.readAsText(file);
+    }
   };
   input.click();
 };

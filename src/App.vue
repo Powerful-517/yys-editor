@@ -21,51 +21,6 @@ const onResizing = (x, y, width, height) => {
   height.value = height;
 };
 
-const handleExport = () => {
-  const dataStr = JSON.stringify(filesStore.fileList, null, 2);
-  const blob = new Blob([dataStr], { type: 'application/json;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'files.json';
-  link.click();
-  URL.revokeObjectURL(url);
-};
-
-const onHandleInport = (file) => {
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    try {
-      const data = JSON.parse(e.target.result as string);
-      if (data[0].visible === true) {
-        // 新版本格式：直接替换 fileList
-        filesStore.$patch({ fileList: data });
-      } else  {
-        // 旧版本格式：仅包含 groups 数组
-        const newFile = {
-          label: `File ${filesStore.fileList.length + 1}`,
-          name: String(filesStore.fileList.length + 1),
-          visible: true,
-          groups: data
-        };
-        filesStore.addFile(newFile);
-      }
-    } catch (error) {
-      console.error('Failed to import file', error);
-    }
-  };
-  reader.readAsText(file);
-};
-
-// const onHandleInport = (file) => {
-//
-//   handleImport(file);
-// };
-
-const onHandleExport = () => {
-  handleExport();
-};
-
 const element = ref({
   x: 400,
   y: 20,
@@ -73,11 +28,6 @@ const element = ref({
   height: windowHeight.value - toolbarHeight,
   isActive: false,
 });
-
-const handleFileSelected = (fileId) => {
-  filesStore.setActiveFile(fileId);
-  filesStore.setVisible(fileId, true);
-};
 
 const handleTabsEdit = (
     targetName: String | undefined,
@@ -129,12 +79,12 @@ const activeFileGroups = computed(() => {
 <template>
   <div class="container">
     <!-- 工具栏 -->
-    <Toolbar title="yys-editor" username="示例用户" @handleExport="onHandleExport" @handleImport="onHandleInport" />
+    <Toolbar title="yys-editor" username="示例用户"/>
     <!-- 侧边栏和工作区 -->
     <div class="main-content">
       <!-- 侧边栏 -->
       <aside class="sidebar">
-        <ProjectExplorer :allFiles="filesStore.fileList" @file-selected="handleFileSelected" />
+        <ProjectExplorer :allFiles="filesStore.fileList" />
       </aside>
 
       <!-- 工作区 -->

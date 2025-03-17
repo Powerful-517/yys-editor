@@ -119,6 +119,7 @@ import '@vueup/vue-quill/dist/vue-quill.snow.css' // 引入样式文件
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import shikigamiData from '../data/Shikigami.json';
 import _ from 'lodash';
+import {Action, ElMessage, ElMessageBox} from "element-plus";
 
 const props = defineProps<{
   groups: any[];
@@ -215,11 +216,57 @@ const updateProperty = (property) => {
 };
 
 const removeGroupElement = (groupIndex, positionIndex) => {
-  props.groups[groupIndex].groupInfo.splice(positionIndex, 1);
+  const group = props.groups[groupIndex];
+
+  if (group.groupInfo.length === 1) {
+    ElMessageBox.alert('无法删除', '提示', {
+      confirmButtonText: '确定',
+    });
+    return;
+  }
+
+  ElMessageBox.confirm('确定要删除此元素吗?', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    group.groupInfo.splice(positionIndex, 1);
+    ElMessage({
+      type: 'success',
+      message: '删除成功!',
+    });
+  }).catch(() => {
+    ElMessage({
+      type: 'info',
+      message: '已取消删除',
+    });
+  });
 };
 
 const removeGroup = (groupIndex) => {
-  props.groups.splice(groupIndex, 1);
+  if (props.groups.length === 1) {
+    ElMessageBox.alert('无法删除最后一个队伍', '提示', {
+      confirmButtonText: '确定',
+    });
+    return;
+  }
+
+  ElMessageBox.confirm('确定要删除此组吗?', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    props.groups.splice(groupIndex, 1);
+    ElMessage({
+      type: 'success',
+      message: '删除成功!',
+    });
+  }).catch(() => {
+    ElMessage({
+      type: 'info',
+      message: '已取消删除',
+    });
+  });
 };
 
 const addGroup = () => {
@@ -392,7 +439,8 @@ defineExpose({
 
   .opt-btn {
     position: absolute;
-    top: -10px;
+    top: 0px;
+    z-index: 10;
     opacity: 0;
   }
 }

@@ -10,6 +10,9 @@
 
 <script setup lang="ts">
 import { defineProps, defineEmits } from 'vue';
+import { useFilesStore } from "@/stores/files";
+
+const filesStore = useFilesStore();
 
 const props = defineProps({
   allFiles: {
@@ -18,7 +21,6 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['file-selected']);
 
 const defaultProps = {
   children: 'children',
@@ -26,7 +28,8 @@ const defaultProps = {
 };
 
 const handleNodeClick = (data) => {
-  emit('file-selected', data.name);
+  filesStore.setActiveFile(data.name);
+  filesStore.setVisible(data.name, true);
 };
 </script>
 
