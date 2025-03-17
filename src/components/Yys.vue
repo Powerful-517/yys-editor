@@ -18,12 +18,12 @@
              handle=".drag-handle">
 
 
-    <template #item="{ element: group, index: groupIndex }">
+    <template class="group" #item="{ element: group, index: groupIndex }">
       <el-row :span="24">
-        <div>
-          <div>
-            <div style="display: flex; justify-content: space-between;" data-html2canvas-ignore="true">
-              <div>
+        <div class="group-item">
+          <div class="group-header">
+            <div class="group-opt" data-html2canvas-ignore="true">
+              <div class="opt-left">
                 <el-button type="primary" icon="CopyDocument" @click="copy(group.shortDescription)">{{ t('Copy') }}
                 </el-button>
                 <el-button type="primary" icon="Document" @click="paste(groupIndex,'shortDescription')">{{
@@ -31,7 +31,7 @@
                   }}
                 </el-button>
               </div>
-              <div>
+              <div class="opt-right">
                 <el-button class="drag-handle" type="primary" icon="Rank" circle></el-button>
                 <el-button type="primary" icon="Plus" circle @click="addGroup"></el-button>
                 <el-button type="danger" icon="Delete" circle @click="removeGroup(groupIndex)"></el-button>
@@ -40,20 +40,17 @@
             <QuillEditor v-model:content="group.shortDescription" contentType="html" theme="snow"
                          :toolbar="toolbarOptions"/>
           </div>
-          <div>
-            <draggable :list="group.groupInfo" item-key="name" style="display: flex; flex-direction: row; width: 20%;">
+          <div class="group-body">
+            <draggable :list="group.groupInfo" item-key="name" class="body-content">
               <template #item="{element : position, index:positionIndex}">
-                <div>
-                  <el-col>
-                    <el-card shadow="never"
-                             :body-style="{ display: 'flex', 'flex-direction': 'column', 'justify-content': 'center', 'align-items': 'center' }">
-
-                      <div data-html2canvas-ignore="true">
+                <el-col>
+                    <el-card class="group-card" shadow="never">
+                      <div class="opt-btn" data-html2canvas-ignore="true">
                         <!-- Add delete button here -->
                         <el-button type="danger" icon="Delete" circle @click="removeGroupElement(groupIndex, positionIndex)"/>
                         <el-button type="primary" icon="Plus" circle @click="addGroupElement(groupIndex)"/>
                       </div>
-                      <div style="position: relative; display: inline-block;">
+                      <div class="avatar-container">
                         <!-- 头像图片 -->
                         <img :src="position.avatar || '/assets/Shikigami/default.png'"
                              style="cursor: pointer; vertical-align: bottom;"
@@ -61,15 +58,10 @@
                              @click="editShikigami(groupIndex, positionIndex)"/>
 
                         <!-- 文字图层 -->
-                        <span v-if="position.properties"
-                              style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%) translateY(50%);
-               font-size: 24px; color: white; text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black;
-               white-space: nowrap; padding: 0 8px; margin: 0; display: flex; align-items: center; justify-content: center;">
-    {{ position.properties.levelRequired }}级 {{ position.properties.skillRequired.join('') }}
-  </span>
+                        <span v-if="position.properties">{{ position.properties.levelRequired }}级 {{ position.properties.skillRequired.join('') }}</span>
                       </div>
-                      <div style="padding: 14px; width: 120px;">
 
+                      <div class="property-wrap">
                         <div style="display: flex; justify-content: center;" data-html2canvas-ignore="true">
                           <span>{{ position.name || "" }}</span>
                         </div>
@@ -96,13 +88,11 @@
                       </div>
                     </el-card>
                   </el-col>
-                </div>
               </template>
             </draggable>
-
           </div>
-          <div>
-            <div data-html2canvas-ignore="true">
+          <div class="group-footer">
+            <div class="opt-left" data-html2canvas-ignore="true">
               <el-button type="primary" icon="CopyDocument" @click="copy(group.details)">{{ t('Copy') }}</el-button>
               <el-button type="primary" icon="Document" @click="paste(groupIndex,'details')">{{
                   t('Paste')
@@ -111,19 +101,10 @@
             </div>
             <QuillEditor v-model:content="group.details" contentType="html" theme="snow" :toolbar="toolbarOptions"/>
           </div>
-
         </div>
       </el-row>
-
-
     </template>
-
-    <!--    </el-row>-->
   </draggable>
-  <div style="margin: 20px">
-
-
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -361,5 +342,73 @@ defineExpose({
   border: 0;
 }
 
+.group-header {
+    padding: 10px;
+}
+
+.group-opt {
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.group-body {
+  padding: 20px;
+  width: 80%;
+}
+
+.body-content {
+  display: flex;
+  flex-direction: row;
+  width: 20%;
+}
+
+.group-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  .avatar-container {
+    position: relative;
+  }
+
+  .avatar-container span {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(50%);
+      font-size: 24px;
+      color: white;
+      text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black;
+      white-space: nowrap;
+      padding: 0 8px;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+
+  .opt-btn {
+    position: absolute;
+    top: -10px;
+    opacity: 0;
+  }
+}
+
+.property-wrap {
+  margin: 10px 0;
+}
+
+/* 当鼠标悬停在容器上时显示按钮 */
+.group-card:hover .opt-btn {
+  opacity: 1;
+}
+
+.group-footer {
+  margin: 10px;
+  padding: 10px;
+}
 
 </style>
