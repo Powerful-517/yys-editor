@@ -43,7 +43,8 @@
           <div class="group-body">
             <draggable :list="group.groupInfo" item-key="name" class="body-content">
               <template #item="{element : position, index:positionIndex}">
-                <el-col>
+                <div>
+                  <el-col>
                     <el-card class="group-card" shadow="never">
                       <div class="opt-btn" data-html2canvas-ignore="true">
                         <!-- Add delete button here -->
@@ -88,6 +89,7 @@
                       </div>
                     </el-card>
                   </el-col>
+                </div>
               </template>
             </draggable>
           </div>
@@ -390,7 +392,8 @@ defineExpose({
 }
 
 .group-header {
-    padding: 10px;
+  margin: 10px;
+  padding: 10px;
 }
 
 .group-opt {
@@ -419,6 +422,7 @@ defineExpose({
 
   .avatar-container {
     position: relative;
+    min-width: 100px;
   }
 
   .avatar-container span {

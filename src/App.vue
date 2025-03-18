@@ -89,24 +89,24 @@ const activeFileGroups = computed(() => {
 
       <!-- 工作区 -->
       <div class="workspace">
-        <main id="main-container" :style="{ height: contentHeight, overflow: 'auto' }">
-          <el-tabs
-              v-model="filesStore.activeFile"
-              type="card"
-              class="demo-tabs"
-              editable
-              @edit="handleTabsEdit"
+        <el-tabs
+            v-model="filesStore.activeFile"
+            type="card"
+            class="demo-tabs"
+            editable
+            @edit="handleTabsEdit"
+        >
+          <el-tab-pane
+              v-for="(file, index) in filesStore.visibleFiles"
+              :key="index"
+              :label="file.label"
+              :name="file.name.toString()"
           >
-            <el-tab-pane
-                v-for="(file, index) in filesStore.visibleFiles"
-                :key="index"
-                :label="file.label"
-                :name="file.name.toString()"
-            >
-              <Yys :groups="activeFileGroups" ref="yysRef" />
-            </el-tab-pane>
-          </el-tabs>
-        </main>
+            <main id="main-container" :style="{ height: contentHeight, overflow: 'auto' }">
+              <Yys :groups="activeFileGroups" ref="yysRef"/>
+            </main>
+          </el-tab-pane>
+        </el-tabs>
       </div>
     </div>
   </div>
