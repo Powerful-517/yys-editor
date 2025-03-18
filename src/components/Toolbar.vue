@@ -8,14 +8,37 @@
           t('setWatermark')
         }}
       </el-button>
+      <!-- 新增的按钮 -->
+      <el-button type="info" @click="showUpdateLog">更新日志</el-button>
+      <el-button type="warning" @click="showFeedbackForm">问题反馈</el-button>
     </div>
 
+    <!-- 更新日志对话框 -->
+    <el-dialog v-model="state.showUpdateLogDialog" title="更新日志" width="60%">
+      <ul>
+        <li v-for="(log, index) in updateLogs" :key="index">
+          <strong>版本 {{ log.version }} - {{ log.date }}</strong>
+          <ul>
+            <li v-for="(change, idx) in log.changes" :key="idx">{{ change }}</li>
+          </ul>
+        </li>
+      </ul>
+    </el-dialog>
+
+    <!-- 更新日志对话框 -->
+    <el-dialog v-model="state.showFeedbackFormDialog" title="更新日志" width="60%">
+      <span style="font-size: 24px;">备注阴阳师</span>
+      <br/>
+      <img src="/assets/Other/Contact.png"
+           style="cursor: pointer; vertical-align: bottom; width: 200px; height: auto;"/>
+    </el-dialog>
+
     <!-- 预览弹窗 -->
-    <el-dialog id="preview-container" v-model="state.previewVisible" width="80%" height="80%" :before-close="handleClose">
+    <el-dialog id="preview-container" v-model="state.previewVisible" width="80%" height="80%"
+               :before-close="handleClose">
       <div style="max-height: 500px; overflow-y: auto;">
         <img v-if="state.previewImage" :src="state.previewImage" alt="Preview" style="width: 100%; display: block;"/>
       </div>
-      <!--      <img v-if="state.previewImage" :src="state.previewImage" alt="Preview" style="width: 100%; height: auto;" />-->
       <span slot="footer" class="dialog-footer">
         <el-button @click="state.previewVisible = false">取 消</el-button>
         <el-button type="primary" @click="downloadImage">下 载</el-button>
@@ -55,24 +78,45 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {ref, reactive} from 'vue';
 import html2canvas from "html2canvas";
 import {useI18n} from 'vue-i18n';
+import updateLogs from "../data/updateLog.json"
+import {useFilesStore} from "@/ts/files";
+
+const filesStore = useFilesStore();
 
 // 获取当前的 i18n 实例
 const {t} = useI18n();
-const emit = defineEmits(['handleExport', 'handleImport'])
 
 // 定义响应式数据
 const state = reactive({
   previewImage: null, // 用于存储预览图像的数据URL
   previewVisible: false, // 控制预览弹窗的显示状态
-  showWatermarkDialog: false, // 控制水印设置弹窗的显示状态
+  showWatermarkDialog: false, // 控制水印设置弹窗的显示状态,
+  showUpdateLogDialog: false, // 控制更新日志对话框的显示状态
+  showFeedbackFormDialog: false, // 控制反馈表单对话框的显示状态
 });
 
+
+const showUpdateLog = () => {
+  state.showUpdateLogDialog = !state.showUpdateLogDialog;
+};
+
+const showFeedbackForm = () => {
+  state.showFeedbackFormDialog = !state.showFeedbackFormDialog;
+};
+
 const handleExport = () => {
-  emit('handleExport');
+  const dataStr = JSON.stringify(filesStore.fileList, null, 2);
+  const blob = new Blob([dataStr], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'files.json';
+  link.click();
+  URL.revokeObjectURL(url);
 };
 
 const handleImport = () => {
@@ -81,11 +125,33 @@ const handleImport = () => {
   input.accept = '.json';
   input.onchange = (e) => {
     const file = e.target.files[0];
-    if (file) emit('handleImport', file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result as string);
+          if (data[0].visible === true) {
+            // 新版本格式：直接替换 fileList
+            filesStore.$patch({ fileList: data });
+          } else  {
+            // 旧版本格式：仅包含 groups 数组
+            const newFile = {
+              label: `File ${filesStore.fileList.length + 1}`,
+              name: String(filesStore.fileList.length + 1),
+              visible: true,
+              groups: data
+            };
+            filesStore.addFile(newFile);
+          }
+        } catch (error) {
+          console.error('Failed to import file', error);
+        }
+      };
+      reader.readAsText(file);
+    }
   };
   input.click();
 };
-
 
 const watermark = reactive({
   text: '示例水印',
@@ -150,9 +216,8 @@ function calculateVisualHeight(selector) {
   return rows.reduce((sum, row) => sum + row.maxHeight, 0);
 }
 
-
 const ignoreElements = (element) => {
-  return element.classList.contains('ql-toolbar');
+  return element.classList.contains('ql-toolbar') || element.classList.contains('el-tabs__header');
 };
 
 const prepareCapture = async () => {
@@ -163,19 +228,34 @@ const prepareCapture = async () => {
   style.textContent = `.ql-container.ql-snow { border: none !important; }`;
   document.head.appendChild(style);
 
+  // 获取目标元素
+  const element = document.querySelector('#main-container');
+  if (!element) {
+    console.error('Element not found');
+    return;
+  }
+
+  // 保存原始 overflow 样式
+  const originalOverflow = element.style.overflow;
+
   try {
-    const element = document.querySelector('#main-container');
+    // 临时隐藏 overflow 样式
+    element.style.overflow = 'visible';
+
+    // 计算需要忽略的元素高度
     let totalHeight = calculateVisualHeight('[data-html2canvas-ignore]') + calculateVisualHeight('.ql-toolbar');
     console.log('所有携带指定属性的元素高度之和:', totalHeight);
-    if (!element) {
-      console.error('Element not found');
-      return;
-    }
+
+    console.log('主元素宽度', element.scrollWidth);
+    console.log('主元素高度', element.scrollHeight);
 
     // 1. 生成原始截图
     const canvas = await html2canvas(element, {
       ignoreElements: ignoreElements,
-      height: element.scrollHeight - totalHeight
+      scrollX: 0,
+      scrollY: 0,
+      width: element.scrollWidth,
+      height: element.scrollHeight - totalHeight,
     });
 
     // 2. 创建新Canvas添加水印
@@ -220,12 +300,16 @@ const prepareCapture = async () => {
     }
 
     ctx.restore(); // 恢复原始状态
+
     // 3. 存储带水印的图片
     state.previewImage = watermarkedCanvas.toDataURL();
-
   } catch (error) {
     console.error('Capture failed', error);
   } finally {
+    // 恢复原始 overflow 样式
+    element.style.overflow = originalOverflow;
+
+    // 移除临时样式
     document.head.removeChild(style);
   }
 };
@@ -254,7 +338,6 @@ const handleClose = (done) => {
   right: 0;
   height: 48px;
   background: #f8f8f8;
-  //border-bottom: 1px solid #eee; display: flex;
   align-items: center;
   padding: 0 8px;
   z-index: 100;

@@ -14,16 +14,16 @@
   />
 
 
-  <draggable :list="state.groups" item-key="group" style="display: flex; flex-direction: column; width: 100%;"
+  <draggable :list="groups" item-key="group" style="display: flex; flex-direction: column; width: 100%;"
              handle=".drag-handle">
 
 
-    <template #item="{ element: group, index: groupIndex }">
+    <template class="group" #item="{ element: group, index: groupIndex }">
       <el-row :span="24">
-        <div>
-          <div>
-            <div style="display: flex; justify-content: space-between;" data-html2canvas-ignore="true">
-              <div>
+        <div class="group-item">
+          <div class="group-header">
+            <div class="group-opt" data-html2canvas-ignore="true">
+              <div class="opt-left">
                 <el-button type="primary" icon="CopyDocument" @click="copy(group.shortDescription)">{{ t('Copy') }}
                 </el-button>
                 <el-button type="primary" icon="Document" @click="paste(groupIndex,'shortDescription')">{{
@@ -31,7 +31,7 @@
                   }}
                 </el-button>
               </div>
-              <div>
+              <div class="opt-right">
                 <el-button class="drag-handle" type="primary" icon="Rank" circle></el-button>
                 <el-button type="primary" icon="Plus" circle @click="addGroup"></el-button>
                 <el-button type="danger" icon="Delete" circle @click="removeGroup(groupIndex)"></el-button>
@@ -40,20 +40,18 @@
             <QuillEditor v-model:content="group.shortDescription" contentType="html" theme="snow"
                          :toolbar="toolbarOptions"/>
           </div>
-          <div>
-            <draggable :list="group.groupInfo" item-key="name" style="display: flex; flex-direction: row; width: 20%;">
+          <div class="group-body">
+            <draggable :list="group.groupInfo" item-key="name" class="body-content">
               <template #item="{element : position, index:positionIndex}">
                 <div>
                   <el-col>
-                    <el-card shadow="never"
-                             :body-style="{ display: 'flex', 'flex-direction': 'column', 'justify-content': 'center', 'align-items': 'center' }">
-
-                      <div data-html2canvas-ignore="true">
+                    <el-card class="group-card" shadow="never">
+                      <div class="opt-btn" data-html2canvas-ignore="true">
                         <!-- Add delete button here -->
                         <el-button type="danger" icon="Delete" circle @click="removeGroupElement(groupIndex, positionIndex)"/>
                         <el-button type="primary" icon="Plus" circle @click="addGroupElement(groupIndex)"/>
                       </div>
-                      <div style="position: relative; display: inline-block;">
+                      <div class="avatar-container">
                         <!-- 头像图片 -->
                         <img :src="position.avatar || '/assets/Shikigami/default.png'"
                              style="cursor: pointer; vertical-align: bottom;"
@@ -61,15 +59,10 @@
                              @click="editShikigami(groupIndex, positionIndex)"/>
 
                         <!-- 文字图层 -->
-                        <span v-if="position.properties"
-                              style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%) translateY(50%);
-               font-size: 24px; color: white; text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black;
-               white-space: nowrap; padding: 0 8px; margin: 0; display: flex; align-items: center; justify-content: center;">
-    {{ position.properties.levelRequired }}级 {{ position.properties.skillRequired.join('') }}
-  </span>
+                        <span v-if="position.properties">{{ position.properties.levelRequired }}级 {{ position.properties.skillRequired.join('') }}</span>
                       </div>
-                      <div style="padding: 14px; width: 120px;">
 
+                      <div class="property-wrap">
                         <div style="display: flex; justify-content: center;" data-html2canvas-ignore="true">
                           <span>{{ position.name || "" }}</span>
                         </div>
@@ -99,10 +92,9 @@
                 </div>
               </template>
             </draggable>
-
           </div>
-          <div>
-            <div data-html2canvas-ignore="true">
+          <div class="group-footer">
+            <div class="opt-left" data-html2canvas-ignore="true">
               <el-button type="primary" icon="CopyDocument" @click="copy(group.details)">{{ t('Copy') }}</el-button>
               <el-button type="primary" icon="Document" @click="paste(groupIndex,'details')">{{
                   t('Paste')
@@ -111,22 +103,13 @@
             </div>
             <QuillEditor v-model:content="group.details" contentType="html" theme="snow" :toolbar="toolbarOptions"/>
           </div>
-
         </div>
       </el-row>
-
-
     </template>
-
-    <!--    </el-row>-->
   </draggable>
-  <div style="margin: 20px">
-
-
-  </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {ref, reactive, toRefs} from 'vue';
 import draggable from 'vuedraggable';
 import ShikigamiSelect from './ShikigamiSelect.vue';
@@ -138,24 +121,17 @@ import '@vueup/vue-quill/dist/vue-quill.snow.css' // 引入样式文件
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import shikigamiData from '../data/Shikigami.json';
 import _ from 'lodash';
+import {Action, ElMessage, ElMessageBox} from "element-plus";
+import { useGlobalMessage } from '../ts/useGlobalMessage'; // 引入全局消息通知工具
+const props = defineProps<{
+  groups: any[];
+}>();
 
 const dialogTableVisible = ref(false)
 // 定义响应式数据
 const state = reactive({
   showSelectShikigami: false,
   showProperty: false,
-  groups: [
-    {
-      shortDescription: '',
-      groupInfo: [{}, {}, {}, {}, {}],
-      details: ''
-    },
-    {
-      shortDescription: '',
-      groupInfo: [{}, {}, {}, {}, {}],
-      details: ''
-    },
-  ],
   groupIndex: 0,
   positionIndex: 0,
   currentShikigami: {},
@@ -165,6 +141,7 @@ const state = reactive({
 
 const clipboard = ref('');
 
+const { showMessage } = useGlobalMessage();
 
 // 获取当前的 i18n 实例
 const {t} = useI18n()
@@ -175,9 +152,9 @@ const copy = (str) => {
 
 const paste = (groupIndex, type) => {
   if ('shortDescription' == type)
-    state.groups[groupIndex].shortDescription = clipboard.value
+    props.groups[groupIndex].shortDescription = clipboard.value
   else if ('details' == type)
-    state.groups[groupIndex].details = clipboard.value
+    props.groups[groupIndex].details = clipboard.value
 }
 
 // 定义工具栏选项
@@ -211,23 +188,23 @@ const editShikigami = (groupIndex, positionIndex) => {
   state.showSelectShikigami = true;
   state.groupIndex = groupIndex;
   state.positionIndex = positionIndex;
-  state.currentShikigami = state.groups[groupIndex].groupInfo[positionIndex];
+  state.currentShikigami = props.groups[groupIndex].groupInfo[positionIndex];
 };
 
 const updateShikigami = (shikigami) => {
   console.log("parent====> ", shikigami);
   state.showSelectShikigami = false;
 
-  const oldProperties = state.groups[state.groupIndex].groupInfo[state.positionIndex].properties;
-  state.groups[state.groupIndex].groupInfo[state.positionIndex] = _.cloneDeep(shikigami);
-  state.groups[state.groupIndex].groupInfo[state.positionIndex].properties = oldProperties;
+  const oldProperties = props.groups[state.groupIndex].groupInfo[state.positionIndex].properties;
+  props.groups[state.groupIndex].groupInfo[state.positionIndex] = _.cloneDeep(shikigami);
+  props.groups[state.groupIndex].groupInfo[state.positionIndex].properties = oldProperties;
 };
 
 const editProperty = (groupIndex, positionIndex) => {
   state.showProperty = true;
   state.groupIndex = groupIndex;
   state.positionIndex = positionIndex;
-  state.currentShikigami = state.groups[groupIndex].groupInfo[positionIndex];
+  state.currentShikigami = props.groups[groupIndex].groupInfo[positionIndex];
 };
 
 const closeProperty = () => {
@@ -238,19 +215,50 @@ const closeProperty = () => {
 const updateProperty = (property) => {
   state.showProperty = false;
   state.currentShikigami = {};
-  state.groups[state.groupIndex].groupInfo[state.positionIndex].properties = _.cloneDeep(property);
+  props.groups[state.groupIndex].groupInfo[state.positionIndex].properties = _.cloneDeep(property);
 };
 
-const removeGroupElement = (groupIndex, positionIndex) => {
-  state.groups[groupIndex].groupInfo.splice(positionIndex, 1);
+const removeGroupElement = async (groupIndex: number, positionIndex: number) => {
+  const group = props.groups[groupIndex];
+
+  if (group.groupInfo.length === 1) {
+    showMessage('warning', '无法删除');
+    return;
+  }
+
+  try {
+    await ElMessageBox.confirm('确定要删除此元素吗?', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    });
+    group.groupInfo.splice(positionIndex, 1);
+    showMessage('success', '删除成功!');
+  } catch (error) {
+    showMessage('info', '已取消删除');
+  }
 };
 
-const removeGroup = (groupIndex) => {
-  state.groups.splice(groupIndex, 1);
-};
+const removeGroup = async (groupIndex: number) => {
+  if (props.groups.length === 1) {
+    showMessage('warning', '无法删除最后一个队伍');
+    return;
+  }
 
+  try {
+    await ElMessageBox.confirm('确定要删除此组吗?', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    });
+    props.groups.splice(groupIndex, 1);
+    showMessage('success', '删除成功!');
+  } catch (error) {
+    showMessage('info', '已取消删除');
+  }
+};
 const addGroup = () => {
-  state.groups.push({
+  props.groups.push({
     shortDescription: '',
     groupInfo: [{}, {}, {}, {}, {}],
     details: ''
@@ -258,12 +266,12 @@ const addGroup = () => {
 };
 
 const addGroupElement = (groupIndex) => {
-  state.groups[groupIndex].groupInfo.push({});
+  props.groups[groupIndex].groupInfo.push({});
 };
 
 
 const exportGroups = () => {
-  const dataStr = JSON.stringify(state.groups, null, 2);
+  const dataStr = JSON.stringify(props.groups, null, 2);
   const blob = new Blob([dataStr], {type: 'application/json'});
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -314,7 +322,7 @@ const importGroups = (file) => {
   reader.onload = (e) => {
     try {
       const importedData = JSON.parse(e.target.result);
-      state.groups = importedData;
+      props.groups = importedData;
       ElMessage.success('导入成功');
     } catch (error) {
       ElMessage.error('文件格式错误');
@@ -369,5 +377,76 @@ defineExpose({
   border: 0;
 }
 
+.group-header {
+  margin: 10px;
+  padding: 10px;
+}
+
+.group-opt {
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.group-body {
+  padding: 20px;
+  width: 80%;
+}
+
+.body-content {
+  display: flex;
+  flex-direction: row;
+  width: 20%;
+}
+
+.group-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  .avatar-container {
+    position: relative;
+    min-width: 100px;
+  }
+
+  .avatar-container span {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(50%);
+      font-size: 24px;
+      color: white;
+      text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black;
+      white-space: nowrap;
+      padding: 0 8px;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+
+  .opt-btn {
+    position: absolute;
+    top: 0px;
+    z-index: 10;
+    opacity: 0;
+  }
+}
+
+.property-wrap {
+  margin: 10px 0;
+}
+
+/* 当鼠标悬停在容器上时显示按钮 */
+.group-card:hover .opt-btn {
+  opacity: 1;
+}
+
+.group-footer {
+  margin: 10px;
+  padding: 10px;
+}
 
 </style>
