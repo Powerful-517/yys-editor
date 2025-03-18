@@ -83,7 +83,7 @@ import {ref, reactive} from 'vue';
 import html2canvas from "html2canvas";
 import {useI18n} from 'vue-i18n';
 import updateLogs from "../data/updateLog.json"
-import {useFilesStore} from "@/stores/files";
+import {useFilesStore} from "@/ts/files";
 
 const filesStore = useFilesStore();
 

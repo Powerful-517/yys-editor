@@ -122,7 +122,7 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import shikigamiData from '../data/Shikigami.json';
 import _ from 'lodash';
 import {Action, ElMessage, ElMessageBox} from "element-plus";
-
+import { useGlobalMessage } from '../ts/useGlobalMessage'; // 引入全局消息通知工具
 const props = defineProps<{
   groups: any[];
 }>();
@@ -141,6 +141,7 @@ const state = reactive({
 
 const clipboard = ref('');
 
+const { showMessage } = useGlobalMessage();
 
 // 获取当前的 i18n 实例
 const {t} = useI18n()
@@ -217,60 +218,45 @@ const updateProperty = (property) => {
   props.groups[state.groupIndex].groupInfo[state.positionIndex].properties = _.cloneDeep(property);
 };
 
-const removeGroupElement = (groupIndex, positionIndex) => {
+const removeGroupElement = async (groupIndex: number, positionIndex: number) => {
   const group = props.groups[groupIndex];
 
   if (group.groupInfo.length === 1) {
-    ElMessageBox.alert('无法删除', '提示', {
-      confirmButtonText: '确定',
-    });
+    showMessage('warning', '无法删除');
     return;
   }
 
-  ElMessageBox.confirm('确定要删除此元素吗?', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning',
-  }).then(() => {
+  try {
+    await ElMessageBox.confirm('确定要删除此元素吗?', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    });
     group.groupInfo.splice(positionIndex, 1);
-    ElMessage({
-      type: 'success',
-      message: '删除成功!',
-    });
-  }).catch(() => {
-    ElMessage({
-      type: 'info',
-      message: '已取消删除',
-    });
-  });
+    showMessage('success', '删除成功!');
+  } catch (error) {
+    showMessage('info', '已取消删除');
+  }
 };
 
-const removeGroup = (groupIndex) => {
+const removeGroup = async (groupIndex: number) => {
   if (props.groups.length === 1) {
-    ElMessageBox.alert('无法删除最后一个队伍', '提示', {
-      confirmButtonText: '确定',
-    });
+    showMessage('warning', '无法删除最后一个队伍');
     return;
   }
 
-  ElMessageBox.confirm('确定要删除此组吗?', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning',
-  }).then(() => {
+  try {
+    await ElMessageBox.confirm('确定要删除此组吗?', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    });
     props.groups.splice(groupIndex, 1);
-    ElMessage({
-      type: 'success',
-      message: '删除成功!',
-    });
-  }).catch(() => {
-    ElMessage({
-      type: 'info',
-      message: '已取消删除',
-    });
-  });
+    showMessage('success', '删除成功!');
+  } catch (error) {
+    showMessage('info', '已取消删除');
+  }
 };
-
 const addGroup = () => {
   props.groups.push({
     shortDescription: '',

@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 
-import ElementPlus from 'element-plus'
+import ElementPlus, {ElMessageBox} from 'element-plus'
 import 'element-plus/dist/index.css'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
@@ -43,6 +43,15 @@ const i18n = createI18n({
         ja,
     },
 })
+
+// 设置ElMessageBox的默认配置
+ElMessageBox.defaults = {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning', // 默认类型为警告
+    center: true, // 文字居中
+    customClass: 'my-message-box', // 自定义类名，用于CSS样式覆盖
+};
 
 const pinia = createPinia() // 创建 Pinia 实例
 

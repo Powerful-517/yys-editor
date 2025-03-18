@@ -3,7 +3,7 @@ import Yys from './components/Yys.vue';
 import Toolbar from './components/Toolbar.vue';
 import ProjectExplorer from './components/ProjectExplorer.vue';
 import { computed, ref, onMounted, onUnmounted } from "vue";
-import { useFilesStore } from "@/stores/files";
+import { useFilesStore } from "@/ts/files";
 import Vue3DraggableResizable from 'vue3-draggable-resizable';
 import { TabPaneName, TabsPaneContext } from "element-plus";
 
@@ -42,9 +42,10 @@ const handleTabsEdit = (
       label: newFileName,
       name: newFileName,
       visible: true,
+      type:'PVE',
       groups:[
         {
-          shortDescription: '',
+          shortDescription: " ",
           groupInfo: [{}, {}, {}, {}, {}],
           details: ''
         },
@@ -98,12 +99,12 @@ const activeFileGroups = computed(() => {
         >
           <el-tab-pane
               v-for="(file, index) in filesStore.visibleFiles"
-              :key="index"
+              :key="`${file.name}-${filesStore.activeFile}`"
               :label="file.label"
               :name="file.name.toString()"
           >
             <main id="main-container" :style="{ height: contentHeight, overflow: 'auto' }">
-              <Yys :groups="activeFileGroups" ref="yysRef"/>
+              <Yys :groups="activeFileGroups"/>
             </main>
           </el-tab-pane>
         </el-tabs>
@@ -133,15 +134,16 @@ const activeFileGroups = computed(() => {
 }
 
 .sidebar {
-  width: 200px; /* 侧边栏宽度 */
+  width: 20%; /* 侧边栏宽度 */
   background-color: #f0f0f0; /* 背景色 */
   flex-shrink: 0; /* 防止侧边栏被压缩 */
   overflow-y: auto; /* 允许侧边栏内容滚动 */
 }
 
 .workspace {
-  flex: 1; /* 占据剩余空间 */
+  //flex: 1; /* 占据剩余空间 */
   overflow: hidden; /* 防止内容溢出 */
+  display: inline-block;
 }
 
 #main-container {
