@@ -207,6 +207,14 @@ watch(() => shikigami.value.skillRequiredMode, (newVal) => {
 watch(() => yuhunTarget.value, (newVal) => {
       switch (newVal) {
           //<el-option label="伤害输出" value="1"/>
+        case "0": {
+          shikigami.value.yuhun.target = 0
+          shikigami.value.yuhun.property2 = ["Attack", "Defense", "Health", "Speed"];;
+          shikigami.value.yuhun.property4 = ["Attack", "Defense", "Health", "ControlHit", "ControlMiss"];
+          shikigami.value.yuhun.property6 = ["Attack", "Defense", "Health", "Crit", "CritDamage"];
+          break;
+        }
+          //<el-option label="伤害输出" value="1"/>
         case "1": {
           shikigami.value.yuhun.target = 1
           shikigami.value.yuhun.property2 = ["Attack"];
@@ -350,7 +358,7 @@ const resetData = () => {
     edit: false,
     yuhun: {
       yuhunSetEffect: [],
-      target: "0",
+      target: "1",
       property2: ["Attack"],
       property4: ["Attack"],
       property6: ["Crit", "CritDamage"],
