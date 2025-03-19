@@ -326,5 +326,41 @@
     "name": "无刀取",
     "type": "CritDamage",
     "avatar": "/assets/Yuhun/无刀取.png"
+  },
+  {
+    "name": "稻荷穗箭",
+    "shortName": "稻",
+    "type": "PVE",
+    "avatar": "/assets/Yuhun/稻荷穗箭.png"
+  },
+  {
+    "name": "纺缘锤",
+    "shortName": "缘",
+    "type": "PVE",
+    "avatar": "/assets/Yuhun/纺缘锤.png"
+  },
+  {
+    "name": "月之石",
+    "shortName": "月石",
+    "type": "PVE",
+    "avatar": "/assets/Yuhun/月之石.png"
+  },
+  {
+    "name": "预言星盘",
+    "shortName": "星盘",
+    "type": "PVE",
+    "avatar": "/assets/Yuhun/预言星盘.png"
+  },
+  {
+    "name": "天羽羽斩",
+    "shortName": "羽",
+    "type": "PVE",
+    "avatar": "/assets/Yuhun/天羽羽斩.png"
+  },
+  {
+    "name": "八咫镜",
+    "shortName": "八咫镜",
+    "type": "attack",
+    "avatar": "/assets/Yuhun/八咫镜.png"
   }
 ]
