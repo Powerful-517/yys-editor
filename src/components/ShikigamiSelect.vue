@@ -6,11 +6,19 @@
       :before-close="cancel"
   >
     <span>当前选择式神：{{ current.name }}</span>
+    <div style="display: flex; align-items: center;">
+      <el-input
+          placeholder="请输入内容"
+          v-model="searchText"
+          style="width: 200px; margin-right: 10px;"
+      />
+    </div>
     <el-tabs
         v-model="activeName"
         type="card"
         class="demo-tabs"
         @tab-click="handleClick"
+        editable
     >
       <el-tab-pane
           v-for="(rarity, index) in rarityLevels"
@@ -20,7 +28,7 @@
       >
         <div style="max-height: 600px; overflow-y: auto;">
           <el-space wrap size="large">
-            <div v-for="i in filterShikigamiByRarity(rarity.name)" :key="i.name">
+            <div v-for="i in filterShikigamiByRarityAndSearch(rarity.name,searchText)" :key="i.name">
               <el-button
                   style="width: 100px; height: 100px;"
                   @click.stop="confirm(i)"
@@ -59,6 +67,7 @@ const props = defineProps({
 
 const emit = defineEmits(['closeSelectShikigami', 'updateShikigami'])
 
+const searchText = ref('') // 新增搜索文本
 const activeName = ref('ALL')
 let current = ref({name:''})
 const show = ref(false)
@@ -96,13 +105,25 @@ const cancel = () => {
 
 const confirm = (shikigami: Shikigami) => {
   emit('updateShikigami', shikigami)
+  searchText.value=''
+  activeName.value='ALL'
   // cancel()
 }
 
-const filterShikigamiByRarity = (rarity: string) => {
-  if (rarity.toLowerCase() === 'all') return shikigamiData
-  return shikigamiData.filter(item =>
-      item.rarity.toLowerCase() === rarity.toLowerCase()
-  )
+
+// 修改后的过滤函数
+const filterShikigamiByRarityAndSearch = (rarity: string, search: string) => {
+  let filteredList = shikigamiData;
+  if (rarity.toLowerCase() !== 'all') {
+    filteredList = filteredList.filter(item =>
+        item.rarity.toLowerCase() === rarity.toLowerCase()
+    );
+  }
+  if (search.trim() !== '') {
+    return filteredList.filter(item =>
+        item.name.toLowerCase().includes(search.toLowerCase())
+    );
+  }
+  return filteredList;
 }
 </script>
