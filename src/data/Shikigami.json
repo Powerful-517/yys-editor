@@ -1,5 +1,10 @@
 [
     {
+        "avatar": "/assets/Shikigami/l/582.png",
+        "name": "巡音流歌",
+        "rarity": "L"
+    },
+    {
         "avatar": "/assets/Shikigami/ssr/581.png",
         "name": "歌留多",
         "rarity": "SSR"
