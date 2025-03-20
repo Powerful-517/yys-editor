@@ -37,13 +37,11 @@
                 <el-button type="danger" icon="Delete" circle @click="removeGroup(groupIndex)"></el-button>
               </div>
             </div>
-            <QuillEditor v-model:content="group.shortDescription" contentType="html" theme="snow"
-                         :toolbar="toolbarOptions"/>
+            <QuillEditor ref="shortDescriptionEditor" contentType="html" theme="snow" :toolbar="toolbarOptions"/>
           </div>
           <div class="group-body">
             <draggable :list="group.groupInfo" item-key="name" class="body-content">
               <template #item="{element : position, index:positionIndex}">
-                <div>
                   <el-col>
                     <el-card class="group-card" shadow="never">
                       <div class="opt-btn" data-html2canvas-ignore="true">
@@ -89,19 +87,23 @@
                       </div>
                     </el-card>
                   </el-col>
-                </div>
               </template>
             </draggable>
+            <!-- <div class="add-btn" data-html2canvas-ignore="true">
+              <el-button type="primary" icon="Plus" circle @click="addGroupElement(groupIndex)"></el-button>
+            </div> -->
           </div>
           <div class="group-footer">
-            <div class="opt-left" data-html2canvas-ignore="true">
+            <div class="group-opt" data-html2canvas-ignore="true">
+              <div class="opt-left">
               <el-button type="primary" icon="CopyDocument" @click="copy(group.details)">{{ t('Copy') }}</el-button>
               <el-button type="primary" icon="Document" @click="paste(groupIndex,'details')">{{
                   t('Paste')
                 }}
               </el-button>
             </div>
-            <QuillEditor v-model:content="group.details" contentType="html" theme="snow" :toolbar="toolbarOptions"/>
+            </div>
+            <QuillEditor ref="detailsEditor" v-model:content="group.details" contentType="html" theme="snow" :toolbar="toolbarOptions" />
           </div>
         </div>
       </el-row>
@@ -116,7 +118,8 @@ import ShikigamiSelect from './ShikigamiSelect.vue';
 import ShikigamiProperty from './ShikigamiProperty.vue';
 import html2canvas from 'html2canvas';
 import {useI18n} from 'vue-i18n'
-import {QuillEditor} from '@vueup/vue-quill'
+import { Quill, QuillEditor } from '@vueup/vue-quill'
+import '@vueup/vue-quill/dist/vue-quill.bubble.css'
 import '@vueup/vue-quill/dist/vue-quill.snow.css' // 引入样式文件
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import shikigamiData from '../data/Shikigami.json';
@@ -151,30 +154,48 @@ const copy = (str) => {
 }
 
 const paste = (groupIndex, type) => {
+  console.log("paste", groupIndex, type, clipboard.value)
   if ('shortDescription' == type)
     props.groups[groupIndex].shortDescription = clipboard.value
   else if ('details' == type)
     props.groups[groupIndex].details = clipboard.value
 }
 
-// 定义工具栏选项
-const toolbarOptions = [
+// 自定义字体注册
+const registerFonts = () => {
+  const Font = Quill.import('attributors/style/font')
+  Font.whitelist = ['SimSun', 'SimHei', 'KaiTi', 'FangSong', 'Microsoft YaHei', 'PingFang SC']
+  Quill.register(Font, true)
+}
 
-  [{'color': []}, {'background': []}],
+// 自定义字号注册
+const registerSizes = () => {
+  const Size = Quill.import('attributors/style/size')
+  Size.whitelist = ['12px', '14px', '16px', '18px', '21px', '29px', '32px', '34px']
+  Quill.register(Size, true)
+}
+
+// 执行注册
+registerFonts()
+registerSizes()
+
+// 工具栏配置
+const toolbarOptions = ref([
   ['bold', 'italic', 'underline', 'strike'],
   // ['blockquote', 'code-block'],
-  // ['link', 'image', 'video', 'formula'],
-  [{'header': 1}, {'header': 2}],
-  [{'list': 'ordered'}, {'list': 'bullet'}, {'list': 'check'}],
-  // [{ 'script': 'sub'}, { 'script': 'super' }],
-  [{'indent': '-1'}, {'indent': '+1'}],
-  // [{ 'size': ['small', false, 'large', 'huge'] }],
-  // [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-  // [{ 'font': [] }],
-  [{'align': []}],
-  [{'direction': 'rtl'}],
-  // ['clean']
-];
+  [{ header: 1 }, { header: 2 }],
+  [{ list: 'ordered' }, { list: 'bullet' }, {'list': 'check'}],
+  [{ script: 'sub' }, { script: 'super' }],
+  [{ indent: '-1' }, { indent: '+1' }],
+  [{ direction: 'rtl' }],
+  [{ color: [] }, { background: [] }],
+  // [{ header: [1, 2, 3, 4, 5, 6, false] }],
+  [{ size: ['12px', '14px', '16px', '18px', '21px', '29px', '32px', '34px'] }],
+  [{ font: ['SimSun', 'SimHei', 'KaiTi', 'FangSong', 'Microsoft YaHei', 'PingFang SC'] }],
+  [{ align: [] }],
+  // ['link', 'image', 'video'],
+  ['clean']
+] as const)
 
 // 定义方法
 const closeSelectShikigami = () => {
@@ -331,8 +352,30 @@ const importGroups = (file) => {
   reader.readAsText(file);
 };
 
+// 定义 QuillEditor 的 ref
+const shortDescriptionEditor = ref<InstanceType<typeof QuillEditor>>()
+const detailsEditor = ref<InstanceType<typeof QuillEditor>>()
+
+// 保存方法
+const saveQuillDesc = async (): Promise<string> => {
+  if (!shortDescriptionEditor.value) {
+    throw new Error('Quill editor instance not found')
+  }
+  return shortDescriptionEditor.value.getHTML()
+}
+
+// 保存方法
+const saveQuillDetail = async (): Promise<string> => {
+  if (!detailsEditor.value) {
+    throw new Error('Quill detailsEditor instance not found')
+  }
+  return detailsEditor.value.getHTML()
+}
+
 // 暴露方法给父组件
 defineExpose({
+  saveQuillDesc,
+  saveQuillDetail,
   exportGroups,
   importGroups
 });
@@ -386,6 +429,10 @@ defineExpose({
   padding: 10px;
   display: flex;
   justify-content: space-between;
+}
+
+.group-item {
+  width: 100%;
 }
 
 .group-body {
@@ -449,4 +496,133 @@ defineExpose({
   padding: 10px;
 }
 
+</style>
+
+<style>
+.ql-container {
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+.ql-toolbar {
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+
+  .ql-tooltip[data-mode="link"]::before {
+    content: "链接地址：";
+  }
+  .ql-tooltip[data-mode="video"]::before {
+    content: "视频地址：";
+  }
+  .ql-tooltip.ql-editing {
+    a.ql-action::after {
+      content: "保存";
+      border-right: 0px;
+      padding-right: 0px;
+    }
+  }
+
+  .ql-picker.ql-font {
+    .ql-picker-label[data-value=SimSun]::before,
+    .ql-picker-item[data-value=SimSun]::before {
+      content: "宋体";
+      font-family: SimSun;
+      font-size: 15px;
+    }
+    .ql-picker-label[data-value=SimHei]::before,
+    .ql-picker-item[data-value=SimHei]::before {
+      content: "黑体";
+      font-family: SimHei;
+      font-size: 15px;
+    }
+    .ql-picker-label[data-value=KaiTi]::before,
+    .ql-picker-item[data-value=KaiTi]::before {
+      content: "楷体";
+      font-family: KaiTi;
+      font-size: 15px;
+    }
+    .ql-picker-label[data-value=FangSong]::before,
+    .ql-picker-item[data-value=FangSong]::before {
+      content: "仿宋";
+      font-family: FangSong;
+      font-size: 15px;
+    }
+    .ql-picker-label[data-value="Microsoft YaHei"]::before,
+    .ql-picker-item[data-value="Microsoft YaHei"]::before {
+      content: "微软雅黑";
+      font-family: 'Microsoft YaHei';
+      font-size: 15px;
+    }
+    .ql-picker-label[data-value="PingFang SC"]::before,
+    .ql-picker-item[data-value="PingFang SC"]::before {
+      content: "苹方";
+      font-family: 'PingFang SC';
+      font-size: 15px;
+    }
+  }
+
+  .ql-picker.ql-size {
+    .ql-picker-label::before,
+    .ql-picker-item::before {
+      font-size: 14px !important;
+      content: "五号" !important;
+    }
+    .ql-picker-label[data-value="12px"]::before {
+      content: "小五" !important;
+    }
+    .ql-picker-item[data-value="12px"]::before {
+      font-size: 12px;
+      content: "小五" !important;
+    }
+    .ql-picker-label[data-value="16px"]::before {
+      content: "小四" !important;
+    }
+    .ql-picker-item[data-value="16px"]::before {
+      font-size: 16px;
+      content: "小四" !important;
+    }
+    .ql-picker-label[data-value="18px"]::before {
+      content: "四号" !important;
+    }
+    .ql-picker-item[data-value="18px"]::before {
+      font-size: 18px;
+      content: "四号" !important;
+    }
+    .ql-picker-label[data-value="21px"]::before {
+      content: "三号" !important;
+    }
+    .ql-picker-item[data-value="21px"]::before {
+      font-size: 21px;
+      content: "三号" !important;
+    }
+    .ql-picker-label[data-value="24px"]::before {
+      content: "小二" !important;
+    }
+    .ql-picker-item[data-value="24px"]::before {
+      font-size: 24px;
+      content: "小二" !important;
+    }
+    .ql-picker-label[data-value="29px"]::before {
+      content: "二号" !important;
+    }
+    .ql-picker-item[data-value="29px"]::before {
+      font-size: 29px;
+      content: "二号" !important;
+    }
+    .ql-picker-label[data-value="32px"]::before {
+      content: "小一" !important;
+    }
+    .ql-picker-item[data-value="32px"]::before {
+      font-size: 32px;
+      content: "小一" !important;
+    }
+    .ql-picker-label[data-value="34px"]::before {
+      content: "一号" !important;
+    }
+    .ql-picker-item[data-value="34px"]::before {
+      font-size: 34px;
+      content: "一号" !important;
+    }
+  }
+}
 </style>
