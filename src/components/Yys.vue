@@ -16,8 +16,6 @@
 
   <draggable :list="groups" item-key="group" style="display: flex; flex-direction: column; width: 100%;"
              handle=".drag-handle">
-
-
     <template class="group" #item="{ element: group, index: groupIndex }">
       <el-row :span="24">
         <div class="group-item">
@@ -33,7 +31,8 @@
               </div>
               <div class="opt-right">
                 <el-button class="drag-handle" type="primary" icon="Rank" circle></el-button>
-                <el-button type="primary" icon="Plus" circle @click="addGroup"></el-button>
+                <el-button type="primary" @click="addGroup">{{t('AddGroup')}}</el-button>
+                <el-button type="primary" @click="addGroupElement(groupIndex)">{{t('AddShikigami')}}</el-button>
                 <el-button type="danger" icon="Delete" circle @click="removeGroup(groupIndex)"></el-button>
               </div>
             </div>
@@ -42,12 +41,13 @@
           <div class="group-body">
             <draggable :list="group.groupInfo" item-key="name" class="body-content">
               <template #item="{element : position, index:positionIndex}">
-                  <el-col>
+                  <div>
+                    <el-col>
                     <el-card class="group-card" shadow="never">
                       <div class="opt-btn" data-html2canvas-ignore="true">
                         <!-- Add delete button here -->
                         <el-button type="danger" icon="Delete" circle @click="removeGroupElement(groupIndex, positionIndex)"/>
-                        <el-button type="primary" icon="Plus" circle @click="addGroupElement(groupIndex)"/>
+                        <!-- <el-button type="primary" icon="Plus" circle @click="addGroupElement(groupIndex)"/> -->
                       </div>
                       <div class="avatar-container">
                         <!-- 头像图片 -->
@@ -87,11 +87,9 @@
                       </div>
                     </el-card>
                   </el-col>
+                  </div>
               </template>
             </draggable>
-            <!-- <div class="add-btn" data-html2canvas-ignore="true">
-              <el-button type="primary" icon="Plus" circle @click="addGroupElement(groupIndex)"></el-button>
-            </div> -->
           </div>
           <div class="group-footer">
             <div class="group-opt" data-html2canvas-ignore="true">
@@ -106,13 +104,14 @@
             <QuillEditor ref="detailsEditor" v-model:content="group.details" contentType="html" theme="snow" :toolbar="toolbarOptions" />
           </div>
         </div>
+        <div class="divider-horizontal"></div>
       </el-row>
     </template>
   </draggable>
 </template>
 
 <script setup lang="ts">
-import {ref, reactive, toRefs} from 'vue';
+import {ref, reactive, toRefs, nextTick} from 'vue';
 import draggable from 'vuedraggable';
 import ShikigamiSelect from './ShikigamiSelect.vue';
 import ShikigamiProperty from './ShikigamiProperty.vue';
@@ -213,7 +212,7 @@ const editShikigami = (groupIndex, positionIndex) => {
 };
 
 const updateShikigami = (shikigami) => {
-  console.log("parent====> ", shikigami);
+  console.log("parent====> ", shikigami, state);
   state.showSelectShikigami = false;
 
   const oldProperties = props.groups[state.groupIndex].groupInfo[state.positionIndex].properties;
@@ -284,10 +283,21 @@ const addGroup = () => {
     groupInfo: [{}, {}, {}, {}, {}],
     details: ''
   });
+
+  const container = document.getElementById('main-container');
+
+
+  nextTick(() => {
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior: 'smooth' // 可选平滑滚动
+    });
+  })
 };
 
 const addGroupElement = (groupIndex) => {
   props.groups[groupIndex].groupInfo.push({});
+  editShikigami(groupIndex, props.groups[groupIndex].groupInfo.length - 1);
 };
 
 
@@ -440,6 +450,15 @@ defineExpose({
   width: 80%;
 }
 
+/* 水平分割线 */
+.divider-horizontal {
+  border: 0;
+  height: 1px;
+  background: #e0e0e0;
+  margin: 24px 0;
+  width: 100%;
+}
+
 .body-content {
   display: flex;
   flex-direction: row;
@@ -477,6 +496,7 @@ defineExpose({
   .opt-btn {
     position: absolute;
     top: 0px;
+    right: 0px;
     z-index: 10;
     opacity: 0;
   }
