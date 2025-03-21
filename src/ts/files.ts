@@ -3,6 +3,19 @@ import {ElMessageBox} from "element-plus";
 import {useGlobalMessage} from "./useGlobalMessage";
 
 const { showMessage } = useGlobalMessage();
+
+function saveStateToLocalStorage(state) {
+    localStorage.setItem('filesStore', JSON.stringify(state));
+}
+
+function clearLocalStorage() {
+    localStorage.clear()
+}
+
+function loadStateFromLocalStorage() {
+    return JSON.parse(localStorage.getItem('filesStore'));
+}
+
 export const useFilesStore = defineStore('files', {
     state: () => ({
         fileList: [
@@ -194,6 +207,32 @@ export const useFilesStore = defineStore('files', {
         visibleFiles: (state) => state.fileList.filter(file => file.visible),
     },
     actions: {
+        initializeWithPrompt() {
+            const savedState = loadStateFromLocalStorage();
+            if (savedState) {
+                ElMessageBox.confirm(
+                    '检测到有未保存的旧数据，是否恢复？',
+                    '提示',
+                    {
+                        confirmButtonText: '恢复',
+                        cancelButtonText: '不恢复',
+                        type: 'warning',
+                    }
+                ).then(() => {
+                    this.fileList = savedState.fileList || [];
+                    this.activeFile = savedState.activeFile || "1";
+                    showMessage('success', '数据已恢复');
+                }).catch(() => {
+                    clearLocalStorage();
+                    showMessage('info', '选择了不恢复旧数据');
+                });
+            }
+        },
+        setupAutoSave() {
+            setInterval(() => {
+                saveStateToLocalStorage(this.$state);
+            }, 30000); // 设置间隔时间为30秒
+        },
         addFile(file) {
             this.fileList.push({...file, visible: true});
             this.activeFile = file.name;

@@ -36,7 +36,7 @@
                 <el-button type="danger" icon="Delete" circle @click="removeGroup(groupIndex)"></el-button>
               </div>
             </div>
-            <QuillEditor ref="shortDescriptionEditor" contentType="html" theme="snow" :toolbar="toolbarOptions"/>
+            <QuillEditor ref="shortDescriptionEditor" v-model:content="group.shortDescription" contentType="html" theme="snow" :toolbar="toolbarOptions"/>
           </div>
           <div class="group-body">
             <draggable :list="group.groupInfo" item-key="name" class="body-content">
@@ -180,20 +180,20 @@ registerSizes()
 
 // 工具栏配置
 const toolbarOptions = ref([
-  ['bold', 'italic', 'underline', 'strike'],
-  // ['blockquote', 'code-block'],
-  [{ header: 1 }, { header: 2 }],
-  [{ list: 'ordered' }, { list: 'bullet' }, {'list': 'check'}],
-  [{ script: 'sub' }, { script: 'super' }],
-  [{ indent: '-1' }, { indent: '+1' }],
-  [{ direction: 'rtl' }],
-  [{ color: [] }, { background: [] }],
-  // [{ header: [1, 2, 3, 4, 5, 6, false] }],
-  [{ size: ['12px', '14px', '16px', '18px', '21px', '29px', '32px', '34px'] }],
   [{ font: ['SimSun', 'SimHei', 'KaiTi', 'FangSong', 'Microsoft YaHei', 'PingFang SC'] }],
+  [{ header: 1 }, { header: 2 }],
+  [{ size: ['12px', '14px', '16px', '18px', '21px', '29px', '32px', '34px'] }],
+  ['bold', 'italic', 'underline', 'strike'],
+  [{ color: [] }, { background: [] }],
+  // ['blockquote', 'code-block'],
+  [ { list: 'bullet' }, { list: 'ordered' }, {'list': 'check'}],
+
+  [{ indent: '-1' }, { indent: '+1' }],
   [{ align: [] }],
+  [{ direction: 'rtl' }],
+  // [{ header: [1, 2, 3, 4, 5, 6, false] }],
   // ['link', 'image', 'video'],
-  ['clean']
+  // ['clean']
 ] as const)
 
 // 定义方法
