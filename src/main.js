@@ -16,6 +16,7 @@ import zh from './locales/zh.json'
 import ja from './locales/ja.json'
 
 import { createPinia } from 'pinia' // 导入 Pinia
+import {useFilesStore} from "@/ts/files";
 
 const app = createApp(App)
 
@@ -60,3 +61,7 @@ app.use(pinia) // 使用 Pinia
     .use(ElementPlus)
     .use(Vue3DraggableResizable)
     .mount('#app')
+
+const filesStore = useFilesStore();
+filesStore.setupAutoSave();
+filesStore.initializeWithPrompt();

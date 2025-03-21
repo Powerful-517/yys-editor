@@ -4,13 +4,10 @@
       <el-button icon="Upload" type="primary" @click="handleImport">{{ t('import') }}</el-button>
       <el-button icon="Download" type="primary" @click="handleExport">{{ t('export') }}</el-button>
       <el-button icon="Share" type="primary" @click="prepareCapture">{{ t('prepareCapture') }}</el-button>
-      <el-button icon="Setting" type="primary" @click="state.showWatermarkDialog = true">{{
-          t('setWatermark')
-        }}
-      </el-button>
-      <!-- 新增的按钮 -->
-      <el-button type="info" @click="showUpdateLog">更新日志</el-button>
-      <el-button type="warning" @click="showFeedbackForm">问题反馈</el-button>
+      <el-button icon="Setting" type="primary" @click="state.showWatermarkDialog = true">{{ t('setWatermark') }}</el-button>
+      <el-button type="info" @click="loadExample">{{ t('loadExample') }}</el-button>
+      <el-button type="info" @click="showUpdateLog">{{ t('updateLog') }}</el-button>
+      <el-button type="warning" @click="showFeedbackForm">{{ t('feedback') }}</el-button>
     </div>
 
     <!-- 更新日志对话框 -->
@@ -25,7 +22,7 @@
       </ul>
     </el-dialog>
 
-    <!-- 更新日志对话框 -->
+    <!-- 问题反馈对话框 -->
     <el-dialog v-model="state.showFeedbackFormDialog" title="更新日志" width="60%">
       <span style="font-size: 24px;">备注阴阳师</span>
       <br/>
@@ -79,13 +76,17 @@
 </template>
 
 <script setup lang="ts">
-import {ref, reactive} from 'vue';
+import {ref, reactive, onMounted} from 'vue';
 import html2canvas from "html2canvas";
 import {useI18n} from 'vue-i18n';
 import updateLogs from "../data/updateLog.json"
+import filesStoreExample from "../data/filesStoreExample.json"
 import {useFilesStore} from "@/ts/files";
+import {ElMessageBox} from "element-plus";
+import {useGlobalMessage} from "@/ts/useGlobalMessage";
 
 const filesStore = useFilesStore();
+const { showMessage } = useGlobalMessage();
 
 // 获取当前的 i18n 实例
 const {t} = useI18n();
@@ -99,10 +100,39 @@ const state = reactive({
   showFeedbackFormDialog: false, // 控制反馈表单对话框的显示状态
 });
 
+const loadExample = () => {
+  ElMessageBox.confirm(
+      '加载样例会覆盖当前数据，是否覆盖？',
+      '提示',
+      {
+        confirmButtonText: '覆盖',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+  ).then(() => {
+    filesStore.$patch({fileList: filesStoreExample});
+    showMessage('success', '数据已恢复');
+  }).catch(() => {
+    showMessage('info', '选择了不恢复旧数据');
+  });
+}
 
+const CURRENT_APP_VERSION = updateLogs[0].version;
 const showUpdateLog = () => {
   state.showUpdateLogDialog = !state.showUpdateLogDialog;
 };
+
+onMounted(() => {
+  const lastVersion = localStorage.getItem('appVersion');
+
+  if (lastVersion !== CURRENT_APP_VERSION) {
+    // 如果版本号不同，则显示更新日志对话框
+    state.showUpdateLogDialog = true;
+    // 更新本地存储中的版本号为当前版本
+    localStorage.setItem('appVersion', CURRENT_APP_VERSION);
+  }
+});
+
 
 const showFeedbackForm = () => {
   state.showFeedbackFormDialog = !state.showFeedbackFormDialog;
@@ -110,7 +140,7 @@ const showFeedbackForm = () => {
 
 const handleExport = () => {
   const dataStr = JSON.stringify(filesStore.fileList, null, 2);
-  const blob = new Blob([dataStr], { type: 'application/json;charset=utf-8' });
+  const blob = new Blob([dataStr], {type: 'application/json;charset=utf-8'});
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
@@ -132,8 +162,8 @@ const handleImport = () => {
           const data = JSON.parse(e.target.result as string);
           if (data[0].visible === true) {
             // 新版本格式：直接替换 fileList
-            filesStore.$patch({ fileList: data });
-          } else  {
+            filesStore.$patch({fileList: data});
+          } else {
             // 旧版本格式：仅包含 groups 数组
             const newFile = {
               label: `File ${filesStore.fileList.length + 1}`,
@@ -154,17 +184,26 @@ const handleImport = () => {
 };
 
 const watermark = reactive({
-  text: '示例水印',
-  fontSize: 30,
-  color: 'rgba(184, 184, 184, 0.3)',
-  angle: -20,
-  rows: 1,  // 新增行数
-  cols: 1   // 新增列数
+  text: localStorage.getItem('watermark.text') || '示例水印',
+  fontSize: Number(localStorage.getItem('watermark.fontSize')) || 30,
+  color: localStorage.getItem('watermark.color') || 'rgba(184, 184, 184, 0.3)',
+  angle: Number(localStorage.getItem('watermark.angle')) || -20,
+  rows: Number(localStorage.getItem('watermark.rows')) || 1,
+  cols: Number(localStorage.getItem('watermark.cols')) || 1,
 });
 
 const applyWatermarkSettings = () => {
+  // 保存水印设置到 localStorage
+  localStorage.setItem('watermark.text', watermark.text);
+  localStorage.setItem('watermark.fontSize', String(watermark.fontSize));
+  localStorage.setItem('watermark.color', watermark.color);
+  localStorage.setItem('watermark.angle', String(watermark.angle));
+  localStorage.setItem('watermark.rows', String(watermark.rows));
+  localStorage.setItem('watermark.cols', String(watermark.cols));
+
   state.showWatermarkDialog = false;
 };
+
 
 // 计算视觉总高度
 function calculateVisualHeight(selector) {
