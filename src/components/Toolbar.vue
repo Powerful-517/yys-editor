@@ -264,7 +264,18 @@ const prepareCapture = async () => {
 
   // 创建临时样式
   const style = document.createElement('style');
-  style.textContent = `.ql-container.ql-snow { border: none !important; }`;
+  style.textContent = `
+  .ql-container.ql-snow {
+    border: none !important;
+  }
+  #main-container {
+    position: relative;
+    height: 100%;
+    overflow-y: auto;
+    min-height: 100vh;
+    display: inline-block;
+    max-width: 100%;
+}`;
   document.head.appendChild(style);
 
   // 获取目标元素

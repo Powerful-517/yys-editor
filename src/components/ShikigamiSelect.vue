@@ -28,13 +28,14 @@
       >
         <div style="max-height: 600px; overflow-y: auto;">
           <el-space wrap size="large">
-            <div v-for="i in filterShikigamiByRarityAndSearch(rarity.name,searchText)" :key="i.name">
+            <div style="display: flex;flex-direction: column;justify-content: center" v-for="i in filterShikigamiByRarityAndSearch(rarity.name,searchText)" :key="i.name">
               <el-button
                   style="width: 100px; height: 100px;"
                   @click.stop="confirm(i)"
               >
                 <img :src="i.avatar" style="width: 99px; height: 99px;">
               </el-button>
+              <span style="text-align: center; display: block;">{{i.name}}</span>
             </div>
           </el-space>
         </div>
