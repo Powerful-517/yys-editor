@@ -4,14 +4,22 @@
       <span>当前选择：{{ current.name }}</span>
       <el-button type="danger" icon="Delete" round @click="remove()"></el-button>
     </div>
+    <div style="display: flex; align-items: center;">
+      <el-input
+          placeholder="请输入内容"
+          v-model="searchText"
+          style="width: 200px; margin-right: 10px;"
+      />
+    </div>
     <el-tabs v-model="activeName" type="card" class="demo-tabs" @tab-click="handleTabClick">
       <el-tab-pane v-for="type in yuhunTypes" :key="type.name" :label="type.label" :name="type.name">
         <div style="max-height: 500px; overflow-y: auto;">
         <el-space wrap size="large" style="">
-          <div v-for="yuhun in filterYuhunByType(activeName)" :key="yuhun.name">
+          <div v-for="yuhun in filterYuhunByTypeAndSearch(activeName,searchText)" :key="yuhun.name">
             <el-button style="width: 100px; height: 100px;" @click="confirm(yuhun)">
               <img :src="yuhun.avatar" style="width: 99px; height: 99px;">
             </el-button>
+            <span style="text-align: center; display: block;">{{yuhun.name}}</span>
           </div>
         </el-space>
         </div>
@@ -20,7 +28,7 @@
   </el-dialog>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {ref, watch, computed} from 'vue';
 import shikigamiData from '../data/Shikigami.json';
 import yuhunData from '../data/Yuhun.json';
@@ -39,6 +47,7 @@ const props = defineProps({
 
 const emit = defineEmits(['updateYuhunSelect', 'closeYuhunSelect']);
 
+const searchText = ref('') // 新增搜索文本
 const show = ref(false);
 const activeName = ref('ALL');
 const current = ref(props.currentShikigami);
@@ -66,9 +75,24 @@ const handleTabClick = (tab) => {
   console.log(tab.paneName);
 };
 
-const filterYuhunByType = (type) => {
-  if (type.toLowerCase() === 'all') return yuhunData;
-  return yuhunData.filter(yuhun => yuhun.type.toLowerCase() === type.toLowerCase());
+const filterYuhunByTypeAndSearch = (type: string, search: string) => {
+  let filteredList = yuhunData;
+
+  // 按类型过滤
+  if (type.toLowerCase() !== 'all') {
+    filteredList = filteredList.filter(item =>
+        item.type.toLowerCase() === type.toLowerCase()
+    );
+  }
+
+  // 按搜索关键字过滤
+  if (search.trim() !== '') {
+    filteredList = filteredList.filter(item =>
+        item.name.toLowerCase().includes(search.toLowerCase())
+    );
+  }
+
+  return filteredList;
 };
 
 const cancel = () => {
@@ -77,6 +101,8 @@ const cancel = () => {
 
 const confirm = (item) => {
   emit('updateYuhunSelect', JSON.parse(JSON.stringify(item)), 'Update');
+  searchText.value=''
+  activeName.value = 'ALL'
 };
 
 const remove = () => {
