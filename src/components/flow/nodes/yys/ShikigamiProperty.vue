@@ -123,10 +123,10 @@
 </template>
 
 <script setup>
-import propertyData from "../data/property.json";
+import propertyData from "../../../../data/property.json";
 import {ref, watch, computed} from 'vue'
-import ShikigamiSelect from "@/components/ShikigamiSelect.vue";
-import YuhunSelect from "@/components/YuhunSelect.vue";
+import ShikigamiSelect from "@/components/flow/nodes/yys/ShikigamiSelect.vue";
+import YuhunSelect from "@/components/flow/nodes/yys/YuhunSelect.vue";
 import {useI18n} from 'vue-i18n'
 // import YuhunSelect from "./YuhunSelect.vue";
 

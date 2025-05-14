@@ -16,7 +16,7 @@
 
   <div class="yys-rank">
     <div class="pvp-mindmap">
-      <div id="mindMapContainer"></div>
+
     </div>
     <div class="pvp-shikigami-editor">
       <el-button type="primary" @click="addGroupElement()">{{ t('AddShikigami') }}</el-button>
@@ -26,9 +26,6 @@
           <draggable :list="props.groups[0].groupInfo" item-key="name" class="body-content">
             <template #item="{element : position, index:positionIndex}">
               <div class="group-card">
-                <div style="width: 20px;padding-left: 10px">
-                  {{positionIndex + 1}}
-                </div>
                 <div class="opt-btn" data-html2canvas-ignore="true">
                   <!-- Add delete button here -->
                   <el-button type="danger" icon="Delete" circle @click="removeGroupElement(positionIndex)"/>
@@ -40,45 +37,36 @@
                        style="cursor: pointer; vertical-align: bottom;"
                        class="avatar-image"
                        @click="editShikigami(positionIndex)"/>
+
+                  <!-- 文字图层 -->
+                  <!--              <span v-if="position.properties">{{ position.properties.levelRequired }}级 {{ position.properties.skillRequired.join('') }}</span>-->
                 </div>
-                <div class="property-wrap">
-                  <div class="shikigami-name">
-                    <div style="display: flex; justify-content: center;">
+                <div class="opt-foot">
+                  <div class="property-wrap">
+                    <div style="display: flex; justify-content: center;" data-html2canvas-ignore="true">
                       <span>{{ position.name || "" }}</span>
                     </div>
                     <div style="display: flex; justify-content: center;" class="bottom" data-html2canvas-ignore="true">
                       <el-button @click="editProperty(positionIndex)">{{ t('editProperties') }}
                       </el-button>
                     </div>
-                  </div>
-                  <div v-if="position.properties">
-                    <div style="display: flex; justify-content: center;">
+                    <div v-if="position.properties">
+                      <div style="display: flex; justify-content: center;">
                             <span
-                                style="width: 100px;height: 30px;background-color: #666;
+                                style="width: 100px;height: 50px;background-color: #666;
                                 border-radius: 5px; margin-right: 5px; color: white;
                                 text-align: center; white-space: pre-wrap; display: flex; align-items: center; justify-content: center; flex-direction: column ">
-                              {{ getYuhunNames(position.properties.yuhun.yuhunSetEffect) }}
-                            </span>
-                    </div>
-                  </div>
-                  <div v-if="position.properties">
-                    <div style="display: flex; justify-content: center;">
-                            <span
-                                style="width: 100px;height: 30px;background-color: #666;
-                                border-radius: 5px; margin-right: 5px; color: white;
-                                text-align: center; white-space: pre-wrap; display: flex; align-items: center; justify-content: center; flex-direction: column ">
-                              {{
+                              {{ getYuhunNames(position.properties.yuhun.yuhunSetEffect) }}<br/>{{
                                 t('yuhun_target.shortName.' + position.properties.yuhun.target)
                               }}·{{ getYuhunPropertyNames(position.properties.yuhun) }}
                             </span>
-                    </div>
-                  </div>
-                  <div v-if="position.properties">
-                    <div>
+                      </div>
+                      <div>
                             <span
-                                style=" width: 100%; height: 30px;  border-radius: 5px; margin-right: 5px; color: red; text-align: left; white-space: pre-wrap; display: flex; align-items: center; justify-content: center; flex-direction: column ">
+                                style="display: inline-block; width: 100px; height: 30px;  border-radius: 5px; margin-right: 5px; color: red; text-align: center; white-space: pre-wrap; display: flex; align-items: center; justify-content: center; flex-direction: column ">
                               {{ position.properties.desc }}
                             </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -93,17 +81,11 @@
 <script setup lang="ts">
 import {ref, reactive, onMounted} from 'vue';
 import shikigami from "../data/Shikigami.json"
-import ShikigamiSelect from "@/components/ShikigamiSelect.vue";
-import ShikigamiProperty from "@/components/ShikigamiProperty.vue";
+import ShikigamiSelect from "@/components/flow/nodes/yys/ShikigamiSelect.vue";
+import ShikigamiProperty from "@/components/flow/nodes/yys/ShikigamiProperty.vue";
 import _ from "lodash";
 import {useI18n} from "vue-i18n";
 import draggable from 'vuedraggable';
-import MindMap from "simple-mind-map";
-import {ElMessageBox} from "element-plus";
-import {useGlobalMessage} from "@/ts/useGlobalMessage";
-
-const { showMessage } = useGlobalMessage();
-
 
 
 const {t} = useI18n()
@@ -126,20 +108,6 @@ const addGroupElement = () => {
   props.groups[0].groupInfo.push({});
   editShikigami(props.groups[0].groupInfo.length - 1);
 };
-
-const removeGroupElement = async (positionIndex) =>{
-  try {
-    await ElMessageBox.confirm('确定要删除此元素吗?', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    });
-    props.groups[0].groupInfo.splice(positionIndex, 1);
-    showMessage('success', '删除成功!');
-  } catch (error) {
-    showMessage('info', '已取消删除');
-  }
-}
 
 const editShikigami = (positionIndex) => {
   // console.log("==== 选择式神 ===", groupIndex, positionIndex);
@@ -247,15 +215,14 @@ const getYuhunPropertyNames = (yuhun) => {
 .group-card {
   position: relative;
   display: flex;
-  flex-direction: row;
-  justify-content: left;
+  flex-direction: column;
+  justify-content: center;
   align-items: center;
 
   .avatar-container {
     position: relative;
-    width: 50px;
-    height: 50px;
-    padding-right: 10px;
+    width: 100px;
+    height: 100px;
   }
 
   .avatar-container span {
@@ -276,12 +243,11 @@ const getYuhunPropertyNames = (yuhun) => {
 
   .opt-btn {
     position: absolute;
-    top: 10px;
-    left: 0px;
+    top: 0px;
+    right: 0px;
     z-index: 10;
     opacity: 0;
   }
-
 }
 
 /* 当鼠标悬停在容器上时显示按钮 */
@@ -298,22 +264,4 @@ const getYuhunPropertyNames = (yuhun) => {
   display: block;
   cursor: pointer;
 }
-
-.property-wrap {
-  display: flex;
-  flex-direction: row;
-}
-
-.shikigami-name {
-  width: 100px;
-}
-
-#mindMapContainer  {
-  margin: 0;
-  padding: 0;
-  height: 400px;
-  min-width: 500px;
-  width: 100%;
-}
-
 </style>

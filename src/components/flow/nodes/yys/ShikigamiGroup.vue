@@ -117,10 +117,10 @@ import { Quill, QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.bubble.css'
 import '@vueup/vue-quill/dist/vue-quill.snow.css' // 引入样式文件
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
-import shikigamiData from '../data/Shikigami.json';
+import shikigamiData from '../../../../data/Shikigami.json';
 import _ from 'lodash';
 import {Action, ElMessage, ElMessageBox} from "element-plus";
-import { useGlobalMessage } from '../ts/useGlobalMessage';
+import { useGlobalMessage } from '../../../../ts/useGlobalMessage';
 import draggable from 'vuedraggable';
 
 const props = defineProps<{

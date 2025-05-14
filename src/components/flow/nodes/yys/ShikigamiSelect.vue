@@ -47,7 +47,7 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import type { TabsPaneContext } from 'element-plus'
-import shikigamiData from "../data/Shikigami.json"
+import shikigamiData from "../../../../data/Shikigami.json"
 
 interface Shikigami {
   name: string
