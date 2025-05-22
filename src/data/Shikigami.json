@@ -1,5 +1,15 @@
 [
     {
+        "avatar": "/assets/Shikigami/sp/584.png",
+        "name": "时曜泷夜叉姬",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/583.png",
+        "name": "卑弥呼",
+        "rarity": "SSR"
+    },
+    {
         "avatar": "/assets/Shikigami/l/582.png",
         "name": "巡音流歌",
         "rarity": "L"
