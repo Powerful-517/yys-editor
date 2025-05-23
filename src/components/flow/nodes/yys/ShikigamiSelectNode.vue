@@ -63,7 +63,6 @@ defineExpose({
 </script>
 
 <template>
-  <div class="shikigami-node" :style="{ width: `${nodeWidth}px`, height: `${nodeHeight}px` }">
     <NodeResizer
         v-if="selected"
         :min-width="150"
@@ -93,16 +92,28 @@ defineExpose({
 
     <!-- 输出连接点 -->
     <Handle type="source" position="right" :id="`${id}-source`" />
-  </div>
 </template>
 
 <style scoped>
+.shikigami-node {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 180px;
+  min-height: 180px;
+}
+
 .node-content {
+  position: relative;
   background-color: white;
   border: 1px solid #dcdfe6;
   border-radius: 4px;
-  padding: 0;
-  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  height: 100%;
+
+  min-width: 180px;
+  min-height: 180px;
 }
 
 :deep(.vue-flow__node-resizer) {
@@ -165,13 +176,15 @@ defineExpose({
   display: flex;
   flex-direction: column;
   align-items: center;
+  height: calc(100% - 37px); /* 减去header的高度 */
+  box-sizing: border-box;
 }
 
 .shikigami-avatar {
-  width: 80px;
-  height: 80px;
+  width: 80%;
+  height: 80%;
   margin-bottom: 8px;
-  transition: width 0.2s, height 0.2s;
+  transition: all 0.2s;
 }
 
 .shikigami-avatar img {
@@ -182,8 +195,8 @@ defineExpose({
 }
 
 .shikigami-placeholder {
-  width: 80px;
-  height: 80px;
+  width: 80%;
+  height: 80%;
   border: 1px dashed #c0c4cc;
   display: flex;
   align-items: center;
@@ -192,7 +205,7 @@ defineExpose({
   font-size: 12px;
   border-radius: 4px;
   margin-bottom: 8px;
-  transition: width 0.2s, height 0.2s;
+  transition: all 0.2s;
 }
 
 .shikigami-name {
