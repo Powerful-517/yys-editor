@@ -205,15 +205,14 @@ defineExpose({
 </script>
 
 <template>
-  <div class="property-node" :class="[currentProperty.priority ? `priority-${currentProperty.priority}` : '']" :style="{ width: `${nodeWidth}px`, height: `${nodeHeight}px` }">
-    <NodeResizer 
+  <NodeResizer
       v-if="selected"
       :min-width="150"
       :min-height="150"
       :max-width="300"
       :max-height="300"
-    />
-    
+  />
+  <div class="property-node" :class="[currentProperty.priority ? `priority-${currentProperty.priority}` : '']" >
     <!-- 输入连接点 -->
     <Handle type="target" position="left" :id="`${id}-target`" />
     
@@ -252,12 +251,28 @@ defineExpose({
 </template>
 
 <style scoped>
+.property-node {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 180px;
+  min-height: 180px;
+}
+
 .node-content {
+  position: relative;
   background-color: white;
   border: 1px solid #dcdfe6;
   border-radius: 4px;
   padding: 0;
   cursor: pointer;
+
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  height: 100%;
+
+  min-width: 180px;
+  min-height: 180px;
 }
 
 :deep(.vue-flow__node-resizer) {

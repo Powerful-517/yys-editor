@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue';
-import { Handle, Position, useVueFlow } from '@vue-flow/core';
-import { NodeResizer } from '@vue-flow/node-resizer'
+import {ref, onMounted, onUnmounted, watch} from 'vue';
+import {Handle, Position, useVueFlow} from '@vue-flow/core';
+import {NodeResizer} from '@vue-flow/node-resizer'
 import '@vue-flow/node-resizer/dist/style.css';
 
 const props = defineProps({
@@ -11,10 +11,10 @@ const props = defineProps({
 });
 
 // 获取Vue Flow的实例和节点更新方法
-const { findNode, updateNode } = useVueFlow();
+const {findNode, updateNode} = useVueFlow();
 
 // 御魂信息保存在节点数据中
-const currentYuhun = ref({ name: '未选择御魂', avatar: '', type: '' });
+const currentYuhun = ref({name: '未选择御魂', avatar: '', type: ''});
 
 // 节点尺寸
 const nodeWidth = ref(180);
@@ -25,7 +25,7 @@ watch(() => props.data, (newData) => {
   if (newData && newData.yuhun) {
     currentYuhun.value = newData.yuhun;
   }
-}, { immediate: true });
+}, {immediate: true});
 
 // 更新御魂信息的方法（将由App.vue调用）
 const updateNodeYuhun = (yuhun) => {
@@ -34,18 +34,18 @@ const updateNodeYuhun = (yuhun) => {
 
 // 备用方案：通过全局事件总线监听更新
 const handleYuhunUpdate = (event) => {
-  const { nodeId, yuhun } = event.detail;
+  const {nodeId, yuhun} = event.detail;
   if (nodeId === props.id) {
     updateNodeYuhun(yuhun);
   }
 };
 
 // 处理调整大小
-const handleResize = (event, { width, height }) => {
+const handleResize = (event, {width, height}) => {
   // 更新本地状态
   nodeWidth.value = width;
   nodeHeight.value = height;
-  
+
   // 更新Vue Flow中的节点
   const node = findNode(props.id);
   if (node) {
@@ -65,7 +65,7 @@ onMounted(() => {
   console.log('YuhunSelectNode mounted:', props.id);
   // 添加全局事件监听
   window.addEventListener('update-yuhun', handleYuhunUpdate);
-  
+
   // 初始化时检查是否有数据
   if (props.data && props.data.yuhun) {
     currentYuhun.value = props.data.yuhun;
@@ -84,26 +84,25 @@ defineExpose({
 </script>
 
 <template>
-  <div class="yuhun-node" :style="{ width: `${nodeWidth}px`, height: `${nodeHeight}px` }">
-    <NodeResizer 
+  <NodeResizer
       v-if="selected"
       :min-width="150"
       :min-height="150"
       :max-width="300"
       :max-height="300"
-    />
-    
+  />
+  <div class="yuhun-node" >
     <!-- 输入连接点 -->
-    <Handle type="target" position="left" :id="`${id}-target`" />
-    
+    <Handle type="target" position="left" :id="`${id}-target`"/>
+
     <div class="node-content">
       <div class="node-header">
         <div class="node-title">御魂选择</div>
       </div>
-      
+
       <div class="node-body">
         <div v-if="currentYuhun.avatar" class="yuhun-avatar">
-          <img :src="currentYuhun.avatar" alt="御魂图片" />
+          <img :src="currentYuhun.avatar" alt="御魂图片"/>
         </div>
         <div v-else class="yuhun-placeholder">
           点击选择御魂
@@ -112,19 +111,35 @@ defineExpose({
         <div v-if="currentYuhun.type" class="yuhun-type">{{ currentYuhun.type }}</div>
       </div>
     </div>
-    
+
     <!-- 输出连接点 -->
-    <Handle type="source" position="right" :id="`${id}-source`" />
+    <Handle type="source" position="right" :id="`${id}-source`"/>
   </div>
 </template>
 
 <style scoped>
+.yuhun-node {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 180px;
+  min-height: 180px;
+}
+
 .node-content {
+  position: relative;
   background-color: white;
   border: 1px solid #dcdfe6;
   border-radius: 4px;
   padding: 0;
   cursor: pointer;
+
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  height: 100%;
+
+  min-width: 180px;
+  min-height: 180px;
 }
 
 :deep(.vue-flow__node-resizer) {
