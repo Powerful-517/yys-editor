@@ -60,156 +60,71 @@ onUnmounted(() => {
 defineExpose({
   updateNodeShikigami
 });
+
+// Add Position enum usage to fix type error
+const position = Position;
 </script>
 
 <template>
     <NodeResizer
         v-if="selected"
-        :min-width="150"
-        :min-height="150"
-        :max-width="300"
-        :max-height="300"
     />
 
-    <!-- 输入连接点 -->
-    <Handle type="target" position="left" :id="`${id}-target`" />
+    <Handle type="target" :position="position.Left" :id="`${id}-target`" />
 
     <div class="node-content">
-      <div class="node-header">
-        <div class="node-title">式神选择</div>
-      </div>
-
-      <div class="node-body">
-        <div v-if="currentShikigami.avatar" class="shikigami-avatar">
-          <img :src="currentShikigami.avatar" alt="式神头像" />
-        </div>
-        <div v-else class="shikigami-placeholder">
-          点击选择式神
-        </div>
-        <div class="shikigami-name">{{ currentShikigami.name }}</div>
-      </div>
+        <img 
+            v-if="currentShikigami.avatar" 
+            :src="currentShikigami.avatar" 
+            :alt="currentShikigami.name"
+            class="shikigami-image"
+        />
+        <div v-else class="placeholder-text">点击选择式神</div>
+        <div class="name-text">{{ currentShikigami.name }}</div>
     </div>
 
-    <!-- 输出连接点 -->
-    <Handle type="source" position="right" :id="`${id}-source`" />
+    <Handle type="source" :position="position.Right" :id="`${id}-source`" />
 </template>
 
 <style scoped>
-.shikigami-node {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  min-width: 180px;
-  min-height: 180px;
+.node-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
-.node-content {
-  position: relative;
-  background-color: white;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  height: 100%;
+.shikigami-image {
+    width: 85%;
+    height: 85%;
+    object-fit: cover;
+}
 
-  min-width: 180px;
-  min-height: 180px;
+.placeholder-text {
+    color: #909399;
+    font-size: 12px;
+}
+
+.name-text {
+    font-size: 14px;
+    text-align: center;
+    margin-top: 8px;
 }
 
 :deep(.vue-flow__node-resizer) {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  pointer-events: none;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
 }
 
 :deep(.vue-flow__node-resizer-handle) {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  background-color: #409EFF;
-  border: 1px solid white;
-  border-radius: 50%;
-  pointer-events: all;
+    width: 8px;
+    height: 8px;
+    background-color: #409EFF;
+    border-radius: 50%;
+    pointer-events: all;
 }
-
-:deep(.vue-flow__node-resizer-handle.top-left) {
-  top: -4px;
-  left: -4px;
-  cursor: nwse-resize;
-}
-
-:deep(.vue-flow__node-resizer-handle.top-right) {
-  top: -4px;
-  right: -4px;
-  cursor: nesw-resize;
-}
-
-:deep(.vue-flow__node-resizer-handle.bottom-left) {
-  bottom: -4px;
-  left: -4px;
-  cursor: nesw-resize;
-}
-
-:deep(.vue-flow__node-resizer-handle.bottom-right) {
-  bottom: -4px;
-  right: -4px;
-  cursor: nwse-resize;
-}
-
-.node-header {
-  padding: 8px 10px;
-  background-color: #ecf5ff;
-  border-bottom: 1px solid #dcdfe6;
-  border-radius: 4px 4px 0 0;
-}
-
-.node-title {
-  font-weight: bold;
-  font-size: 14px;
-}
-
-.node-body {
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: calc(100% - 37px); /* 减去header的高度 */
-  box-sizing: border-box;
-}
-
-.shikigami-avatar {
-  width: 80%;
-  height: 80%;
-  margin-bottom: 8px;
-  transition: all 0.2s;
-}
-
-.shikigami-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 4px;
-}
-
-.shikigami-placeholder {
-  width: 80%;
-  height: 80%;
-  border: 1px dashed #c0c4cc;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #909399;
-  font-size: 12px;
-  border-radius: 4px;
-  margin-bottom: 8px;
-  transition: all 0.2s;
-}
-
-.shikigami-name {
-  font-size: 14px;
-  margin-top: 5px;
-}
-</style> 
+</style>

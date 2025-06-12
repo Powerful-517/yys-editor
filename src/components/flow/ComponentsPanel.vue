@@ -79,7 +79,8 @@ const handleComponentClick = (component) => {
     type: component.type,
     label: component.name,
     position: { x: 100, y: 100 }, // 默认位置
-    data: { componentType: component.type }
+    data: { componentType: component.type },
+    style: { background: '#fff', border: '2px solid black',width: '150px', height: '150px' },
   };
   
   // 发出添加节点事件

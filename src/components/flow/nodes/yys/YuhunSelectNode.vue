@@ -84,162 +84,80 @@ defineExpose({
 </script>
 
 <template>
-  <NodeResizer
-      v-if="selected"
-      :min-width="150"
-      :min-height="150"
-      :max-width="300"
-      :max-height="300"
-  />
-  <div class="yuhun-node" >
-    <!-- 输入连接点 -->
-    <Handle type="target" position="left" :id="`${id}-target`"/>
+    <NodeResizer
+        v-if="selected"
+        :min-width="150"
+        :min-height="150"
+        :max-width="300"
+        :max-height="300"
+    />
+
+    <Handle type="target" :position="Position.Left" :id="`${id}-target`" />
 
     <div class="node-content">
-      <div class="node-header">
-        <div class="node-title">御魂选择</div>
-      </div>
-
-      <div class="node-body">
-        <div v-if="currentYuhun.avatar" class="yuhun-avatar">
-          <img :src="currentYuhun.avatar" alt="御魂图片"/>
-        </div>
-        <div v-else class="yuhun-placeholder">
-          点击选择御魂
-        </div>
-        <div class="yuhun-name">{{ currentYuhun.name }}</div>
-        <div v-if="currentYuhun.type" class="yuhun-type">{{ currentYuhun.type }}</div>
-      </div>
+        <img 
+            v-if="currentYuhun.avatar" 
+            :src="currentYuhun.avatar" 
+            :alt="currentYuhun.name"
+            class="yuhun-image"
+        />
+        <div v-else class="placeholder-text">点击选择御魂</div>
+        <div class="name-text">{{ currentYuhun.name }}</div>
+        <div v-if="currentYuhun.type" class="type-text">{{ currentYuhun.type }}</div>
     </div>
 
-    <!-- 输出连接点 -->
-    <Handle type="source" position="right" :id="`${id}-source`"/>
-  </div>
+    <Handle type="source" :position="Position.Right" :id="`${id}-source`" />
 </template>
 
 <style scoped>
-.yuhun-node {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  min-width: 180px;
-  min-height: 180px;
+.node-content {
+    width: 100%;
+    height: 100%;
+    min-width: 180px;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
-.node-content {
-  position: relative;
-  background-color: white;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  padding: 0;
-  cursor: pointer;
+.yuhun-image {
+    width: 85%;
+    height: 85%;
+    object-fit: cover;
+}
 
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  height: 100%;
+.placeholder-text {
+    color: #909399;
+    font-size: 12px;
+}
 
-  min-width: 180px;
-  min-height: 180px;
+.name-text {
+    font-size: 14px;
+    text-align: center;
+    margin-top: 8px;
+}
+
+.type-text {
+    font-size: 12px;
+    color: #909399;
+    margin-top: 4px;
 }
 
 :deep(.vue-flow__node-resizer) {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  pointer-events: none;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
 }
 
 :deep(.vue-flow__node-resizer-handle) {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  background-color: #409EFF;
-  border: 1px solid white;
-  border-radius: 50%;
-  pointer-events: all;
-}
-
-:deep(.vue-flow__node-resizer-handle.top-left) {
-  top: -4px;
-  left: -4px;
-  cursor: nwse-resize;
-}
-
-:deep(.vue-flow__node-resizer-handle.top-right) {
-  top: -4px;
-  right: -4px;
-  cursor: nesw-resize;
-}
-
-:deep(.vue-flow__node-resizer-handle.bottom-left) {
-  bottom: -4px;
-  left: -4px;
-  cursor: nesw-resize;
-}
-
-:deep(.vue-flow__node-resizer-handle.bottom-right) {
-  bottom: -4px;
-  right: -4px;
-  cursor: nwse-resize;
-}
-
-.node-header {
-  padding: 8px 10px;
-  background-color: #f0f7ff;
-  border-bottom: 1px solid #dcdfe6;
-  border-radius: 4px 4px 0 0;
-}
-
-.node-title {
-  font-weight: bold;
-  font-size: 14px;
-}
-
-.node-body {
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.yuhun-avatar {
-  width: 80px;
-  height: 80px;
-  margin-bottom: 8px;
-  transition: width 0.2s, height 0.2s;
-}
-
-.yuhun-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 4px;
-}
-
-.yuhun-placeholder {
-  width: 80px;
-  height: 80px;
-  border: 1px dashed #c0c4cc;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #909399;
-  font-size: 12px;
-  border-radius: 4px;
-  margin-bottom: 8px;
-  transition: width 0.2s, height 0.2s;
-}
-
-.yuhun-name {
-  font-size: 14px;
-  margin-top: 5px;
-}
-
-.yuhun-type {
-  font-size: 12px;
-  color: #909399;
-  margin-top: 3px;
+    width: 8px;
+    height: 8px;
+    background-color: #409EFF;
+    border-radius: 50%;
+    pointer-events: all;
 }
 </style>
