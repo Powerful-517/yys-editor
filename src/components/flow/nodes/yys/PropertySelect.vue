@@ -9,8 +9,6 @@
   <el-dialog
       v-model="show"
       title="属性选择器"
-      @close="cancel"
-      :before-close="cancel"
       width="80%"
   >
     <el-form :model="property" label-width="120px">
@@ -232,7 +230,7 @@
       
       <el-form-item>
         <el-button type="primary" @click="confirm">确认</el-button>
-        <el-button @click="cancel">取消</el-button>
+        <el-button @click="emit('closePropertySelect')">取消</el-button>
       </el-form-item>
     </el-form>
   </el-dialog>
@@ -250,303 +248,84 @@ const { t } = useI18n();
 const props = defineProps({
   currentProperty: {
     type: Object,
-    default: () => ({}),
+    default: () => ({ type: '未选择属性', priority: 'optional', description: '' })
   },
   showPropertySelect: {
     type: Boolean,
-    default: false,
-  },
+    default: false
+  }
 });
 
 const emit = defineEmits(['closePropertySelect', 'updateProperty']);
 
-// 属性类型选项
-const propertyTypes = [
+const show = computed({
+  get() {
+    return props.showPropertySelect
+  },
+  set(value) {
+    if (!value) {
+      emit('closePropertySelect')
+    }
+  }
+})
+
+const property = ref({});
+const activeTab = ref('basic');
+const yuhunTarget = ref('');
+const yuhunTargetOptions = ref([]);
+const showYuhunSelect = ref(false);
+const currentYuhun = ref({});
+const yuhunSelectIndex = ref(-1);
+
+const propertyTypes = ref([
   { label: '攻击', value: 'attack' },
   { label: '生命', value: 'health' },
   { label: '防御', value: 'defense' },
   { label: '速度', value: 'speed' },
-  { label: '暴击率', value: 'crit' },
+  { label: '暴击', value: 'crit' },
   { label: '暴击伤害', value: 'critDmg' },
   { label: '效果命中', value: 'effectHit' },
-  { label: '效果抵抗', value: 'effectResist' },
-];
-
-// 标签页控制
-const activeTab = ref('basic');
-
-// 御魂选择相关
-const showYuhunSelect = ref(false);
-const currentYuhun = ref({ name: '未选择御魂', avatar: '', type: '' });
-const yuhunIndex = ref(-1);
-const yuhunTarget = ref('1');
-
-// 御魂目标选项
-const yuhunTargetOptions = [
-  { label: 'yuhun_target.fullName.0', value: '0' },
-  { label: 'yuhun_target.fullName.1', value: '1' },
-  { label: 'yuhun_target.fullName.2', value: '2' },
-  { label: 'yuhun_target.fullName.3', value: '3' },
-  { label: 'yuhun_target.fullName.4', value: '4' },
-  { label: 'yuhun_target.fullName.5', value: '5' },
-  { label: 'yuhun_target.fullName.6', value: '6' },
-  { label: 'yuhun_target.fullName.7', value: '7' },
-  { label: 'yuhun_target.fullName.8', value: '8' },
-  { label: 'yuhun_target.fullName.9', value: '9' },
-  { label: 'yuhun_target.fullName.10', value: '10' },
-  { label: 'yuhun_target.fullName.11', value: '11' },
-  { label: 'yuhun_target.fullName.12', value: '12' },
-];
-
-// 属性数据对象
-const property = ref({
-  // 基础属性
-  type: 'attack',
-  attackType: 'percentage',
-  attackValue: 0,
-  healthType: 'percentage',
-  healthValue: 0,
-  defenseType: 'percentage',
-  defenseValue: 0,
-  speedValue: 0,
-  critRate: 0,
-  critDmg: 0,
-  effectHitValue: 0,
-  effectResistValue: 0,
-  priority: 'optional',
-  
-  // 式神要求
-  levelRequired: "40",
-  skillRequiredMode: "all",
-  skillRequired: ["5", "5", "5"],
-  
-  // 御魂要求
-  yuhun: {
-    yuhunSetEffect: [],
-    target: "1",
-    property2: ["Attack"],
-    property4: ["Attack"],
-    property6: ["Crit", "CritDamage"],
-  },
-  
-  // 效果指标
-  expectedDamage: 0,
-  survivalRate: 50,
-  damageType: "balanced",
-  
-  // 附加信息
-  description: '',
-});
-
-const show = ref(false);
-
-// 监听props变化
-watch(() => props.showPropertySelect, (newVal) => {
-  show.value = newVal;
-});
+  { label: '效果抵抗', value: 'effectResist' }
+]);
 
 watch(() => props.currentProperty, (newVal) => {
-  if (newVal && Object.keys(newVal).length > 0) {
-    // 如果传入了属性数据，则使用传入的数据
-    property.value = { ...newVal };
-    // 设置御魂目标
-    if (newVal.yuhun && newVal.yuhun.target) {
-      yuhunTarget.value = newVal.yuhun.target.toString();
-    }
+  if (newVal) {
+    property.value = JSON.parse(JSON.stringify(newVal));
   }
-}, { deep: true });
+}, { deep: true, immediate: true });
 
-// 处理属性类型变更
-const handleTypeChange = (type) => {
-  console.log('属性类型变更为:', type);
+const handleTypeChange = (newType) => {
+  // Reset related fields when type changes
 };
 
-// 处理技能要求变更
 const updateSkillRequired = (index, value) => {
   property.value.skillRequired[index] = value;
 };
 
-// 处理御魂目标变更
-const handleYuhunTargetChange = (value) => {
-  switch (value) {
-    case "0": {
-      property.value.yuhun.target = 0;
-      property.value.yuhun.property2 = ["Attack", "Defense", "Health", "Speed"];
-      property.value.yuhun.property4 = ["Attack", "Defense", "Health", "ControlHit", "ControlMiss"];
-      property.value.yuhun.property6 = ["Attack", "Defense", "Health", "Crit", "CritDamage"];
-      break;
-    }
-    case "1": {
-      property.value.yuhun.target = 1;
-      property.value.yuhun.property2 = ["Attack"];
-      property.value.yuhun.property4 = ["Attack"];
-      property.value.yuhun.property6 = ["Crit", "CritDamage"];
-      break;
-    }
-    case "2": {
-      property.value.yuhun.target = 2;
-      property.value.yuhun.property2 = ["Speed"];
-      property.value.yuhun.property4 = ["ControlHit"];
-      property.value.yuhun.property6 = ["Attack", "Defense", "Health", "Crit", "CritDamage"];
-      break;
-    }
-    case "3": {
-      property.value.yuhun.target = 3;
-      property.value.yuhun.property2 = ["Speed"];
-      property.value.yuhun.property4 = ["ControlMiss"];
-      property.value.yuhun.property6 = ["Attack", "Defense", "Health", "Crit", "CritDamage"];
-      break;
-    }
-    case "4": {
-      property.value.yuhun.target = 4;
-      property.value.yuhun.property2 = ["Health"];
-      property.value.yuhun.property4 = ["Health"];
-      property.value.yuhun.property6 = ["Health"];
-      break;
-    }
-    case "5": {
-      property.value.yuhun.target = 5;
-      property.value.yuhun.property2 = ["Attack"];
-      property.value.yuhun.property4 = ["Attack"];
-      property.value.yuhun.property6 = ["Attack"];
-      break;
-    }
-    case "6": {
-      property.value.yuhun.target = 6;
-      property.value.yuhun.property2 = ["Defense"];
-      property.value.yuhun.property4 = ["Defense"];
-      property.value.yuhun.property6 = ["Defense"];
-      break;
-    }
-    case "7": {
-      property.value.yuhun.target = 7;
-      property.value.yuhun.property2 = ["Speed"];
-      property.value.yuhun.property4 = ["Attack", "Defense", "Health", "ControlHit", "ControlMiss"];
-      property.value.yuhun.property6 = ["Attack", "Defense", "Health", "Crit", "CritDamage"];
-      break;
-    }
-    case "8": {
-      property.value.yuhun.target = 8;
-      property.value.yuhun.property2 = ["Attack", "Defense", "Health", "Speed"];
-      property.value.yuhun.property4 = ["Attack", "Defense", "Health", "ControlHit", "ControlMiss"];
-      property.value.yuhun.property6 = ["Crit"];
-      break;
-    }
-    case "9": {
-      property.value.yuhun.target = 9;
-      property.value.yuhun.property2 = ["Attack", "Defense", "Health", "Speed"];
-      property.value.yuhun.property4 = ["Attack", "Defense", "Health", "ControlHit", "ControlMiss"];
-      property.value.yuhun.property6 = ["CritDamage"];
-      break;
-    }
-    case "10": {
-      property.value.yuhun.target = 10;
-      property.value.yuhun.property2 = ["Speed"];
-      property.value.yuhun.property4 = ["Health"];
-      property.value.yuhun.property6 = ["Crit", "CritDamage"];
-      break;
-    }
-    case "11": {
-      property.value.yuhun.target = 11;
-      property.value.yuhun.property2 = ["Speed"];
-      property.value.yuhun.property4 = ["ControlHit", "ControlMiss"];
-      property.value.yuhun.property6 = ["Attack", "Defense", "Health", "Crit", "CritDamage"];
-      break;
-    }
-    case "12": {
-      property.value.yuhun.target = 12;
-      property.value.yuhun.property2 = ["Defense"];
-      property.value.yuhun.property4 = ["Defense"];
-      property.value.yuhun.property6 = ["Crit", "CritDamage"];
-      break;
-    }
-  }
-};
-
-// 打开御魂选择
 const openYuhunSelect = (index) => {
-  yuhunIndex.value = index;
+  yuhunSelectIndex.value = index;
   showYuhunSelect.value = true;
 };
 
-// 关闭御魂选择
 const closeYuhunSelect = () => {
   showYuhunSelect.value = false;
 };
 
-// 更新御魂选择
-const updateYuhunSelect = (yuhun, operator) => {
-  showYuhunSelect.value = false;
-  
-  if (operator === "Update") {
-    if (yuhunIndex.value >= 0) {
-      property.value.yuhun.yuhunSetEffect[yuhunIndex.value] = JSON.parse(JSON.stringify(yuhun));
-    } else {
-      property.value.yuhun.yuhunSetEffect.push(JSON.parse(JSON.stringify(yuhun)));
-    }
-  } else if (operator === "Remove") {
-    if (yuhunIndex.value >= 0) {
-      property.value.yuhun.yuhunSetEffect.splice(yuhunIndex.value, 1);
-    }
+const updateYuhunSelect = (yuhun) => {
+  if (yuhunSelectIndex.value === -1) {
+    property.value.yuhun.yuhunSetEffect.push(yuhun);
+  } else {
+    property.value.yuhun.yuhunSetEffect[yuhunSelectIndex.value] = yuhun;
   }
+  closeYuhunSelect();
 };
 
-// 取消选择
-const cancel = () => {
-  emit('closePropertySelect');
-  resetData();
+const handleYuhunTargetChange = (value) => {
+  // Handle change
 };
 
-// 确认选择
 const confirm = () => {
-  // 复制当前属性数据
-  const result = JSON.parse(JSON.stringify(property.value));
-  
-  emit('updateProperty', result);
-  resetData();
-};
-
-// 重置数据
-const resetData = () => {
-  yuhunTarget.value = '1';
-  property.value = {
-    // 基础属性
-    type: 'attack',
-    attackType: 'percentage',
-    attackValue: 0,
-    healthType: 'percentage',
-    healthValue: 0,
-    defenseType: 'percentage',
-    defenseValue: 0,
-    speedValue: 0,
-    critRate: 0,
-    critDmg: 0,
-    effectHitValue: 0,
-    effectResistValue: 0,
-    priority: 'optional',
-    
-    // 式神要求
-    levelRequired: "40",
-    skillRequiredMode: "all",
-    skillRequired: ["5", "5", "5"],
-    
-    // 御魂要求
-    yuhun: {
-      yuhunSetEffect: [],
-      target: "1",
-      property2: ["Attack"],
-      property4: ["Attack"],
-      property6: ["Crit", "CritDamage"],
-    },
-    
-    // 效果指标
-    expectedDamage: 0,
-    survivalRate: 50,
-    damageType: "balanced",
-    
-    // 附加信息
-    description: '',
-  };
+  emit('updateProperty', property.value);
 };
 </script>
 

@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue';
 import { useVueFlow } from '@vue-flow/core';
 import { QuillEditor } from '@vueup/vue-quill';
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
+import { useDialogs } from '../../ts/useDialogs';
 
 const props = defineProps({
   height: {
@@ -11,10 +12,10 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['open-shikigami-select', 'open-yuhun-select', 'open-property-select']);
-
 // 使用VueFlow的store获取当前选中的节点
-const { findNode, getNodes } = useVueFlow();
+const { findNode, getNodes, updateNode } = useVueFlow();
+const { openDialog } = useDialogs();
+
 // getNodes是一个ref对象，而不是函数
 const nodes = getNodes;
 
@@ -37,32 +38,20 @@ const nodeType = computed(() => {
   return selectedNode.value.type || 'default';
 });
 
-// 处理式神选择按钮点击
-const handleSelectShikigami = () => {
+// 通用的弹窗处理方法
+const handleOpenDialog = (type: 'shikigami' | 'yuhun' | 'property') => {
   if (selectedNode.value) {
-    emit('open-shikigami-select', selectedNode.value);
-  }
-};
+    const node = selectedNode.value;
+    const currentData = node.data && node.data[type] ? node.data[type] : undefined;
 
-// 处理御魂选择按钮点击
-const handleSelectYuhun = () => {
-  if (selectedNode.value) {
-    emit('open-yuhun-select', selectedNode.value);
-  }
-};
-
-// 处理属性选择按钮点击
-const handleSelectProperty = () => {
-  if (selectedNode.value) {
-    emit('open-property-select', selectedNode.value);
-  }
-};
-
-const updateNodeData = (key, value) => {
-  if (!selectedNode.value) return;
-  const node = findNode(selectedNode.value.id);
-  if (node) {
-    node.data = { ...node.data, [key]: value };
+    openDialog(
+      type,
+      currentData,
+      node,
+      (updatedData, nodeToUpdate) => {
+        updateNode(nodeToUpdate.id, { data: { ...nodeToUpdate.data, [type]: updatedData } });
+      }
+    );
   }
 };
 
@@ -74,6 +63,14 @@ const handleImageUpload = (e) => {
     updateNodeData('url', evt.target.result);
   };
   reader.readAsDataURL(file);
+};
+
+const updateNodeData = (key, value) => {
+  if (!selectedNode.value) return;
+  const node = findNode(selectedNode.value.id);
+  if (node) {
+    node.data = { ...node.data, [key]: value };
+  }
 };
 
 const quillToolbar = [
@@ -115,7 +112,7 @@ const quillToolbar = [
         <div class="property-item">
           <el-button 
             type="primary" 
-            @click="handleSelectShikigami" 
+            @click="handleOpenDialog('shikigami')" 
             style="width: 100%"
           >
             选择式神
@@ -129,7 +126,7 @@ const quillToolbar = [
         <div class="property-item">
           <el-button 
             type="primary" 
-            @click="handleSelectYuhun" 
+            @click="handleOpenDialog('yuhun')" 
             style="width: 100%"
           >
             选择御魂
@@ -143,7 +140,7 @@ const quillToolbar = [
         <div class="property-item">
           <el-button 
             type="primary" 
-            @click="handleSelectProperty" 
+            @click="handleOpenDialog('property')" 
             style="width: 100%"
           >
             设置属性
