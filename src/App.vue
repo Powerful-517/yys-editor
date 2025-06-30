@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import Toolbar from './components/Toolbar.vue';
 import ProjectExplorer from './components/ProjectExplorer.vue';
-import { computed, ref, onMounted, onUnmounted } from "vue";
+import ComponentsPanel from './components/flow/ComponentsPanel.vue';
+import { computed, ref, onMounted, onUnmounted, onBeforeUpdate, reactive, provide, inject } from "vue";
 import { useFilesStore } from "@/ts/files";
 import Vue3DraggableResizable from 'vue3-draggable-resizable';
 import { TabPaneName, TabsPaneContext } from "element-plus";
@@ -10,6 +11,7 @@ import ShikigamiSelect from './components/flow/nodes/yys/ShikigamiSelect.vue';
 import YuhunSelect from './components/flow/nodes/yys/YuhunSelect.vue';
 import PropertySelect from './components/flow/nodes/yys/PropertySelect.vue';
 import { useVueFlow } from '@vue-flow/core';
+import DialogManager from './components/DialogManager.vue';
 
 const filesStore = useFilesStore();
 const { updateNode } = useVueFlow();
@@ -20,49 +22,8 @@ const toolbarHeight = 48; // 工具栏的高度
 const windowHeight = ref(window.innerHeight);
 const contentHeight = computed(() => `${windowHeight.value - toolbarHeight}px`);
 
-// Dialogs and Selected Node Management
-const showShikigamiDialog = ref(false);
-const showYuhunDialog = ref(false);
-const showPropertyDialog = ref(false);
-
-const currentShikigami = ref({ name: '未选择式神', avatar: '', rarity: '' });
-const currentYuhun = ref({ name: '未选择御魂', avatar: '', type: '' });
-const currentProperty = ref({ type: '未选择属性', priority: 'optional', description: '' });
-
-const selectedNode = ref(null);
 const flowEditorRef = ref(null);
-
-const openDialogForType = (type: string, node: any) => {
-  selectedNode.value = node;
-  switch (type) {
-    case 'shikigami': showShikigamiDialog.value = true; break;
-    case 'yuhun': showYuhunDialog.value = true; break;
-    case 'property': showPropertyDialog.value = true; break;
-  }
-};
-
-// Handle Dialogs Close
-const closeDialogForType = (type: string) => {
-  switch (type) {
-    case 'shikigami': showShikigamiDialog.value = false; break;
-    case 'yuhun': showYuhunDialog.value = false; break;
-    case 'property': showPropertyDialog.value = false; break;
-  }
-};
-
-// 更新式神信息
-const updateNodeData = (type: string, data: any) => {
-  if (selectedNode.value) {
-    updateNode(selectedNode.value.id, {
-      data: {
-        ...selectedNode.value.data,
-        [type]: data
-      }
-    });
-    console.log(`${type.charAt(0).toUpperCase() + type.slice(1)}信息已更新:`, data.name || data.type);
-    closeDialogForType(type);
-  }
-};
+const flowEditorRefs = ref({});
 
 const handleTabsEdit = (
     targetName: String | undefined,
@@ -110,6 +71,21 @@ const activeFileGroups = computed(() => {
   const activeFile = filesStore.fileList.find(file => file.name === filesStore.activeFile);
   return activeFile ? activeFile.groups : [];
 });
+
+onBeforeUpdate(() => {
+  flowEditorRefs.value = {};
+});
+
+const handleAddNode = (nodeData) => {
+  const activeEditor = flowEditorRefs.value[filesStore.activeFile];
+  if (activeEditor) {
+    const { x, y, zoom } = activeEditor.getViewport();
+    const position = { x: -x / zoom + 150, y: -y / zoom + 150 };
+    activeEditor.handleAddNode({ ...nodeData, position });
+  }
+};
+
+
 </script>
 
 <template>
@@ -119,7 +95,7 @@ const activeFileGroups = computed(() => {
     <!-- 侧边栏和工作区 -->
     <div class="main-content">
       <!-- 侧边栏 -->
-      <ProjectExplorer />
+      <ComponentsPanel @add-node="handleAddNode" />
       <!-- 工作区 -->
       <div class="workspace">
         <el-tabs
@@ -138,11 +114,9 @@ const activeFileGroups = computed(() => {
             <div id="main-container" :style="{ height: contentHeight, overflow: 'auto' }">
               <!-- 流程图编辑器 -->
               <FlowEditor
-                  ref="flowEditorRef"
+                  :ref="(el) => { if (el) flowEditorRefs[file.name] = el }"
                   :height="contentHeight"
-                  @open-shikigami-select="node => openDialogForType('shikigami', node)"
-                  @open-yuhun-select="node => openDialogForType('yuhun', node)"
-                  @open-property-select="node => openDialogForType('property', node)"
+
               />
             </div>
           </el-tab-pane>
@@ -150,29 +124,7 @@ const activeFileGroups = computed(() => {
       </div>
     </div>
 
-    <!-- 全局式神选择对话框 -->
-    <ShikigamiSelect
-        :showSelectShikigami="showShikigamiDialog"
-        :currentShikigami="currentShikigami"
-        @closeSelectShikigami="closeDialogForType('shikigami')"
-        @updateShikigami="data => updateNodeData('shikigami', data)"
-    />
-
-    <!-- 全局御魂选择对话框 -->
-    <YuhunSelect
-        :showSelectYuhun="showYuhunDialog"
-        :currentYuhun="currentYuhun"
-        @closeSelectYuhun="closeDialogForType('yuhun')"
-        @updateYuhun="data => updateNodeData('yuhun', data)"
-    />
-
-    <!-- 全局属性选择对话框 -->
-    <PropertySelect
-        :showPropertySelect="showPropertyDialog"
-        :currentProperty="currentProperty"
-        @closePropertySelect="closeDialogForType('property')"
-        @updateProperty="data => updateNodeData('property', data)"
-    />
+    <DialogManager />
   </div>
 </template>
 
@@ -197,7 +149,7 @@ const activeFileGroups = computed(() => {
 }
 
 .sidebar {
-  width: 20%; /* 侧边栏宽度 */
+  width: 230px; /* 侧边栏宽度 */
   background-color: #f0f0f0; /* 背景色 */
   flex-shrink: 0; /* 防止侧边栏被压缩 */
   overflow-y: auto; /* 允许侧边栏内容滚动 */
