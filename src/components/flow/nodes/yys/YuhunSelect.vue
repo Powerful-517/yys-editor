@@ -2,10 +2,8 @@
   <el-dialog
       v-model="show"
       title="请选择御魂"
-      @close="cancel"
-      :before-close="cancel"
   >
-    <span>当前选择御魂：{{ current.name }}</span>
+    <span>当前选择御魂：{{ props.currentYuhun.name }}</span>
     <div style="display: flex; align-items: center;">
       <el-input
           placeholder="请输入内容"
@@ -45,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { ref, computed } from 'vue'
 import type { TabsPaneContext } from 'element-plus'
 import yuhunData from "../../../../data/Yuhun.json"
 
@@ -59,7 +57,7 @@ interface Yuhun {
 const props = defineProps({
   currentYuhun: {
     type: Object as () => Yuhun,
-    default: () => ({ name: '' })
+    default: () => ({ name: '未选择御魂', type: '', avatar: '' })
   },
   showSelectYuhun: {
     type: Boolean,
@@ -69,10 +67,19 @@ const props = defineProps({
 
 const emit = defineEmits(['closeSelectYuhun', 'updateYuhun'])
 
+const show = computed({
+  get() {
+    return props.showSelectYuhun
+  },
+  set(value) {
+    if (!value) {
+      emit('closeSelectYuhun')
+    }
+  }
+})
+
 const searchText = ref('') // 搜索文本
 const activeName = ref('ALL')
-let current = ref({name:''})
-const show = ref(false)
 
 const yuhunTypes = [
   { label: "全部", name: "ALL" },
@@ -85,30 +92,14 @@ const yuhunTypes = [
   { label: "特殊类", name: "Special" }
 ]
 
-watch(() => props.showSelectYuhun, (newVal) => {
-  show.value = newVal
-})
-
-watch(() => props.currentYuhun, (newVal) => {
-  console.log("YuhunSelect.vue" + current.value.name)
-  current.value = newVal
-  console.log("YuhunSelect.vue" + current.value.name)
-}, {deep: true})
-
 const handleClick = (tab: TabsPaneContext) => {
   console.log('Tab clicked:', tab)
 }
 
-const cancel = () => {
-  emit('closeSelectYuhun')
-  show.value = false
-}
-
 const confirm = (yuhun: Yuhun) => {
   emit('updateYuhun', yuhun)
-  searchText.value=''
-  activeName.value='ALL'
-  // cancel()
+  searchText.value = ''
+  activeName.value = 'ALL'
 }
 
 // 过滤函数
