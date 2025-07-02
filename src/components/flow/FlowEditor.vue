@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, shallowRef, markRaw, onUnmounted } from 'vue';
-import { VueFlow, useVueFlow, Panel, NodeTypes } from '@vue-flow/core';
+import { VueFlow, useVueFlow, Panel } from '@vue-flow/core';
 import { Background } from '@vue-flow/background';
 import { Controls } from '@vue-flow/controls';
 import '@vue-flow/core/dist/style.css';
@@ -13,6 +13,7 @@ import PropertySelectNode from './nodes/yys/PropertySelectNode.vue';
 import ImageNode from './nodes/common/ImageNode.vue';
 import TextNode from './nodes/common/TextNode.vue';
 import useDragAndDrop from '@/ts/useDnD';
+import { useFilesStore } from '@/ts/useStore';
 
 const props = defineProps({
   height: {
@@ -20,6 +21,9 @@ const props = defineProps({
     default: '100%'
   }
 });
+
+// 获取文件 store
+const filesStore = useFilesStore();
 
 // 设置节点类型
 const nodeTypes = shallowRef({
@@ -30,20 +34,47 @@ const nodeTypes = shallowRef({
   textNode: markRaw(TextNode)
 });
 
-// 初始化流程图节点 - 使用普通数组而非ref
-const initialNodes = [
-  { id: '1', label: '开始', position: { x: 100, y: 100 }, type: 'input' }
-];
-
-// 初始化流程图连线 - 使用普通数组而非ref
-const initialEdges = [];
-
-// 使用VueFlow的API，传入普通数组而非ref
-const { nodes, edges, onNodesChange, onEdgesChange, onConnect, addNodes, setTransform, getViewport, updateNode } = useVueFlow({
-  defaultNodes: initialNodes,
-  defaultEdges: initialEdges,
-  nodeTypes
+// 使用VueFlow的API
+const { onNodesChange, onEdgesChange, onConnect, addNodes, setTransform, getViewport, updateNode } = useVueFlow({
+  nodes: filesStore.activeFileNodes,
+  edges: filesStore.activeFileEdges,
+  nodeTypes: nodeTypes.value
 });
+
+// 监听节点变化
+const handleNodesChange = (changes) => {
+  // 更新 store 中的节点
+  changes.forEach(change => {
+    if (change.type === 'position' && change.position) {
+      filesStore.updateNodePosition(change.id, change.position);
+    } else if (change.type === 'remove') {
+      filesStore.removeNode(change.id);
+    }
+  });
+  onNodesChange(changes);
+};
+
+// 监听边变化
+const handleEdgesChange = (changes) => {
+  // 更新 store 中的边
+  changes.forEach(change => {
+    if (change.type === 'remove') {
+      filesStore.removeEdge(change.id);
+    }
+  });
+  onEdgesChange(changes);
+};
+
+// 监听连接
+const handleConnect = (connection) => {
+  // 添加新边到 store
+  filesStore.addEdge({
+    id: `e${connection.source}-${connection.target}`,
+    source: connection.source,
+    target: connection.target
+  });
+  onConnect(connection);
+};
 
 // 使用拖拽功能
 const { onDragOver, onDrop } = useDragAndDrop();
@@ -89,11 +120,12 @@ const handleLayerOrder = (action) => {
   if (!contextMenu.value.nodeId) return;
 
   const nodeId = contextMenu.value.nodeId;
-  const nodeIndex = nodes.value.findIndex(n => n.id === nodeId);
+  const currentNodes = filesStore.activeFileNodes;
+  const nodeIndex = currentNodes.findIndex(n => n.id === nodeId);
   if (nodeIndex === -1) return;
 
-  const node = nodes.value[nodeIndex];
-  const newNodes = [...nodes.value];
+  const node = currentNodes[nodeIndex];
+  const newNodes = [...currentNodes];
 
   switch (action) {
     case 'bringToFront':
@@ -120,8 +152,8 @@ const handleLayerOrder = (action) => {
       break;
   }
 
-  // 更新节点顺序
-  nodes.value = newNodes;
+  // 更新 store 中的节点顺序
+  filesStore.updateNodesOrder(newNodes);
   contextMenu.value.show = false;
 };
 
@@ -146,18 +178,18 @@ onUnmounted(() => {
       <!-- 中间流程图区域 -->
       <div class="flow-container">
         <VueFlow
-            :nodes="nodes"
-            :edges="edges"
-            @nodes-change="onNodesChange"
-            @edges-change="onEdgesChange"
-            @connect="onConnect"
+            :nodes="filesStore.activeFileNodes"
+            :edges="filesStore.activeFileEdges"
+            @nodes-change="handleNodesChange"
+            @edges-change="handleEdgesChange"
+            @connect="handleConnect"
             fit-view-on-init
             @drop="onDrop"
             @dragover="onDragOver"
             @node-context-menu="handleNodeContextMenu"
             @pane-context-menu="handlePaneContextMenu"
         >
-          <Background pattern-color="#aaa" gap="8" />
+          <Background :pattern-color="'#aaa'" :gap="8" />
           <Controls />
           <Panel position="top-right" class="flow-panel">
             <div>流程图编辑器 (模仿 draw.io)</div>

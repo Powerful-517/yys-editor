@@ -3,7 +3,7 @@ import Toolbar from './components/Toolbar.vue';
 import ProjectExplorer from './components/ProjectExplorer.vue';
 import ComponentsPanel from './components/flow/ComponentsPanel.vue';
 import { computed, ref, onMounted, onUnmounted, onBeforeUpdate, reactive, provide, inject } from "vue";
-import { useFilesStore } from "@/ts/files";
+import { useFilesStore } from "@/ts/useStore";
 import Vue3DraggableResizable from 'vue3-draggable-resizable';
 import { TabPaneName, TabsPaneContext } from "element-plus";
 import FlowEditor from './components/flow/FlowEditor.vue';

@@ -34,7 +34,7 @@
 
 <script setup lang="ts">
 import {defineProps, defineEmits, ref} from 'vue';
-import {useFilesStore} from "@/ts/files";
+import {useFilesStore} from "@/ts/useStore";
 import {ElTree, ElButton, ElDropdownMenu, ElDropdownItem} from 'element-plus';
 
 const filesStore = useFilesStore();

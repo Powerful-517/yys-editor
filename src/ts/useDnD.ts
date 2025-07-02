@@ -1,5 +1,6 @@
 import { useVueFlow } from '@vue-flow/core'
 import { ref, watch } from 'vue'
+import { useFilesStore } from './useStore'
 
 let id = 0
 
@@ -15,7 +16,8 @@ const state = {
 
 export default function useDragAndDrop() {
   const { draggedType, isDragOver, isDragging } = state
-  const { addNodes, screenToFlowCoordinate, onNodesInitialized, updateNode } = useVueFlow()
+  const { screenToFlowCoordinate, onNodesInitialized } = useVueFlow()
+  const filesStore = useFilesStore()
 
   watch(isDragging, (dragging) => {
     document.body.style.userSelect = dragging ? 'none' : ''
@@ -72,17 +74,18 @@ export default function useDragAndDrop() {
         position,
       }
 
+      filesStore.addNode(newNode)
+
       const { off } = onNodesInitialized(() => {
-        updateNode(nodeId, (node) => ({
+        filesStore.updateNode(nodeId, {
           position: { 
-            x: node.position.x - node.dimensions.width / 2, 
-            y: node.position.y - node.dimensions.height / 2 
+            x: position.x - newNode.dimensions?.width / 2 || position.x, 
+            y: position.y - newNode.dimensions?.height / 2 || position.y 
           },
-        }))
+        })
         off()
       })
 
-      addNodes(newNode)
     } catch (error) {
       console.error('拖拽放置处理失败:', error)
     }

@@ -81,7 +81,7 @@ import html2canvas from "html2canvas";
 import {useI18n} from 'vue-i18n';
 import updateLogs from "../data/updateLog.json"
 import filesStoreExample from "../data/filesStoreExample.json"
-import {useFilesStore} from "@/ts/files";
+import {useFilesStore} from "@/ts/useStore";
 import {ElMessageBox} from "element-plus";
 import {useGlobalMessage} from "@/ts/useGlobalMessage";
 
