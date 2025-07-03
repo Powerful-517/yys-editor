@@ -2,7 +2,7 @@
 import Toolbar from './components/Toolbar.vue';
 import ProjectExplorer from './components/ProjectExplorer.vue';
 import ComponentsPanel from './components/flow/ComponentsPanel.vue';
-import { computed, ref, onMounted, onUnmounted, onBeforeUpdate, reactive, provide, inject } from "vue";
+import { computed, ref, onMounted, onUnmounted, onBeforeUpdate, reactive, provide, inject, watch } from "vue";
 import { useFilesStore } from "@/ts/useStore";
 import Vue3DraggableResizable from 'vue3-draggable-resizable';
 import { TabPaneName, TabsPaneContext } from "element-plus";
@@ -24,6 +24,7 @@ const contentHeight = computed(() => `${windowHeight.value - toolbarHeight}px`);
 
 const flowEditorRef = ref(null);
 const flowEditorRefs = ref({});
+const lastActiveFile = ref(filesStore.activeFile);
 
 const handleTabsEdit = (
     targetName: String | undefined,
@@ -85,6 +86,24 @@ const handleAddNode = (nodeData) => {
   }
 };
 
+const handleSaveViewport = (viewport) => {
+  filesStore.updateFileViewport(filesStore.activeFile, viewport);
+};
+const handleRequestViewport = () => {
+  return filesStore.getFileViewport(filesStore.activeFile);
+};
+
+watch(
+  () => filesStore.activeFile,
+  (newVal, oldVal) => {
+    // 切换前保存旧 tab 的 viewport
+    if (oldVal && flowEditorRef.value && flowEditorRef.value.getViewport) {
+      const viewport = flowEditorRef.value.getViewport();
+      filesStore.updateFileViewport(oldVal, viewport);
+    }
+    lastActiveFile.value = newVal;
+  }
+);
 
 </script>
 
@@ -110,20 +129,20 @@ const handleAddNode = (nodeData) => {
               :key="`${file.name}-${filesStore.activeFile}`"
               :label="file.label"
               :name="file.name.toString()"
-          >
-            <div id="main-container" :style="{ height: contentHeight, overflow: 'auto' }">
-              <!-- 流程图编辑器 -->
-              <FlowEditor
-                  :ref="(el) => { if (el) flowEditorRefs[file.name] = el }"
-                  :height="contentHeight"
-
-              />
-            </div>
-          </el-tab-pane>
+          />
         </el-tabs>
+        <div id="main-container" :style="{ height: contentHeight, overflow: 'auto' }">
+          <FlowEditor
+            ref="flowEditorRef"
+            :height="contentHeight"
+            :nodes="filesStore.activeFileNodes"
+            :edges="filesStore.activeFileEdges"
+            :viewport="filesStore.getFileViewport(filesStore.activeFile)"
+            :key="filesStore.activeFile"
+          />
+        </div>
       </div>
     </div>
-
     <DialogManager />
   </div>
 </template>

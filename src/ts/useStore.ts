@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { Edge, Node } from '@vue-flow/core';
+import type { Edge, Node, ViewportTransform } from '@vue-flow/core';
 
 // 文件相关的类型定义
 interface FileGroup {
@@ -17,6 +17,7 @@ interface FlowFile {
     groups: FileGroup[];
     nodes?: Node[];
     edges?: Edge[];
+    viewport?: { x: number; y: number; zoom: number };
 }
 
 export const useFilesStore = defineStore('files', () => {
@@ -137,6 +138,21 @@ export const useFilesStore = defineStore('files', () => {
         file.nodes = nodes;
     };
 
+    // 更新文件的 viewport
+    const updateFileViewport = (fileName: string, viewport: { x: number; y: number; zoom: number }) => {
+        const file = fileList.value.find(f => f.name === fileName);
+        if (file) file.viewport = viewport;
+    };
+
+    const getFileViewport = (fileName: string): ViewportTransform => {
+        const file = fileList.value.find(f => f.name === fileName);
+        const v = file?.viewport;
+        if (v && typeof v.x === 'number' && typeof v.y === 'number' && typeof v.zoom === 'number') {
+            return v as ViewportTransform;
+        }
+        return { x: 0, y: 0, zoom: 1 };
+    };
+
     return {
         fileList,
         activeFile,
@@ -152,5 +168,7 @@ export const useFilesStore = defineStore('files', () => {
         removeEdge,
         updateNodePosition,
         updateNodesOrder,
+        updateFileViewport,
+        getFileViewport,
     };
 });

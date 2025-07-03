@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, shallowRef, markRaw, onUnmounted } from 'vue';
+import { ref, onMounted, shallowRef, markRaw, onUnmounted, watch, nextTick } from 'vue';
 import { VueFlow, useVueFlow, Panel } from '@vue-flow/core';
 import { Background } from '@vue-flow/background';
 import { Controls } from '@vue-flow/controls';
@@ -14,13 +14,15 @@ import ImageNode from './nodes/common/ImageNode.vue';
 import TextNode from './nodes/common/TextNode.vue';
 import useDragAndDrop from '@/ts/useDnD';
 import { useFilesStore } from '@/ts/useStore';
+import type { Node, Edge, ViewportTransform } from '@vue-flow/core';
 
-const props = defineProps({
-  height: {
-    type: String,
-    default: '100%'
-  }
-});
+const props = defineProps<{
+  height: string;
+  nodes: Node[];
+  edges: Edge[];
+  viewport: ViewportTransform;
+}>();
+const emit = defineEmits(['save-viewport', 'request-viewport']);
 
 // 获取文件 store
 const filesStore = useFilesStore();
@@ -35,10 +37,23 @@ const nodeTypes = shallowRef({
 });
 
 // 使用VueFlow的API
-const { onNodesChange, onEdgesChange, onConnect, addNodes, setTransform, getViewport, updateNode } = useVueFlow({
-  nodes: filesStore.activeFileNodes,
-  edges: filesStore.activeFileEdges,
+const { nodes, edges, setNodes, setEdges, setTransform, getViewport, onNodesChange, onEdgesChange, onConnect, addNodes, updateNode } = useVueFlow({
+  nodes: props.nodes,
+  edges: props.edges,
   nodeTypes: nodeTypes.value
+});
+
+// 监听 viewport 变化，重绘视图
+watch(
+  () => props.viewport,
+  (newViewport) => {
+    setTransform(newViewport);
+  },
+  { immediate: true }
+);
+
+onMounted(() => {
+  setTransform(props.viewport);
 });
 
 // 监听节点变化
@@ -170,6 +185,22 @@ onUnmounted(() => {
   // 移除事件监听
   // document.removeEventListener('click', handleClickOutside);
 });
+
+const lastActiveFile = ref(filesStore.activeFile);
+
+const flowEditorRef = ref();
+
+watch(
+  () => filesStore.activeFile,
+  (newVal, oldVal) => {
+    // 切换前保存旧 tab 的 viewport
+    if (oldVal && flowEditorRef.value && flowEditorRef.value.getViewport) {
+      const viewport = flowEditorRef.value.getViewport();
+      filesStore.updateFileViewport(oldVal, viewport);
+    }
+    lastActiveFile.value = newVal;
+  }
+);
 </script>
 
 <template>
