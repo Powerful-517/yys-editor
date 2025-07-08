@@ -15,9 +15,7 @@ interface FlowFile {
     visible: boolean;
     type: string;
     groups: FileGroup[];
-    nodes?: Node[];
-    edges?: Edge[];
-    viewport?: { x: number; y: number; zoom: number };
+    flowData?: any;
 }
 
 export const useFilesStore = defineStore('files', () => {
@@ -33,21 +31,23 @@ export const useFilesStore = defineStore('files', () => {
     // 获取当前活动文件的节点和边
     const activeFileNodes = computed(() => {
         const file = fileList.value.find(f => f.name === activeFile.value);
-        return file?.nodes || [];
+        return file?.flowData?.nodes || [];
     });
 
     const activeFileEdges = computed(() => {
         const file = fileList.value.find(f => f.name === activeFile.value);
-        return file?.edges || [];
+        return file?.flowData?.edges || [];
     });
 
     // 添加新文件
     const addFile = (file: FlowFile) => {
-        // 确保新文件包含空的节点和边数组
         const newFile = {
             ...file,
-            nodes: [],
-            edges: []
+            flowData: {
+                nodes: [],
+                edges: [],
+                viewport: { x: 0, y: 0, zoom: 1 }
+            }
         };
         fileList.value.push(newFile);
         activeFile.value = file.name;
@@ -72,21 +72,18 @@ export const useFilesStore = defineStore('files', () => {
     const addNode = (node: Node) => {
         const file = fileList.value.find(f => f.name === activeFile.value);
         if (!file) return;
-
-        if (!file.nodes) file.nodes = [];
-        file.nodes.push(node);
+        if (!file.flowData) file.flowData = { nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } };
+        file.flowData.nodes.push(node);
     };
 
     // 更新节点
     const updateNode = (nodeId: string, updateData: Partial<Node>) => {
         const file = fileList.value.find(f => f.name === activeFile.value);
-        if (!file || !file.nodes) return;
-
-        const nodeIndex = file.nodes.findIndex(n => n.id === nodeId);
+        if (!file || !file.flowData || !file.flowData.nodes) return;
+        const nodeIndex = file.flowData.nodes.findIndex(n => n.id === nodeId);
         if (nodeIndex === -1) return;
-
-        file.nodes[nodeIndex] = {
-            ...file.nodes[nodeIndex],
+        file.flowData.nodes[nodeIndex] = {
+            ...file.flowData.nodes[nodeIndex],
             ...updateData,
         };
     };
@@ -94,12 +91,11 @@ export const useFilesStore = defineStore('files', () => {
     // 删除节点
     const removeNode = (nodeId: string) => {
         const file = fileList.value.find(f => f.name === activeFile.value);
-        if (!file || !file.nodes) return;
-
-        file.nodes = file.nodes.filter(n => n.id !== nodeId);
+        if (!file || !file.flowData || !file.flowData.nodes) return;
+        file.flowData.nodes = file.flowData.nodes.filter(n => n.id !== nodeId);
         // 同时删除相关的边
-        if (file.edges) {
-            file.edges = file.edges.filter(e => e.source !== nodeId && e.target !== nodeId);
+        if (file.flowData.edges) {
+            file.flowData.edges = file.flowData.edges.filter(e => e.source !== nodeId && e.target !== nodeId);
         }
     };
 
@@ -107,25 +103,22 @@ export const useFilesStore = defineStore('files', () => {
     const addEdge = (edge: Edge) => {
         const file = fileList.value.find(f => f.name === activeFile.value);
         if (!file) return;
-
-        if (!file.edges) file.edges = [];
-        file.edges.push(edge);
+        if (!file.flowData) file.flowData = { nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } };
+        file.flowData.edges.push(edge);
     };
 
     // 删除边
     const removeEdge = (edgeId: string) => {
         const file = fileList.value.find(f => f.name === activeFile.value);
-        if (!file || !file.edges) return;
-
-        file.edges = file.edges.filter(e => e.id !== edgeId);
+        if (!file || !file.flowData || !file.flowData.edges) return;
+        file.flowData.edges = file.flowData.edges.filter(e => e.id !== edgeId);
     };
 
     // 更新节点位置
     const updateNodePosition = (nodeId: string, position: { x: number; y: number }) => {
         const file = fileList.value.find(f => f.name === activeFile.value);
-        if (!file || !file.nodes) return;
-
-        const node = file.nodes.find(n => n.id === nodeId);
+        if (!file || !file.flowData || !file.flowData.nodes) return;
+        const node = file.flowData.nodes.find(n => n.id === nodeId);
         if (node) {
             node.position = position;
         }
@@ -134,23 +127,35 @@ export const useFilesStore = defineStore('files', () => {
     // 更新节点顺序
     const updateNodesOrder = (nodes: Node[]) => {
         const file = fileList.value.find(f => f.name === activeFile.value);
-        if (!file) return;
-        file.nodes = nodes;
+        if (!file || !file.flowData) return;
+        file.flowData.nodes = nodes;
     };
 
     // 更新文件的 viewport
     const updateFileViewport = (fileName: string, viewport: { x: number; y: number; zoom: number }) => {
         const file = fileList.value.find(f => f.name === fileName);
-        if (file) file.viewport = viewport;
+        if (file && file.flowData) file.flowData.viewport = viewport;
     };
 
     const getFileViewport = (fileName: string): ViewportTransform => {
         const file = fileList.value.find(f => f.name === fileName);
-        const v = file?.viewport;
+        const v = file?.flowData?.viewport;
         if (v && typeof v.x === 'number' && typeof v.y === 'number' && typeof v.zoom === 'number') {
             return v as ViewportTransform;
         }
         return { x: 0, y: 0, zoom: 1 };
+    };
+
+    // 更新文件的 flowData
+    const updateFileFlowData = (fileName: string, flowData: any) => {
+        const file = fileList.value.find(f => f.name === fileName);
+        if (file) file.flowData = flowData;
+    };
+
+    // 获取文件的 flowData
+    const getFileFlowData = (fileName: string): any => {
+        const file = fileList.value.find(f => f.name === fileName);
+        return file?.flowData;
     };
 
     return {
@@ -170,5 +175,7 @@ export const useFilesStore = defineStore('files', () => {
         updateNodesOrder,
         updateFileViewport,
         getFileViewport,
+        updateFileFlowData,
+        getFileFlowData,
     };
 });

@@ -189,18 +189,6 @@ onUnmounted(() => {
 const lastActiveFile = ref(filesStore.activeFile);
 
 const flowEditorRef = ref();
-
-watch(
-  () => filesStore.activeFile,
-  (newVal, oldVal) => {
-    // 切换前保存旧 tab 的 viewport
-    if (oldVal && flowEditorRef.value && flowEditorRef.value.getViewport) {
-      const viewport = flowEditorRef.value.getViewport();
-      filesStore.updateFileViewport(oldVal, viewport);
-    }
-    lastActiveFile.value = newVal;
-  }
-);
 </script>
 
 <template>
@@ -209,8 +197,8 @@ watch(
       <!-- 中间流程图区域 -->
       <div class="flow-container">
         <VueFlow
-            :nodes="filesStore.activeFileNodes"
-            :edges="filesStore.activeFileEdges"
+            :nodes="props.nodes"
+            :edges="props.edges"
             @nodes-change="handleNodesChange"
             @edges-change="handleEdgesChange"
             @connect="handleConnect"

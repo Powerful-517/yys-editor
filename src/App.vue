@@ -14,7 +14,7 @@ import { useVueFlow } from '@vue-flow/core';
 import DialogManager from './components/DialogManager.vue';
 
 const filesStore = useFilesStore();
-const { updateNode } = useVueFlow();
+const { updateNode,toObject,fromObject } = useVueFlow();
 
 const width = ref('100%');
 const height = ref('100vh');
@@ -100,6 +100,7 @@ watch(
     if (oldVal && flowEditorRef.value && flowEditorRef.value.getViewport) {
       const viewport = flowEditorRef.value.getViewport();
       filesStore.updateFileViewport(oldVal, viewport);
+      filesStore.updateFileFlowData(oldVal, toObject());
     }
     lastActiveFile.value = newVal;
   }
@@ -135,9 +136,9 @@ watch(
           <FlowEditor
             ref="flowEditorRef"
             :height="contentHeight"
-            :nodes="filesStore.activeFileNodes"
-            :edges="filesStore.activeFileEdges"
-            :viewport="filesStore.getFileViewport(filesStore.activeFile)"
+            :nodes="filesStore.getFileFlowData(filesStore.activeFile)?.nodes || []"
+            :edges="filesStore.getFileFlowData(filesStore.activeFile)?.edges || []"
+            :viewport="filesStore.getFileFlowData(filesStore.activeFile)?.viewport || { x: 0, y: 0, zoom: 1 }"
             :key="filesStore.activeFile"
           />
         </div>
