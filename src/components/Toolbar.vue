@@ -80,7 +80,6 @@ import {ref, reactive, onMounted} from 'vue';
 import html2canvas from "html2canvas";
 import {useI18n} from 'vue-i18n';
 import updateLogs from "../data/updateLog.json"
-import filesStoreExample from "../data/filesStoreExample.json"
 import {useFilesStore} from "@/ts/useStore";
 import {ElMessageBox} from "element-plus";
 import {useGlobalMessage} from "@/ts/useGlobalMessage";
@@ -110,7 +109,29 @@ const loadExample = () => {
         type: 'warning',
       }
   ).then(() => {
-    filesStore.$patch({fileList: filesStoreExample});
+    // 使用默认状态作为示例
+    const defaultState = {
+      fileList: [{
+        "label": "示例文件",
+        "name": "example",
+        "visible": true,
+        "type": "FLOW",
+        "groups": [
+          {
+            "shortDescription": "示例组",
+            "groupInfo": [{}, {}, {}, {}, {}],
+            "details": "这是一个示例文件"
+          }
+        ],
+        "flowData": {
+          "nodes": [],
+          "edges": [],
+          "viewport": { "x": 0, "y": 0, "zoom": 1 }
+        }
+      }],
+      activeFile: "example"
+    };
+    filesStore.importData(defaultState);
     showMessage('success', '数据已恢复');
   }).catch(() => {
     showMessage('info', '选择了不恢复旧数据');
@@ -139,14 +160,7 @@ const showFeedbackForm = () => {
 };
 
 const handleExport = () => {
-  const dataStr = JSON.stringify(filesStore.fileList, null, 2);
-  const blob = new Blob([dataStr], {type: 'application/json;charset=utf-8'});
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'files.json';
-  link.click();
-  URL.revokeObjectURL(url);
+  filesStore.exportData();
 };
 
 const handleImport = () => {
@@ -154,27 +168,18 @@ const handleImport = () => {
   input.type = 'file';
   input.accept = '.json';
   input.onchange = (e) => {
-    const file = e.target.files[0];
+    const target = e.target as HTMLInputElement;
+    const file = target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
-          const data = JSON.parse(e.target.result as string);
-          if (data[0].visible === true) {
-            // 新版本格式：直接替换 fileList
-            filesStore.$patch({fileList: data});
-          } else {
-            // 旧版本格式：仅包含 groups 数组
-            const newFile = {
-              label: `File ${filesStore.fileList.length + 1}`,
-              name: String(filesStore.fileList.length + 1),
-              visible: true,
-              groups: data
-            };
-            filesStore.addFile(newFile);
-          }
+          const target = e.target as FileReader;
+          const data = JSON.parse(target.result as string);
+          filesStore.importData(data);
         } catch (error) {
           console.error('Failed to import file', error);
+          showMessage('error', '文件格式错误');
         }
       };
       reader.readAsText(file);

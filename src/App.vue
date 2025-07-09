@@ -27,7 +27,7 @@ const flowEditorRefs = ref({});
 const lastActiveFile = ref(filesStore.activeFile);
 
 const handleTabsEdit = (
-    targetName: String | undefined,
+    targetName: string | undefined,
     action: 'remove' | 'add'
 ) => {
   if (action === 'remove') {
@@ -60,6 +60,9 @@ onMounted(() => {
   window.addEventListener('resize', () => {
     windowHeight.value = window.innerHeight;
   });
+  // 初始化自动保存功能
+  filesStore.initializeWithPrompt();
+  filesStore.setupAutoSave();
 });
 
 onUnmounted(() => {

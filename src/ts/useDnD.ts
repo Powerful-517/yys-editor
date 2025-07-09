@@ -5,7 +5,7 @@ import { useFilesStore } from './useStore'
 let id = 0
 
 function getId() {
-  return `dndnode_${id++}`
+  return `dndnode_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
 }
 
 const state = {

@@ -1,6 +1,63 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { Edge, Node, ViewportTransform } from '@vue-flow/core';
+import { ElMessageBox } from "element-plus";
+import { useGlobalMessage } from "./useGlobalMessage";
+
+const { showMessage } = useGlobalMessage();
+
+function getDefaultState() {
+    return {
+        fileList: [{
+            "label": "File 1",
+            "name": "1",
+            "visible": true,
+            "type": "FLOW",
+            "groups": [
+                {
+                    "shortDescription": "",
+                    "groupInfo": [{}, {}, {}, {}, {}],
+                    "details": ""
+                }
+            ],
+            "flowData": {
+                "nodes": [],
+                "edges": [],
+                "viewport": { "x": 0, "y": 0, "zoom": 1 }
+            }
+        }],
+        activeFile: "1",
+    };
+}
+
+function saveStateToLocalStorage(state: any) {
+    try {
+        localStorage.setItem('filesStore', JSON.stringify(state));
+    } catch (error) {
+        console.error('保存到 localStorage 失败:', error);
+        // 如果 localStorage 满了，尝试清理一些数据
+        try {
+            localStorage.clear();
+            localStorage.setItem('filesStore', JSON.stringify(state));
+        } catch (clearError) {
+            console.error('清理 localStorage 后仍无法保存:', clearError);
+        }
+    }
+}
+
+function clearFilesStoreLocalStorage() {
+    localStorage.removeItem('filesStore');
+}
+
+function loadStateFromLocalStorage() {
+    try {
+        const data = localStorage.getItem('filesStore');
+        return data ? JSON.parse(data) : null;
+    } catch (error) {
+        console.error('从 localStorage 加载数据失败:', error);
+        return null;
+    }
+}
 
 // 文件相关的类型定义
 interface FileGroup {
@@ -158,6 +215,123 @@ export const useFilesStore = defineStore('files', () => {
         return file?.flowData;
     };
 
+    // 初始化时检查是否有未保存的数据
+    const initializeWithPrompt = () => {
+        const savedState = loadStateFromLocalStorage();
+        const defaultState = getDefaultState();
+
+        // 如果没有保存的数据，使用默认状态
+        if (!savedState) {
+            fileList.value = defaultState.fileList;
+            activeFile.value = defaultState.activeFile;
+            return;
+        }
+
+        const isSame = JSON.stringify(savedState) === JSON.stringify(defaultState);
+        if (savedState && !isSame) {
+            ElMessageBox.confirm(
+                '检测到有未保存的旧数据，是否恢复？',
+                '提示',
+                {
+                    confirmButtonText: '恢复',
+                    cancelButtonText: '不恢复',
+                    type: 'warning',
+                }
+            ).then(() => {
+                fileList.value = savedState.fileList || [];
+                activeFile.value = savedState.activeFile || "1";
+                showMessage('success', '数据已恢复');
+            }).catch(() => {
+                clearFilesStoreLocalStorage();
+                fileList.value = defaultState.fileList;
+                activeFile.value = defaultState.activeFile;
+                showMessage('info', '选择了不恢复旧数据');
+            });
+        } else {
+            // 如果有保存的数据且与默认状态相同，直接使用保存的数据
+            fileList.value = savedState.fileList || defaultState.fileList;
+            activeFile.value = savedState.activeFile || defaultState.activeFile;
+        }
+    };
+
+    // 设置自动保存
+    const setupAutoSave = () => {
+        console.log('自动保存功能已启动，每30秒保存一次');
+        setInterval(() => {
+            try {
+                saveStateToLocalStorage({
+                    fileList: fileList.value,
+                    activeFile: activeFile.value
+                });
+                console.log('数据已自动保存到 localStorage');
+            } catch (error) {
+                console.error('自动保存失败:', error);
+            }
+        }, 30000); // 设置间隔时间为30秒
+    };
+
+    // 导出数据
+    const exportData = () => {
+        try {
+            const dataStr = JSON.stringify({
+                fileList: fileList.value,
+                activeFile: activeFile.value
+            }, null, 2);
+            const blob = new Blob([dataStr], {type: 'application/json;charset=utf-8'});
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'yys-editor-files.json';
+            link.click();
+            URL.revokeObjectURL(url);
+            showMessage('success', '数据导出成功');
+        } catch (error) {
+            console.error('导出数据失败:', error);
+            showMessage('error', '数据导出失败');
+        }
+    };
+
+    // 导入数据
+    const importData = (data: any) => {
+        try {
+            if (data.fileList && Array.isArray(data.fileList)) {
+                // 新版本格式：包含 fileList 和 activeFile
+                fileList.value = data.fileList;
+                activeFile.value = data.activeFile || "1";
+                showMessage('success', '数据导入成功');
+            } else if (Array.isArray(data) && data[0]?.visible === true) {
+                // 兼容旧版本格式：直接是 fileList 数组
+                fileList.value = data;
+                activeFile.value = data[0]?.name || "1";
+                showMessage('success', '数据导入成功');
+            } else {
+                // 兼容更旧版本格式：仅包含 groups 数组
+                const newFile = {
+                    label: `File ${fileList.value.length + 1}`,
+                    name: String(fileList.value.length + 1),
+                    visible: true,
+                    type: "FLOW",
+                    groups: data,
+                    flowData: {
+                        nodes: [],
+                        edges: [],
+                        viewport: { x: 0, y: 0, zoom: 1 }
+                    }
+                };
+                addFile(newFile);
+                showMessage('success', '数据导入成功');
+            }
+            // 导入后立即保存到 localStorage
+            saveStateToLocalStorage({
+                fileList: fileList.value,
+                activeFile: activeFile.value
+            });
+        } catch (error) {
+            console.error('Failed to import file', error);
+            showMessage('error', '数据导入失败');
+        }
+    };
+
     return {
         fileList,
         activeFile,
@@ -177,5 +351,9 @@ export const useFilesStore = defineStore('files', () => {
         getFileViewport,
         updateFileFlowData,
         getFileFlowData,
+        initializeWithPrompt,
+        setupAutoSave,
+        exportData,
+        importData,
     };
 });
