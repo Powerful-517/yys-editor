@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { Edge, Node, ViewportTransform } from '@vue-flow/core';
+// import type { Edge, Node, ViewportTransform } from '@vue-flow/core';
 import { ElMessageBox } from "element-plus";
 import { useGlobalMessage } from "./useGlobalMessage";
 
@@ -8,24 +8,88 @@ const { showMessage } = useGlobalMessage();
 
 function getDefaultState() {
     return {
-        fileList: [{
-            "label": "File 1",
-            "name": "1",
-            "visible": true,
-            "type": "FLOW",
-            "groups": [
-                {
-                    "shortDescription": "",
-                    "groupInfo": [{}, {}, {}, {}, {}],
-                    "details": ""
+        fileList: [
+            {
+                label: "File 1",
+                name: "1",
+                visible: true,
+                type: "FLOW",
+                groups: [
+                    {
+                        shortDescription: "File 1 Group",
+                        groupInfo: [{}, {}, {}, {}, {}],
+                        details: "File 1 详情"
+                    }
+                ],
+                flowData: {
+                    nodes: [
+                        {
+                            id: "node-1",
+                            type: "rect",
+                            x: 100,
+                            y: 100,
+                            text: "File1-矩形节点"
+                        },
+                        {
+                            id: "node-2",
+                            type: "ellipse",
+                            x: 350,
+                            y: 120,
+                            text: "File1-圆形节点"
+                        }
+                    ],
+                    edges: [
+                        {
+                            id: "edge-1",
+                            type: "polyline",
+                            sourceNodeId: "node-1",
+                            targetNodeId: "node-2"
+                        }
+                    ],
+                    viewport: { x: 0, y: 0, zoom: 1 }
                 }
-            ],
-            "flowData": {
-                "nodes": [],
-                "edges": [],
-                "viewport": { "x": 0, "y": 0, "zoom": 1 }
+            },
+            {
+                label: "File 2",
+                name: "2",
+                visible: true,
+                type: "FLOW",
+                groups: [
+                    {
+                        shortDescription: "File 2 Group",
+                        groupInfo: [{}, {}, {}, {}, {}],
+                        details: "File 2 详情"
+                    }
+                ],
+                flowData: {
+                    nodes: [
+                        {
+                            id: "node-1",
+                            type: "rect",
+                            x: 100,
+                            y: 100,
+                            text: "File2-矩形节点"
+                        },
+                        {
+                            id: "node-2",
+                            type: "ellipse",
+                            x: 350,
+                            y: 120,
+                            text: "File2222-圆形节点"
+                        }
+                    ],
+                    edges: [
+                        {
+                            id: "edge-1",
+                            type: "polyline",
+                            sourceNodeId: "node-1",
+                            targetNodeId: "node-2"
+                        }
+                    ],
+                    viewport: { x: 0, y: 0, zoom: 1 }
+                }
             }
-        }],
+        ],
         activeFile: "1",
     };
 }
@@ -157,7 +221,7 @@ export const useFilesStore = defineStore('files', () => {
     };
 
     // 添加边
-    const addEdge = (edge: Edge) => {
+    const addEdge = (edge) => {
         const file = fileList.value.find(f => f.name === activeFile.value);
         if (!file) return;
         if (!file.flowData) file.flowData = { nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } };
@@ -191,14 +255,17 @@ export const useFilesStore = defineStore('files', () => {
     // 更新文件的 viewport
     const updateFileViewport = (fileName: string, viewport: { x: number; y: number; zoom: number }) => {
         const file = fileList.value.find(f => f.name === fileName);
-        if (file && file.flowData) file.flowData.viewport = viewport;
+        if (file && file.flowData) {
+            console.log(`[updateFileViewport] 保存 tab "${fileName}" 的视口信息:`, viewport);
+            file.flowData.viewport = viewport;
+        }
     };
 
-    const getFileViewport = (fileName: string): ViewportTransform => {
+    const getFileViewport = (fileName: string) => {
         const file = fileList.value.find(f => f.name === fileName);
         const v = file?.flowData?.viewport;
         if (v && typeof v.x === 'number' && typeof v.y === 'number' && typeof v.zoom === 'number') {
-            return v as ViewportTransform;
+            return v ;
         }
         return { x: 0, y: 0, zoom: 1 };
     };

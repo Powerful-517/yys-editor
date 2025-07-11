@@ -10,11 +10,11 @@ import FlowEditor from './components/flow/FlowEditor.vue';
 import ShikigamiSelect from './components/flow/nodes/yys/ShikigamiSelect.vue';
 import YuhunSelect from './components/flow/nodes/yys/YuhunSelect.vue';
 import PropertySelect from './components/flow/nodes/yys/PropertySelect.vue';
-import { useVueFlow } from '@vue-flow/core';
+// import { useVueFlow } from '@vue-flow/core';
 import DialogManager from './components/DialogManager.vue';
 
 const filesStore = useFilesStore();
-const { updateNode,toObject,fromObject } = useVueFlow();
+// const { updateNode,toObject,fromObject } = useVueFlow();
 
 const width = ref('100%');
 const height = ref('100vh');
@@ -89,23 +89,37 @@ const handleAddNode = (nodeData) => {
   }
 };
 
-const handleSaveViewport = (viewport) => {
-  filesStore.updateFileViewport(filesStore.activeFile, viewport);
-};
-const handleRequestViewport = () => {
-  return filesStore.getFileViewport(filesStore.activeFile);
-};
-
 watch(
   () => filesStore.activeFile,
-  (newVal, oldVal) => {
-    // 切换前保存旧 tab 的 viewport
-    if (oldVal && flowEditorRef.value && flowEditorRef.value.getViewport) {
-      const viewport = flowEditorRef.value.getViewport();
-      filesStore.updateFileViewport(oldVal, viewport);
-      filesStore.updateFileFlowData(oldVal, toObject());
+  async (newVal, oldVal) => {
+    // 切换前保存旧 tab 的数据和视口
+    if (oldVal && flowEditorRef.value) {
+      if (flowEditorRef.value.getGraphRawData) {
+        const rawData = flowEditorRef.value.getGraphRawData();
+        filesStore.updateFileFlowData(oldVal, rawData);
+      }
+      if (flowEditorRef.value.getViewport) {
+        const viewport = flowEditorRef.value.getViewport();
+        console.log(`[Tab切换] 切换前保存 tab "${oldVal}" 的视口信息:`, viewport);
+        filesStore.updateFileViewport(oldVal, viewport);
+      }
     }
     lastActiveFile.value = newVal;
+
+    // 切换后恢复新 tab 的数据和视口
+    if (newVal && flowEditorRef.value) {
+      if (flowEditorRef.value.renderRawData) {
+        const newRawData = filesStore.getFileFlowData(newVal);
+        if (newRawData) flowEditorRef.value.renderRawData(newRawData);
+      }
+      if (flowEditorRef.value.setViewport) {
+        const newViewport = filesStore.getFileViewport(newVal);
+        console.log(`[Tab切换] 切换后恢复 tab "${newVal}" 的视口信息:`, newViewport);
+        requestAnimationFrame(() => {
+          flowEditorRef.value.setViewport(newViewport);
+        });
+      }
+    }
   }
 );
 
