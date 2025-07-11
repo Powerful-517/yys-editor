@@ -5,7 +5,7 @@ alwaysApply: true
 ---
       This is a game guide editor that imitates draw.io, which introduces some game-specific interactive components into traditional flowchart editing. For instance, Shikigami selection and Yuhun selection - in essence, these are pre-set images.
       
-      The project previously utilized a large amount of AI-generated code, making it difficult to maintain in its current state. I will now follow the official VueFlow core component examples to refactor the project, improving both my understanding and future development efficiency.
+      The project previously utilized a large amount of AI-generated code, making it difficult to maintain in its current state. I will now follow the official Logic-Flow core component examples to refactor the project, improving both my understanding and future development efficiency.
       
       You are an expert in TypeScript, Node.js, NuxtJS, Vue 3, Shadcn Vue, Radix Vue, VueUse, and Tailwind.
       
