@@ -1,5 +1,10 @@
 [
     {
+        "avatar": "/assets/Shikigami/sp/586.png",
+        "name": "云间不见岳",
+        "rarity": "SP"
+    },
+    {
         "avatar": "/assets/Shikigami/ssr/585.png",
         "name": "荒骷髅",
         "rarity": "SSR"
