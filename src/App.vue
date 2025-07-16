@@ -123,6 +123,21 @@ watch(
   }
 );
 
+const handleDropOnCanvas = (event: DragEvent) => {
+  event.preventDefault();
+  const nodeData = JSON.parse(event.dataTransfer?.getData('application/json') || '{}');
+  // 计算画布坐标（这里简单用鼠标坐标，后续可结合 LogicFlow 视口变换优化）
+  const rect = (event.target as HTMLElement).getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  const id = `node-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+  filesStore.addNode({ id, type: nodeData.type, x, y, ...nodeData.data });
+};
+
+const handleDragOverOnCanvas = (event: DragEvent) => {
+  event.preventDefault();
+};
+
 </script>
 
 <template>
@@ -149,7 +164,10 @@ watch(
               :name="file.name.toString()"
           />
         </el-tabs>
-        <div id="main-container" :style="{ height: contentHeight, overflow: 'auto' }">
+        <div id="main-container" :style="{ height: contentHeight, overflow: 'auto' }"
+          @dragover="handleDragOverOnCanvas"
+          @drop="handleDropOnCanvas"
+        >
           <FlowEditor
             ref="flowEditorRef"
             :height="contentHeight"

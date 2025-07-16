@@ -16,11 +16,8 @@ const filesStore = useFilesStore();
     :currentShikigami="dialogs.shikigami.data"
     @closeSelectShikigami="closeDialog('shikigami')"
     @updateShikigami="data => {
-      if (dialogs.shikigami.node?.id) {
-        filesStore.updateNode(dialogs.shikigami.node.id, { data: { ...dialogs.shikigami.node.data, shikigami: data } })
-      }
-      dialogs.shikigami.callback?.(data, dialogs.shikigami.node)
-      closeDialog('shikigami')
+      dialogs.shikigami.callback?.(data);
+      closeDialog('shikigami');
     }"
   />
   <YuhunSelect
@@ -28,12 +25,9 @@ const filesStore = useFilesStore();
     :showSelectYuhun="dialogs.yuhun.show"
     :currentYuhun="dialogs.yuhun.data"
     @closeSelectYuhun="closeDialog('yuhun')"
-    @updateYuhun="data => { 
-      if (dialogs.yuhun.node?.id) {
-        filesStore.updateNode(dialogs.yuhun.node.id, { data: { ...dialogs.yuhun.node.data, yuhun: data } })
-      }
-      dialogs.yuhun.callback?.(data, dialogs.yuhun.node); 
-      closeDialog('yuhun') 
+    @updateYuhun="data => {
+      dialogs.yuhun.callback?.(data);
+      closeDialog('yuhun');
     }"
   />
   <PropertySelect
@@ -41,12 +35,9 @@ const filesStore = useFilesStore();
     :showPropertySelect="dialogs.property.show"
     :currentProperty="dialogs.property.data"
     @closePropertySelect="closeDialog('property')"
-    @updateProperty="data => { 
-      if (dialogs.property.node?.id) {
-        filesStore.updateNode(dialogs.property.node.id, { data: { ...dialogs.property.node.data, property: data } })
-      }
-      dialogs.property.callback?.(data, dialogs.property.node); 
-      closeDialog('property') 
+    @updateProperty="data => {
+      dialogs.property.callback?.(data);
+      closeDialog('property');
     }"
   />
 </template> 

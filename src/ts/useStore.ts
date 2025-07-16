@@ -6,6 +6,12 @@ import { useGlobalMessage } from "./useGlobalMessage";
 
 const { showMessage } = useGlobalMessage();
 
+// LogicFlow 实例全局引用
+let logicFlowInstance: any = null;
+function setLogicFlowInstance(lf: any) {
+    logicFlowInstance = lf;
+}
+
 function getDefaultState() {
     return {
         fileList: [
@@ -36,6 +42,69 @@ function getDefaultState() {
                             x: 350,
                             y: 120,
                             text: "File1-圆形节点"
+                        },
+                        {
+                            id: "node-3",
+                            type: "shikigamiSelect",
+                            x: 200,
+                            y: 300,
+                            properties: {
+                                shikigami: {
+                                    name: "时曜泷夜叉姬",
+                                    avatar: "/assets/Shikigami/sp/584.png",
+                                    rarity: "SP"
+                                },
+                                width: 100,
+                                height: 80
+                            }
+                        },
+                        {
+                            id: "node-yuhun-1",
+                            type: "yuhunSelect",
+                            x: 300,
+                            y: 200,
+                            properties: {
+                                yuhun: {
+                                    name: "针女",
+                                    avatar: "/assets/Yuhun/针女.png",
+                                    type: "攻击类"
+                                },
+                                width: 100,
+                                height: 80
+                            }
+                        },
+                        {
+                            id: "node-property-1",
+                            type: "propertySelect",
+                            x: 500,
+                            y: 300,
+                            properties: {
+                                property: {
+                                    type: "attack",
+                                    priority: "required",
+                                    attackType: "fixed",
+                                    attackValue: 3000,
+                                    description: "主输出式神，需高攻击",
+                                    levelRequired: "40",
+                                    skillRequiredMode: "all",
+                                    skillRequired: ["5", "5", "5"],
+                                    yuhun: {
+                                        yuhunSetEffect: [
+                                            { name: "破势", avatar: "/assets/Yuhun/破势.png" },
+                                            { name: "荒骷髅", avatar: "/assets/Yuhun/荒骷髅.png" }
+                                        ],
+                                        target: "1",
+                                        property2: ["Attack"],
+                                        property4: ["Attack"],
+                                        property6: ["Crit", "CritDamage"]
+                                    },
+                                    expectedDamage: 10000,
+                                    survivalRate: 50,
+                                    damageType: "balanced"
+                                },
+                                width: 120,
+                                height: 100
+                            }
                         }
                     ],
                     edges: [
@@ -130,13 +199,26 @@ interface FileGroup {
     details: string;
 }
 
+interface LogicFlowNode {
+    id: string;
+    type: string;
+    x: number;
+    y: number;
+    text?: string | object;
+    properties?: Record<string, any>;
+}
+
 interface FlowFile {
     label: string;
     name: string;
     visible: boolean;
     type: string;
     groups: FileGroup[];
-    flowData?: any;
+    flowData?: {
+        nodes: LogicFlowNode[];
+        edges: any[];
+        viewport: any;
+    };
 }
 
 export const useFilesStore = defineStore('files', () => {
@@ -190,7 +272,7 @@ export const useFilesStore = defineStore('files', () => {
     };
 
     // 添加节点
-    const addNode = (node: Node) => {
+    const addNode = (node: LogicFlowNode) => {
         const file = fileList.value.find(f => f.name === activeFile.value);
         if (!file) return;
         if (!file.flowData) file.flowData = { nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } };
@@ -198,15 +280,26 @@ export const useFilesStore = defineStore('files', () => {
     };
 
     // 更新节点
-    const updateNode = (nodeId: string, updateData: Partial<Node>) => {
+    const updateNode = (nodeId: string, updateData: Partial<LogicFlowNode>) => {
         const file = fileList.value.find(f => f.name === activeFile.value);
         if (!file || !file.flowData || !file.flowData.nodes) return;
-        const nodeIndex = file.flowData.nodes.findIndex(n => n.id === nodeId);
+        const nodeIndex = file.flowData.nodes.findIndex((n: LogicFlowNode) => n.id === nodeId);
         if (nodeIndex === -1) return;
-        file.flowData.nodes[nodeIndex] = {
-            ...file.flowData.nodes[nodeIndex],
-            ...updateData,
-        };
+
+        const oldNode = file.flowData.nodes[nodeIndex];
+        const mergedNode = { ...oldNode, ...updateData };
+
+        // Deep merge properties
+        if (updateData.properties && oldNode.properties) {
+            mergedNode.properties = { ...oldNode.properties, ...updateData.properties };
+        }
+        file.flowData.nodes[nodeIndex] = mergedNode;
+
+        // 同步 LogicFlow 画布
+        if (logicFlowInstance && mergedNode.properties) {
+            // setProperties overwrites, so we pass the fully merged properties object
+            logicFlowInstance.setProperties(nodeId, mergedNode.properties);
+        }
     };
 
     // 删除节点
@@ -239,14 +332,15 @@ export const useFilesStore = defineStore('files', () => {
     const updateNodePosition = (nodeId: string, position: { x: number; y: number }) => {
         const file = fileList.value.find(f => f.name === activeFile.value);
         if (!file || !file.flowData || !file.flowData.nodes) return;
-        const node = file.flowData.nodes.find(n => n.id === nodeId);
+        const node = file.flowData.nodes.find((n: LogicFlowNode) => n.id === nodeId);
         if (node) {
-            node.position = position;
+            node.x = position.x;
+            node.y = position.y;
         }
     };
 
     // 更新节点顺序
-    const updateNodesOrder = (nodes: Node[]) => {
+    const updateNodesOrder = (nodes: LogicFlowNode[]) => {
         const file = fileList.value.find(f => f.name === activeFile.value);
         if (!file || !file.flowData) return;
         file.flowData.nodes = nodes;
@@ -422,5 +516,6 @@ export const useFilesStore = defineStore('files', () => {
         setupAutoSave,
         exportData,
         importData,
+        setLogicFlowInstance,
     };
 });
