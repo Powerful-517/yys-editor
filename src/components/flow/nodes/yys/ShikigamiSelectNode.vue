@@ -41,6 +41,7 @@ onMounted(() => {
       :src="currentShikigami.avatar"
       :alt="currentShikigami.name"
       class="shikigami-image"
+      draggable="false"
     />
     <div v-else class="placeholder-text">点击选择式神</div>
     <div class="name-text">{{ currentShikigami.name }}</div>

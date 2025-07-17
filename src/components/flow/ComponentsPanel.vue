@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import useDragAndDrop from '@/ts/useDnD';
-
-const { onDragStart } = useDragAndDrop();
+import { getLogicFlowInstance } from '@/ts/useLogicFlow';
 
 // 使用嵌套结构定义组件分组
 const componentGroups = [
@@ -107,25 +105,28 @@ const componentGroups = [
         }
       }
     ]
-  }
+  },
   // 可以轻松添加新的游戏组件组
-  // {
-  //   id: 'other-game',
-  //   title: '其他游戏',
-  //   components: []
-  // }
+  {
+    id: 'other-game',
+    title: '其他游戏',
+    components: []
+  }
 ];
 
-// 处理组件点击 - 直接使用 onDragStart 的数据格式
+// 处理组件点击 - 可选：可直接创建节点
 const handleComponentClick = (component) => {
-  const nodeData = {
+  // 可选：实现点击直接添加节点到画布
+};
+
+const handleMouseDown = (e, component) => {
+  e.preventDefault(); // 阻止文字选中
+  const lf = getLogicFlowInstance();
+  if (!lf) return;
+  lf.dnd.startDrag({
     type: component.type,
-    label: component.name,
-    position: { x: 100, y: 100 },
-    data: component.data
-  };
-  
-  onDragStart({ dataTransfer: { setData: () => {} } } as DragEvent, nodeData);
+    properties: component.data
+  });
 };
 </script>
 
@@ -140,17 +141,12 @@ const handleComponentClick = (component) => {
     >
       <div class="group-title">{{ group.title }}</div>
       <div class="components-list">
-        <div 
-          v-for="component in group.components" 
-          :key="component.id" 
+        <div
+          v-for="component in group.components"
+          :key="component.id"
           class="component-item"
           @click="handleComponentClick(component)"
-          draggable="true"
-          @dragstart="(e) => onDragStart(e, {
-            type: component.type,
-            label: component.name,
-            data: component.data
-          })"
+          @mousedown="(e) => handleMouseDown(e, component)"
         >
           <div class="component-icon">
             <i class="el-icon-plus"></i>

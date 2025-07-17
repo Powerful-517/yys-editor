@@ -32,6 +32,7 @@ onMounted(() => {
       :src="currentYuhun.avatar"
       :alt="currentYuhun.name"
       class="yuhun-image"
+      draggable="false"
     />
     <div v-else class="placeholder-text">点击选择御魂</div>
     <div class="name-text">{{ currentYuhun.name }}</div>

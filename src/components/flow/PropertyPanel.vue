@@ -1,38 +1,31 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
-import { useVueFlow } from '@vue-flow/core';
+import { computed } from 'vue';
+import type LogicFlow from '@logicflow/core';
+// import { useVueFlow } from '@vue-flow/core';
 import { QuillEditor } from '@vueup/vue-quill';
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
 import { useDialogs } from '../../ts/useDialogs';
+import { useFilesStore } from '@/ts/useStore';
+import { getLogicFlowInstance } from '@/ts/useLogicFlow';
 
 const props = defineProps({
   height: {
     type: String,
     default: '100%'
+  },
+  node: {
+    type: Object,
+    default: null
   }
 });
 
-// 使用VueFlow的store获取当前选中的节点
-const { findNode, getNodes, updateNode } = useVueFlow();
+const filesStore = useFilesStore();
 const { openDialog } = useDialogs();
 
-// getNodes是一个ref对象，而不是函数
-const nodes = getNodes;
+const selectedNode = computed(() => props.node);
 
-// 当前选中的节点
-const selectedNode = ref(null);
-
-// 监听节点变化
-watch(nodes, (newNodes) => {
-  // 查找选中的节点
-  const selected = newNodes.find(node => node.selected);
-  selectedNode.value = selected || null;
-}, { deep: true });
-
-// 计算属性：节点是否选中
 const hasNodeSelected = computed(() => !!selectedNode.value);
 
-// 计算属性：节点类型
 const nodeType = computed(() => {
   if (!selectedNode.value) return '';
   return selectedNode.value.type || 'default';
@@ -40,16 +33,21 @@ const nodeType = computed(() => {
 
 // 通用的弹窗处理方法
 const handleOpenDialog = (type: 'shikigami' | 'yuhun' | 'property') => {
-  if (selectedNode.value) {
+  const lf = getLogicFlowInstance();
+  if (selectedNode.value && lf) {
     const node = selectedNode.value;
-    const currentData = node.data && node.data[type] ? node.data[type] : undefined;
+    // 取 properties 下的 type 字段
+    const currentData = node.properties && node.properties[type] ? node.properties[type] : undefined;
 
     openDialog(
       type,
       currentData,
       node,
-      (updatedData, nodeToUpdate) => {
-        updateNode(nodeToUpdate.id, { data: { ...nodeToUpdate.data, [type]: updatedData } });
+      (updatedData) => {
+        lf.setProperties(node.id, {
+          ...node.properties,
+          [type]: updatedData
+        });
       }
     );
   }
@@ -60,18 +58,11 @@ const handleImageUpload = (e) => {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = (evt) => {
-    updateNodeData('url', evt.target.result);
+    // updateNodeData('url', evt.target.result);
   };
   reader.readAsDataURL(file);
 };
 
-const updateNodeData = (key, value) => {
-  if (!selectedNode.value) return;
-  const node = findNode(selectedNode.value.id);
-  if (node) {
-    node.data = { ...node.data, [key]: value };
-  }
-};
 
 const quillToolbar = [
   [{ header: 1 }, { header: 2 }],
@@ -88,11 +79,11 @@ const quillToolbar = [
     <div class="panel-header">
       <h3>属性编辑</h3>
     </div>
-    
+
     <div v-if="!hasNodeSelected" class="no-selection">
       <p>请选择一个节点以编辑其属性</p>
     </div>
-    
+
     <div v-else class="property-content">
       <div class="property-section">
         <div class="section-header">基本信息</div>
@@ -105,42 +96,43 @@ const quillToolbar = [
           <div class="property-value">{{ nodeType }}</div>
         </div>
       </div>
-      
+
       <!-- 式神选择节点的特定属性 -->
       <div v-if="nodeType === 'shikigamiSelect'" class="property-section">
         <div class="section-header">式神属性</div>
         <div class="property-item">
-          <el-button 
-            type="primary" 
-            @click="handleOpenDialog('shikigami')" 
+          <span>当前选择式神：{{ selectedNode.properties?.shikigami?.name || '未选择' }}</span>
+          <el-button
+            type="primary"
+            @click="handleOpenDialog('shikigami')"
             style="width: 100%"
           >
             选择式神
           </el-button>
         </div>
       </div>
-      
+
       <!-- 御魂选择节点的特定属性 -->
       <div v-if="nodeType === 'yuhunSelect'" class="property-section">
         <div class="section-header">御魂属性</div>
         <div class="property-item">
-          <el-button 
-            type="primary" 
-            @click="handleOpenDialog('yuhun')" 
+          <el-button
+            type="primary"
+            @click="handleOpenDialog('yuhun')"
             style="width: 100%"
           >
             选择御魂
           </el-button>
         </div>
       </div>
-      
+
       <!-- 属性选择节点的特定属性 -->
       <div v-if="nodeType === 'propertySelect'" class="property-section">
         <div class="section-header">属性设置</div>
         <div class="property-item">
-          <el-button 
-            type="primary" 
-            @click="handleOpenDialog('property')" 
+          <el-button
+            type="primary"
+            @click="handleOpenDialog('property')"
             style="width: 100%"
           >
             设置属性
@@ -153,8 +145,8 @@ const quillToolbar = [
         <div class="section-header">图片设置</div>
         <div class="property-item">
           <input type="file" accept="image/*" @change="handleImageUpload" />
-          <div v-if="selectedNode.data && selectedNode.data.url" style="margin-top:8px;">
-            <img :src="selectedNode.data.url" alt="预览" style="max-width:100%;max-height:100px;" />
+          <div v-if="selectedNode.value.properties && selectedNode.value.properties.url" style="margin-top:8px;">
+            <img :src="selectedNode.value.properties.url" alt="预览" style="max-width:100%;max-height:100px;" />
           </div>
         </div>
       </div>
@@ -163,14 +155,14 @@ const quillToolbar = [
       <div v-if="nodeType === 'textNode'" class="property-section">
         <div class="section-header">文本编辑</div>
         <div class="property-item">
-          <QuillEditor
-            v-model:content="selectedNode.data.html"
-            contentType="html"
-            :toolbar="quillToolbar"
-            theme="snow"
-            style="height:120px;"
-            @update:content="val => updateNodeData('html', val)"
-          />
+<!--          <QuillEditor-->
+<!--            v-model:content="selectedNode.value.properties.html"-->
+<!--            contentType="html"-->
+<!--            :toolbar="quillToolbar"-->
+<!--            theme="snow"-->
+<!--            style="height:120px;"-->
+<!--            @update:content="val => updateNodeData('html', val)"-->
+<!--          />-->
         </div>
       </div>
     </div>
@@ -248,4 +240,4 @@ const quillToolbar = [
   font-size: 14px;
   word-break: break-all;
 }
-</style> 
+</style>

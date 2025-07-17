@@ -32,7 +32,8 @@ import PropertySelectNode from './nodes/yys/PropertySelectNode.vue';
 // import ImageNode from './nodes/common/ImageNode.vue';
 // import TextNode from './nodes/common/TextNode.vue';
 import PropertyPanel from './PropertyPanel.vue';
-import {useFilesStore} from "@/ts/useStore";
+import { useFilesStore } from "@/ts/useStore";
+import { setLogicFlowInstance, destroyLogicFlowInstance } from '@/ts/useLogicFlow';
 
 const props = defineProps<{
   nodes: any[];
@@ -74,7 +75,7 @@ onMounted(() => {
   });
   registerNodes(lf.value);
   renderFlow();
-  filesStore.setLogicFlowInstance(lf.value);
+  setLogicFlowInstance(lf.value);
 
   // 监听节点点击事件，更新 selectedNode
   lf.value.on(EventType.NODE_CLICK, ({ data }) => {
@@ -88,18 +89,16 @@ onMounted(() => {
 
   // 节点属性改变，如果当前节点是选中节点，则同步更新 selectedNode
   lf.value.on(EventType.NODE_PROPERTIES_CHANGE, (data) => {
-  const nodeId = data.id || (data.value && data.value.id);
-  if (selectedNode.value && nodeId === selectedNode.value.id) {
-    if (data.value) {
-      selectedNode.value = data.value;
-    } else if (data.properties) {
-      selectedNode.value = {
-        ...selectedNode.value,
-        properties: data.properties
-      };
+    const nodeId = data.id;
+    if (selectedNode.value && nodeId === selectedNode.value.id) {
+      if (data.properties) {
+        selectedNode.value = {
+          ...selectedNode.value,
+          properties: data.properties
+        };
+      }
     }
-  }
-});
+  });
 
   // 右键事件
   lf.value.on('node:contextmenu', handleNodeContextMenu);
@@ -110,6 +109,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   lf.value?.destroy();
   lf.value = null;
+  destroyLogicFlowInstance();
 });
 
 // 响应式更新 nodes/edges
