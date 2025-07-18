@@ -2,7 +2,7 @@ name: Deploy to Production
 
 on:
   push:
-    branches: [ master ] 
+    branches: [master]
 
 jobs:
   build-and-deploy:
@@ -22,7 +22,7 @@ jobs:
         npm install
         npm run build
         
-    - name: Deploy to server via SSH
+    - name: Deploy to temporary directory
       uses: appleboy/scp-action@v0.1.6
       with:
         host: ${{ secrets.SERVER_HOST }} 
@@ -30,5 +30,18 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }} 
         port: ${{ secrets.SERVER_PORT || 22 }} 
         source: "dist/*"                     
-        target: "/var/www/html/yys-editor"
+        target: "~/code/yys-editor"
         rm: true
+
+    - name: Copy to production directory
+      uses: appleboy/ssh-action@v0.1.8
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.SERVER_PORT || 22 }}
+        script: |
+          # 清空目标目录
+          sudo rm -rf /var/www/html/yys-editor
+          # 复制文件到目标目录
+          sudo cp -rf /home/ubuntu/code/yys-editor /var/www/html/
