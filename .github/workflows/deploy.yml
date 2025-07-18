@@ -29,8 +29,9 @@ jobs:
         username: ${{ secrets.SERVER_USERNAME }} 
         key: ${{ secrets.SSH_PRIVATE_KEY }} 
         port: ${{ secrets.SERVER_PORT || 22 }} 
-        source: "dist/*"                     
+        source: "dist/"
         target: "~/code/yys-editor"
+        strip_components: 1
         rm: true
 
     - name: Copy to production directory
