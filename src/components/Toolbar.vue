@@ -77,12 +77,13 @@
 
 <script setup lang="ts">
 import {ref, reactive, onMounted} from 'vue';
-import html2canvas from "html2canvas";
 import {useI18n} from 'vue-i18n';
 import updateLogs from "../data/updateLog.json"
 import {useFilesStore} from "@/ts/useStore";
 import {ElMessageBox} from "element-plus";
 import {useGlobalMessage} from "@/ts/useGlobalMessage";
+// import { useScreenshot } from '@/ts/useScreenshot';
+import { getCurrentInstance } from 'vue';
 
 const filesStore = useFilesStore();
 const { showMessage } = useGlobalMessage();
@@ -210,162 +211,46 @@ const applyWatermarkSettings = () => {
 };
 
 
-// 计算视觉总高度
-function calculateVisualHeight(selector) {
-  // 1. 获取所有目标元素
-  const elements = Array.from(document.querySelectorAll(selector));
+// 获取 App 根实例，便于跨组件获取 flowEditorRef
+const appInstance = getCurrentInstance();
 
-  // 2. 获取元素位置信息并排序
-  const rects = elements.map(el => {
-    const rect = el.getBoundingClientRect();
-    return {
-      el,
-      top: rect.top,
-      bottom: rect.bottom,
-      height: rect.height
-    };
-  }).sort((a, b) => a.top - b.top); // 按垂直位置排序
-
-  // 3. 动态分组同行元素
-  const rows = [];
-  rects.forEach(rect => {
-    let placed = false;
-
-    // 尝试将元素加入已有行
-    for (const row of rows) {
-      if (
-          rect.top < row.bottom &&  // 元素顶部在行底部上方
-          rect.bottom > row.top     // 元素底部在行顶部下方
-      ) {
-        row.elements.push(rect);
-        row.bottom = Math.max(row.bottom, rect.bottom); // 扩展行底部
-        row.maxHeight = Math.max(row.maxHeight, rect.height);
-        placed = true;
-        break;
-      }
-    }
-
-    // 未加入则创建新行
-    if (!placed) {
-      rows.push({
-        elements: [rect],
-        top: rect.top,
-        bottom: rect.bottom,
-        maxHeight: rect.height
-      });
-    }
-  });
-
-  // 4. 累加每行最大高度
-  return rows.reduce((sum, row) => sum + row.maxHeight, 0);
-}
-
-const ignoreElements = (element) => {
-  return element.classList.contains('ql-toolbar') || element.classList.contains('el-tabs__header');
-};
+// const { captureFlow, dataUrl } = useScreenshot();
 
 const prepareCapture = async () => {
-  state.previewVisible = true;
-
-  // 创建临时样式
-  const style = document.createElement('style');
-  style.textContent = `
-  .ql-container.ql-snow {
-    border: none !important;
-  }
-  #main-container {
-    position: relative;
-    height: 100%;
-    overflow-y: auto;
-    min-height: 100vh;
-    display: inline-block;
-    max-width: 100%;
-}`;
-  document.head.appendChild(style);
-
-  // 获取目标元素
-  const element = document.querySelector('#main-container');
-  if (!element) {
-    console.error('Element not found');
-    return;
-  }
-
-  // 保存原始 overflow 样式
-  const originalOverflow = element.style.overflow;
-
+  // 获取 FlowEditor 实例
+  // 这里假设 App.vue 已将 flowEditorRef 作为全局 property 或 provide
+  // 或者你可以通过 window.__VUE_DEVTOOLS_GLOBAL_HOOK__.$vm0.$refs.flowEditorRef 方式调试
+  let flowEditor = null;
   try {
-    // 临时隐藏 overflow 样式
-    element.style.overflow = 'visible';
-
-    // 计算需要忽略的元素高度
-    let totalHeight = calculateVisualHeight('[data-html2canvas-ignore]') + calculateVisualHeight('.ql-toolbar');
-    console.log('所有携带指定属性的元素高度之和:', totalHeight);
-
-    console.log('主元素宽度', element.scrollWidth);
-    console.log('主元素高度', element.scrollHeight);
-
-    // 1. 生成原始截图
-    const canvas = await html2canvas(element, {
-      ignoreElements: ignoreElements,
-      scrollX: 0,
-      scrollY: 0,
-      width: element.scrollWidth,
-      height: element.scrollHeight - totalHeight,
-    });
-
-    // 2. 创建新Canvas添加水印
-    const watermarkedCanvas = document.createElement('canvas');
-    const ctx = watermarkedCanvas.getContext('2d');
-
-    // 设置新Canvas尺寸
-    watermarkedCanvas.width = canvas.width;
-    watermarkedCanvas.height = canvas.height;
-
-    // 绘制原始截图
-    ctx.drawImage(canvas, 0, 0);
-
-    // 添加水印
-    ctx.font = `${watermark.fontSize}px Arial`;
-    ctx.fillStyle = watermark.color;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-
-    // 计算每个水印的位置间隔
-    const colSpace = watermarkedCanvas.width / (watermark.cols + 1);
-    const rowSpace = watermarkedCanvas.height / (watermark.rows + 1);
-
-    // 保存原始画布状态
-    ctx.save();
-
-    // 循环绘制多个水印
-    for (let row = 1; row <= watermark.rows; row++) {
-      for (let col = 1; col <= watermark.cols; col++) {
-        ctx.save(); // 保存当前状态
-        const x = col * colSpace;
-        const y = row * rowSpace;
-
-        // 移动到目标位置并旋转
-        ctx.translate(x, y);
-        ctx.rotate((watermark.angle * Math.PI) / 180);
-
-        // 绘制水印文字
-        ctx.fillText(watermark.text, 0, 0);
-        ctx.restore(); // 恢复状态
-      }
+    // 通过 DOM 查找
+    const flowEditorDom = document.querySelector('#main-container .flow-editor');
+    if (!flowEditorDom) {
+      showMessage('error', '未找到流程图编辑器');
+      return;
     }
-
-    ctx.restore(); // 恢复原始状态
-
-    // 3. 存储带水印的图片
-    state.previewImage = watermarkedCanvas.toDataURL();
-  } catch (error) {
-    console.error('Capture failed', error);
-  } finally {
-    // 恢复原始 overflow 样式
-    element.style.overflow = originalOverflow;
-
-    // 移除临时样式
-    document.head.removeChild(style);
+    // 通过 ref 获取 vueflow 根元素
+    const vueflowRoot = flowEditorDom.querySelector('.vue-flow');
+    if (!vueflowRoot || !(vueflowRoot instanceof HTMLElement)) {
+      showMessage('error', '未找到 VueFlow 画布');
+      return;
+    }
+    state.previewVisible = true;
+    // 截图
+    const img = await captureFlow(vueflowRoot as HTMLElement, {
+      type: 'png',
+      shouldDownload: false,
+      watermark: {
+        text: watermark.text,
+        fontSize: watermark.fontSize,
+        color: watermark.color,
+        angle: watermark.angle,
+        rows: watermark.rows,
+        cols: watermark.cols,
+      },
+    });
+    state.previewImage = img;
+  } catch (e) {
+    showMessage('error', '截图失败: ' + (e?.message || e));
   }
 };
 
@@ -373,9 +258,9 @@ const downloadImage = () => {
   if (state.previewImage) {
     const link = document.createElement('a');
     link.href = state.previewImage;
-    link.download = 'screenshot.png'; // 设置下载的文件名
+    link.download = 'screenshot.png';
     link.click();
-    state.previewVisible = false; // 关闭预览弹窗
+    state.previewVisible = false;
   }
 };
 
