@@ -2,10 +2,8 @@
   <el-dialog
       v-model="show"
       title="请选择式神"
-      @close="cancel"
-      :before-close="cancel"
   >
-    <span>当前选择式神：{{ current.name }}</span>
+    <span>当前选择式神：{{ props.currentShikigami.name }}</span>
     <div style="display: flex; align-items: center;">
       <el-input
           placeholder="请输入内容"
@@ -45,9 +43,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { ref, computed } from 'vue'
 import type { TabsPaneContext } from 'element-plus'
-import shikigamiData from "../data/Shikigami.json"
+import shikigamiData from "../../../../data/Shikigami.json"
 
 interface Shikigami {
   name: string
@@ -58,7 +56,7 @@ interface Shikigami {
 const props = defineProps({
   currentShikigami: {
     type: Object as () => Shikigami,
-    default: () => ({ name: '' })
+    default: () => ({ name: '未选择式神', avatar: '', rarity: '' })
   },
   showSelectShikigami: {
     type: Boolean,
@@ -68,10 +66,19 @@ const props = defineProps({
 
 const emit = defineEmits(['closeSelectShikigami', 'updateShikigami'])
 
-const searchText = ref('') // 新增搜索文本
+const show = computed({
+  get() {
+    return props.showSelectShikigami
+  },
+  set(value) {
+    if (!value) {
+      emit('closeSelectShikigami')
+    }
+  }
+})
+
+const searchText = ref('')
 const activeName = ref('ALL')
-let current = ref({name:''})
-const show = ref(false)
 
 const rarityLevels = [
   { label: "全部", name: "ALL" },
@@ -84,33 +91,15 @@ const rarityLevels = [
   { label: "呱太", name: "G" },
 ]
 
-watch(() => props.showSelectShikigami, (newVal) => {
-  show.value = newVal
-})
-
-watch(() => props.currentShikigami, (newVal) => {
-  console.log("ShikigamiSelect.vue" + current.value.name)
-  current.value = newVal
-  console.log("ShikigamiSelect.vue" + current.value.name)
-}, {deep: true})
-
-
 const handleClick = (tab: TabsPaneContext) => {
   console.log('Tab clicked:', tab)
 }
 
-const cancel = () => {
-  emit('closeSelectShikigami')
-  show.value = false
-}
-
 const confirm = (shikigami: Shikigami) => {
   emit('updateShikigami', shikigami)
-  searchText.value=''
-  activeName.value='ALL'
-  // cancel()
+  searchText.value = ''
+  activeName.value = 'ALL'
 }
-
 
 // 修改后的过滤函数
 const filterShikigamiByRarityAndSearch = (rarity: string, search: string) => {

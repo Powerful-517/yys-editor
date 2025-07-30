@@ -113,8 +113,8 @@
 <script setup lang="ts">
 import {ref, reactive, toRefs, nextTick} from 'vue';
 import draggable from 'vuedraggable';
-import ShikigamiSelect from './ShikigamiSelect.vue';
-import ShikigamiProperty from './ShikigamiProperty.vue';
+import ShikigamiSelect from './flow/nodes/yys/ShikigamiSelect.vue';
+import ShikigamiProperty from './flow/nodes/yys/ShikigamiProperty.vue';
 import html2canvas from 'html2canvas';
 import {useI18n} from 'vue-i18n'
 import { Quill, QuillEditor } from '@vueup/vue-quill'

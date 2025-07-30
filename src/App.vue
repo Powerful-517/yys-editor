@@ -1,81 +1,75 @@
 <script setup lang="ts">
-import Yys from './components/Yys.vue';
 import Toolbar from './components/Toolbar.vue';
 import ProjectExplorer from './components/ProjectExplorer.vue';
-import {computed, ref, onMounted, onUnmounted} from "vue";
-import {useFilesStore} from "@/ts/files";
+import ComponentsPanel from './components/flow/ComponentsPanel.vue';
+import {computed, ref, onMounted, onUnmounted, onBeforeUpdate, reactive, provide, inject, watch} from "vue";
+import {useFilesStore} from "@/ts/useStore";
 import Vue3DraggableResizable from 'vue3-draggable-resizable';
 import {TabPaneName, TabsPaneContext} from "element-plus";
-import YysRank from "@/components/YysRank.vue";
+import FlowEditor from './components/flow/FlowEditor.vue';
+import ShikigamiSelect from './components/flow/nodes/yys/ShikigamiSelect.vue';
+import YuhunSelect from './components/flow/nodes/yys/YuhunSelect.vue';
+import PropertySelect from './components/flow/nodes/yys/PropertySelect.vue';
+// import { useVueFlow } from '@vue-flow/core';
+import DialogManager from './components/DialogManager.vue';
+import {getLogicFlowInstance} from "@/ts/useLogicFlow";
 
 const filesStore = useFilesStore();
+// const { updateNode,toObject,fromObject } = useVueFlow();
 
-const yysRef = ref(null);
 const width = ref('100%');
 const height = ref('100vh');
 const toolbarHeight = 48; // 工具栏的高度
 const windowHeight = ref(window.innerHeight);
 const contentHeight = computed(() => `${windowHeight.value - toolbarHeight}px`);
 
-const onResizing = (x, y, width, height) => {
-  width.value = width;
-  height.value = height;
-};
-
-const element = ref({
-  x: 400,
-  y: 20,
-  width: 1080,
-  height: windowHeight.value - toolbarHeight,
-  isActive: false,
-});
-
 const handleTabsEdit = (
-    targetName: String | undefined,
+    targetName: string | undefined,
     action: 'remove' | 'add'
 ) => {
   if (action === 'remove') {
-    filesStore.closeTab(targetName);
+    filesStore.removeTab(targetName);
   } else if (action === 'add') {
-    const newFileName = `File ${filesStore.fileList.length + 1}`;
-
-    filesStore.addFile({
-      label: newFileName,
-      name: newFileName,
-      visible: true,
-      type: 'PVE',
-      groups: [
-        {
-          shortDescription: " ",
-          groupInfo: [{}, {}, {}, {}, {}],
-          details: ''
-        },
-        {
-          shortDescription: '',
-          groupInfo: [{}, {}, {}, {}, {}],
-          details: ''
-        }
-      ]
-    });
+    filesStore.addTab();
   }
 };
 
 onMounted(() => {
-  window.addEventListener('resize', () => {
-    windowHeight.value = window.innerHeight;
-  });
+  // 初始化自动保存功能
+  filesStore.initializeWithPrompt();
+  filesStore.setupAutoSave();
 });
 
 onUnmounted(() => {
-  window.removeEventListener('resize', () => {
-    windowHeight.value = window.innerHeight;
-  });
+
 });
 
-const activeFileGroups = computed(() => {
-  const activeFile = filesStore.fileList.find(file => file.name === filesStore.activeFile);
-  return activeFile ? activeFile.groups : [];
-});
+
+watch(
+    () => filesStore.activeFile,
+    async (newVal, oldVal) => {
+      // 保存旧 tab 数据
+      if (oldVal) {
+        filesStore.updateTab(oldVal);
+      }
+
+      // 渲染新 tab 数据
+      if (newVal) {
+        const logicFlowInstance = getLogicFlowInstance();
+        const currentTab = filesStore.getTab(newVal);
+
+        if (logicFlowInstance && currentTab?.graphRawData) {
+          try {
+            logicFlowInstance.render(currentTab.graphRawData);
+            logicFlowInstance.zoom(currentTab.transform.SCALE_X, [currentTab.transform.TRANSLATE_X, currentTab.transform.TRANSLATE_Y]);
+          } catch (error) {
+            console.warn('渲染画布数据失败:', error);
+          }
+        }
+      }
+    }
+);
+
 </script>
 
 <template>
@@ -85,10 +79,7 @@ const activeFileGroups = computed(() => {
     <!-- 侧边栏和工作区 -->
     <div class="main-content">
       <!-- 侧边栏 -->
-      <aside class="sidebar">
-        <ProjectExplorer :allFiles="filesStore.fileList"/>
-      </aside>
-
+      <ComponentsPanel/>
       <!-- 工作区 -->
       <div class="workspace">
         <el-tabs
@@ -103,15 +94,16 @@ const activeFileGroups = computed(() => {
               :key="`${file.name}-${filesStore.activeFile}`"
               :label="file.label"
               :name="file.name.toString()"
-          >
-            <main id="main-container" :style="{ height: contentHeight, overflow: 'auto' }">
-              <Yys class="yys" :groups="activeFileGroups" v-if="file.type === 'PVE' "/>
-              <YysRank :groups="activeFileGroups" v-else-if="file.type === 'PVP' "/>
-            </main>
-          </el-tab-pane>
+          />
         </el-tabs>
+        <div id="main-container" :style="{ height: contentHeight, overflow: 'auto' }">
+          <FlowEditor
+              :height="contentHeight"
+          />
+        </div>
       </div>
     </div>
+    <DialogManager/>
   </div>
 </template>
 
@@ -136,7 +128,7 @@ const activeFileGroups = computed(() => {
 }
 
 .sidebar {
-  width: 20%; /* 侧边栏宽度 */
+  width: 230px; /* 侧边栏宽度 */
   background-color: #f0f0f0; /* 背景色 */
   flex-shrink: 0; /* 防止侧边栏被压缩 */
   overflow-y: auto; /* 允许侧边栏内容滚动 */
@@ -153,8 +145,8 @@ const activeFileGroups = computed(() => {
   height: 100%; /* 确保内容区域占满父容器 */
   overflow-y: auto; /* 允许内容滚动 */
   min-height: 100vh; /* 允许容器扩展 */
-  //display: inline-block;
-  max-width: 100%;
 }
-
 </style>
+
+
+
