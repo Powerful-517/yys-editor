@@ -1,181 +1,52 @@
-import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import {defineStore} from 'pinia';
+import {ref, computed} from 'vue';
 // import type { Edge, Node, ViewportTransform } from '@vue-flow/core';
-import { ElMessageBox } from "element-plus";
-import { useGlobalMessage } from "./useGlobalMessage";
+import {ElMessageBox} from "element-plus";
+import {useGlobalMessage} from "./useGlobalMessage";
+import {getLogicFlowInstance} from "./useLogicFlow";
 
-const { showMessage } = useGlobalMessage();
+const {showMessage} = useGlobalMessage();
 
-// LogicFlow 实例全局引用
-let logicFlowInstance: any = null;
-function setLogicFlowInstance(lf: any) {
-    logicFlowInstance = lf;
+// localStorage 防抖定时器
+let localStorageDebounceTimer: NodeJS.Timeout | null = null;
+const LOCALSTORAGE_DEBOUNCE_DELAY = 1000; // 1秒防抖
+
+interface FlowFile {
+    label: string;
+    name: string;
+    visible: boolean;
+    type: string;
+    graphRawData?: object;
+    transform?: {
+        "SCALE_X": number,
+        "SCALE_Y": number,
+        "TRANSLATE_X": number,
+        "TRANSLATE_Y": number
+    };
 }
 
 function getDefaultState() {
     return {
-        fileList: [
+        "fileList": [
             {
-                label: "File 1",
-                name: "1",
-                visible: true,
-                type: "FLOW",
-                groups: [
-                    {
-                        shortDescription: "File 1 Group",
-                        groupInfo: [{}, {}, {}, {}, {}],
-                        details: "File 1 详情"
-                    }
-                ],
-                flowData: {
-                    nodes: [
-                        {
-                            id: "node-1",
-                            type: "rect",
-                            x: 100,
-                            y: 100,
-                            text: "File1-矩形节点"
-                        },
-                        {
-                            id: "node-2",
-                            type: "ellipse",
-                            x: 350,
-                            y: 120,
-                            text: "File1-圆形节点"
-                        },
-                        {
-                            id: "node-3",
-                            type: "shikigamiSelect",
-                            x: 200,
-                            y: 300,
-                            properties: {
-                                shikigami: {
-                                    name: "时曜泷夜叉姬",
-                                    avatar: "/assets/Shikigami/sp/584.png",
-                                    rarity: "SP"
-                                },
-                                width: 100,
-                                height: 80
-                            }
-                        },
-                        {
-                            id: "node-yuhun-1",
-                            type: "yuhunSelect",
-                            x: 300,
-                            y: 200,
-                            properties: {
-                                yuhun: {
-                                    name: "针女",
-                                    avatar: "/assets/Yuhun/针女.png",
-                                    type: "攻击类"
-                                },
-                                width: 100,
-                                height: 80
-                            }
-                        },
-                        {
-                            id: "node-property-1",
-                            type: "propertySelect",
-                            x: 500,
-                            y: 300,
-                            properties: {
-                                property: {
-                                    type: "attack",
-                                    priority: "required",
-                                    attackType: "fixed",
-                                    attackValue: 3000,
-                                    description: "主输出式神，需高攻击",
-                                    levelRequired: "40",
-                                    skillRequiredMode: "all",
-                                    skillRequired: ["5", "5", "5"],
-                                    yuhun: {
-                                        yuhunSetEffect: [
-                                            { name: "破势", avatar: "/assets/Yuhun/破势.png" },
-                                            { name: "荒骷髅", avatar: "/assets/Yuhun/荒骷髅.png" }
-                                        ],
-                                        target: "1",
-                                        property2: ["Attack"],
-                                        property4: ["Attack"],
-                                        property6: ["Crit", "CritDamage"]
-                                    },
-                                    expectedDamage: 10000,
-                                    survivalRate: 50,
-                                    damageType: "balanced"
-                                },
-                                width: 120,
-                                height: 100
-                            }
-                        }
-                    ],
-                    edges: [
-                        {
-                            id: "edge-1",
-                            type: "polyline",
-                            sourceNodeId: "node-1",
-                            targetNodeId: "node-2"
-                        }
-                    ],
-                    viewport: { x: 0, y: 0, zoom: 1 }
-                }
-            },
-            {
-                label: "File 2",
-                name: "2",
-                visible: true,
-                type: "FLOW",
-                groups: [
-                    {
-                        shortDescription: "File 2 Group",
-                        groupInfo: [{}, {}, {}, {}, {}],
-                        details: "File 2 详情"
-                    }
-                ],
-                flowData: {
-                    nodes: [
-                        {
-                            id: "node-1",
-                            type: "rect",
-                            x: 100,
-                            y: 100,
-                            text: "File2-矩形节点"
-                        },
-                        {
-                            id: "node-2",
-                            type: "ellipse",
-                            x: 350,
-                            y: 120,
-                            text: "File2222-圆形节点"
-                        }
-                    ],
-                    edges: [
-                        {
-                            id: "edge-1",
-                            type: "polyline",
-                            sourceNodeId: "node-1",
-                            targetNodeId: "node-2"
-                        }
-                    ],
-                    viewport: { x: 0, y: 0, zoom: 1 }
+                "label": "File 1",
+                "name": "File 1",
+                "visible": true,
+                "type": "FLOW",
+                "graphRawData": {
+                    "nodes": [],
+                    "edges": []
+                },
+                "transform": {
+                    "SCALE_X": 1,
+                    "SCALE_Y": 1,
+                    "TRANSLATE_X": 0,
+                    "TRANSLATE_Y": 0
                 }
             }
         ],
-        activeFile: "1",
+        "activeFile": "File 1"
     };
-}
-
-function saveStateToLocalStorage(state: any) {
-    try {
-        localStorage.setItem('filesStore', JSON.stringify(state));
-    } catch (error) {
-        console.error('保存到 localStorage 失败:', error);
-        // 如果 localStorage 满了，尝试清理一些数据
-        try {
-            localStorage.clear();
-            localStorage.setItem('filesStore', JSON.stringify(state));
-        } catch (clearError) {
-            console.error('清理 localStorage 后仍无法保存:', clearError);
-        }
-    }
 }
 
 function clearFilesStoreLocalStorage() {
@@ -192,34 +63,30 @@ function loadStateFromLocalStorage() {
     }
 }
 
-// 文件相关的类型定义
-interface FileGroup {
-    shortDescription: string;
-    groupInfo: Record<string, any>[];
-    details: string;
+function saveStateToLocalStorage(state: any) {
+    // 清除之前的防抖定时器
+    if (localStorageDebounceTimer) {
+        clearTimeout(localStorageDebounceTimer);
+    }
+
+    // 设置新的防抖定时器
+    localStorageDebounceTimer = setTimeout(() => {
+        try {
+            localStorage.setItem('filesStore', JSON.stringify(state));
+            console.log('数据已防抖保存到 localStorage');
+        } catch (error) {
+            console.error('保存到 localStorage 失败:', error);
+            // 如果 localStorage 满了，尝试清理一些数据
+            try {
+                localStorage.clear();
+                localStorage.setItem('filesStore', JSON.stringify(state));
+            } catch (clearError) {
+                console.error('清理 localStorage 后仍无法保存:', clearError);
+            }
+        }
+    }, LOCALSTORAGE_DEBOUNCE_DELAY);
 }
 
-interface LogicFlowNode {
-    id: string;
-    type: string;
-    x: number;
-    y: number;
-    text?: string | object;
-    properties?: Record<string, any>;
-}
-
-interface FlowFile {
-    label: string;
-    name: string;
-    visible: boolean;
-    type: string;
-    groups: FileGroup[];
-    flowData?: {
-        nodes: LogicFlowNode[];
-        edges: any[];
-        viewport: any;
-    };
-}
 
 export const useFilesStore = defineStore('files', () => {
     // 文件列表状态
@@ -231,149 +98,67 @@ export const useFilesStore = defineStore('files', () => {
         return fileList.value.filter(file => file.visible);
     });
 
-    // 获取当前活动文件的节点和边
-    const activeFileNodes = computed(() => {
-        const file = fileList.value.find(f => f.name === activeFile.value);
-        return file?.flowData?.nodes || [];
-    });
-
-    const activeFileEdges = computed(() => {
-        const file = fileList.value.find(f => f.name === activeFile.value);
-        return file?.flowData?.edges || [];
-    });
-
-    // 添加新文件
-    const addFile = (file: FlowFile) => {
-        const newFile = {
-            ...file,
-            flowData: {
-                nodes: [],
-                edges: [],
-                viewport: { x: 0, y: 0, zoom: 1 }
+    // 导入数据
+    const importData = (data: any) => {
+        try {
+            if (data.fileList && Array.isArray(data.fileList)) {
+                // 新版本格式：包含 fileList 和 activeFile
+                fileList.value = data.fileList;
+                activeFile.value = data.activeFile || data[0]?.name;
+                showMessage('success', '数据导入成功');
+            } else if (Array.isArray(data) && data[0]?.visible === true) {
+                // 兼容旧版本格式：直接是 fileList 数组
+                fileList.value = data;
+                activeFile.value = data[0]?.name || "1";
+                showMessage('success', '数据导入成功');
+            } else {
+                // 兼容更旧版本格式：仅包含 groups 数组
+                const newFile = {
+                    label: `File ${fileList.value.length + 1}`,
+                    name: String(fileList.value.length + 1),
+                    visible: true,
+                    type: "FLOW",
+                    groups: data,
+                    graphRawData: {
+                        nodes: [],
+                        edges: []
+                    },
+                    transform: {
+                        SCALE_X: 1,
+                        SCALE_Y: 1,
+                        TRANSLATE_X: 0,
+                        TRANSLATE_Y: 0
+                    }
+                };
+                fileList.value.push(newFile);
+                activeFile.value = newFile.name;
+                showMessage('success', '数据导入成功');
             }
-        };
-        fileList.value.push(newFile);
-        activeFile.value = file.name;
-    };
-
-    // 关闭文件标签
-    const closeTab = (fileName: string | undefined) => {
-        if (!fileName) return;
-
-        const index = fileList.value.findIndex(file => file.name === fileName);
-        if (index === -1) return;
-
-        fileList.value.splice(index, 1);
-
-        // 如果关闭的是当前活动文件，则切换到其他文件
-        if (activeFile.value === fileName) {
-            activeFile.value = fileList.value[Math.max(0, index - 1)]?.name || '';
+        } catch (error) {
+            console.error('Failed to import file', error);
+            showMessage('error', '数据导入失败');
         }
     };
 
-    // 添加节点
-    const addNode = (node: LogicFlowNode) => {
-        const file = fileList.value.find(f => f.name === activeFile.value);
-        if (!file) return;
-        if (!file.flowData) file.flowData = { nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } };
-        file.flowData.nodes.push(node);
-    };
-
-    // 更新节点
-    const updateNode = (nodeId: string, updateData: Partial<LogicFlowNode>) => {
-        const file = fileList.value.find(f => f.name === activeFile.value);
-        if (!file || !file.flowData || !file.flowData.nodes) return;
-        const nodeIndex = file.flowData.nodes.findIndex((n: LogicFlowNode) => n.id === nodeId);
-        if (nodeIndex === -1) return;
-
-        const oldNode = file.flowData.nodes[nodeIndex];
-        const mergedNode = { ...oldNode, ...updateData };
-
-        // Deep merge properties
-        if (updateData.properties && oldNode.properties) {
-            mergedNode.properties = { ...oldNode.properties, ...updateData.properties };
+    // 导出数据
+    const exportData = () => {
+        try {
+            const dataStr = JSON.stringify({
+                fileList: fileList.value,
+                activeFile: activeFile.value
+            }, null, 2);
+            const blob = new Blob([dataStr], {type: 'application/json;charset=utf-8'});
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'yys-editor-files.json';
+            link.click();
+            URL.revokeObjectURL(url);
+            showMessage('success', '数据导出成功');
+        } catch (error) {
+            console.error('导出数据失败:', error);
+            showMessage('error', '数据导出失败');
         }
-        file.flowData.nodes[nodeIndex] = mergedNode;
-
-        // 同步 LogicFlow 画布
-        if (logicFlowInstance && mergedNode.properties) {
-            // setProperties overwrites, so we pass the fully merged properties object
-            logicFlowInstance.setProperties(nodeId, mergedNode.properties);
-        }
-    };
-
-    // 删除节点
-    const removeNode = (nodeId: string) => {
-        const file = fileList.value.find(f => f.name === activeFile.value);
-        if (!file || !file.flowData || !file.flowData.nodes) return;
-        file.flowData.nodes = file.flowData.nodes.filter(n => n.id !== nodeId);
-        // 同时删除相关的边
-        if (file.flowData.edges) {
-            file.flowData.edges = file.flowData.edges.filter(e => e.source !== nodeId && e.target !== nodeId);
-        }
-    };
-
-    // 添加边
-    const addEdge = (edge) => {
-        const file = fileList.value.find(f => f.name === activeFile.value);
-        if (!file) return;
-        if (!file.flowData) file.flowData = { nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } };
-        file.flowData.edges.push(edge);
-    };
-
-    // 删除边
-    const removeEdge = (edgeId: string) => {
-        const file = fileList.value.find(f => f.name === activeFile.value);
-        if (!file || !file.flowData || !file.flowData.edges) return;
-        file.flowData.edges = file.flowData.edges.filter(e => e.id !== edgeId);
-    };
-
-    // 更新节点位置
-    const updateNodePosition = (nodeId: string, position: { x: number; y: number }) => {
-        const file = fileList.value.find(f => f.name === activeFile.value);
-        if (!file || !file.flowData || !file.flowData.nodes) return;
-        const node = file.flowData.nodes.find((n: LogicFlowNode) => n.id === nodeId);
-        if (node) {
-            node.x = position.x;
-            node.y = position.y;
-        }
-    };
-
-    // 更新节点顺序
-    const updateNodesOrder = (nodes: LogicFlowNode[]) => {
-        const file = fileList.value.find(f => f.name === activeFile.value);
-        if (!file || !file.flowData) return;
-        file.flowData.nodes = nodes;
-    };
-
-    // 更新文件的 viewport
-    const updateFileViewport = (fileName: string, viewport: { x: number; y: number; zoom: number }) => {
-        const file = fileList.value.find(f => f.name === fileName);
-        if (file && file.flowData) {
-            console.log(`[updateFileViewport] 保存 tab "${fileName}" 的视口信息:`, viewport);
-            file.flowData.viewport = viewport;
-        }
-    };
-
-    const getFileViewport = (fileName: string) => {
-        const file = fileList.value.find(f => f.name === fileName);
-        const v = file?.flowData?.viewport;
-        if (v && typeof v.x === 'number' && typeof v.y === 'number' && typeof v.zoom === 'number') {
-            return v ;
-        }
-        return { x: 0, y: 0, zoom: 1 };
-    };
-
-    // 更新文件的 flowData
-    const updateFileFlowData = (fileName: string, flowData: any) => {
-        const file = fileList.value.find(f => f.name === fileName);
-        if (file) file.flowData = flowData;
-    };
-
-    // 获取文件的 flowData
-    const getFileFlowData = (fileName: string): any => {
-        const file = fileList.value.find(f => f.name === fileName);
-        return file?.flowData;
     };
 
     // 初始化时检查是否有未保存的数据
@@ -415,107 +200,127 @@ export const useFilesStore = defineStore('files', () => {
         }
     };
 
-    // 设置自动保存
+    // 设置自动更新
     const setupAutoSave = () => {
-        console.log('自动保存功能已启动，每30秒保存一次');
+        console.log('自动更新功能已启动，每30秒更新一次');
         setInterval(() => {
-            try {
-                saveStateToLocalStorage({
-                    fileList: fileList.value,
-                    activeFile: activeFile.value
-                });
-                console.log('数据已自动保存到 localStorage');
-            } catch (error) {
-                console.error('自动保存失败:', error);
-            }
+            updateTab(); // 使用统一的更新方法
         }, 30000); // 设置间隔时间为30秒
     };
 
-    // 导出数据
-    const exportData = () => {
+    // 添加新文件
+    const addTab = () => {
+        // 添加文件前先保存
+        updateTab();
+
+        requestAnimationFrame(() => {
+            const newFileName = `File ${fileList.value.length + 1}`;
+            const newFile = {
+                label: newFileName,
+                name: newFileName,
+                visible: true,
+                type: 'FLOW',
+                graphRawData: {},
+                transform: {
+                    SCALE_X: 1,
+                    SCALE_Y: 1,
+                    TRANSLATE_X: 0,
+                    TRANSLATE_Y: 0
+                }
+            };
+            fileList.value.push(newFile);
+            activeFile.value = newFileName;
+        });
+    };
+
+    // 关闭文件标签
+    const removeTab = (fileName: string | undefined) => {
+        if (!fileName) return;
+
+        const index = fileList.value.findIndex(file => file.name === fileName);
+        if (index === -1) return;
+
+        fileList.value.splice(index, 1);
+
+        // 如果关闭的是当前活动文件，则切换到其他文件
+        if (activeFile.value === fileName) {
+            activeFile.value = fileList.value[Math.max(0, index - 1)]?.name || '';
+        }
+
+        // 关闭文件后立即更新
+        updateTab();
+    };
+
+    // 更新指定 Tab - 内存操作即时，localStorage 操作防抖
+    const updateTab = (fileName?: string) => {
         try {
-            const dataStr = JSON.stringify({
+            const targetFile = fileName || activeFile.value;
+
+            // 先同步 LogicFlow 数据到内存
+            syncLogicFlowDataToStore(targetFile);
+
+            // 再保存到 localStorage（带防抖）
+            const state = {
                 fileList: fileList.value,
                 activeFile: activeFile.value
-            }, null, 2);
-            const blob = new Blob([dataStr], {type: 'application/json;charset=utf-8'});
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'yys-editor-files.json';
-            link.click();
-            URL.revokeObjectURL(url);
-            showMessage('success', '数据导出成功');
+            };
+            saveStateToLocalStorage(state);
         } catch (error) {
-            console.error('导出数据失败:', error);
-            showMessage('error', '数据导出失败');
+            console.error('更新 Tab 失败:', error);
+            showMessage('error', '数据更新失败');
         }
     };
 
-    // 导入数据
-    const importData = (data: any) => {
-        try {
-            if (data.fileList && Array.isArray(data.fileList)) {
-                // 新版本格式：包含 fileList 和 activeFile
-                fileList.value = data.fileList;
-                activeFile.value = data.activeFile || "1";
-                showMessage('success', '数据导入成功');
-            } else if (Array.isArray(data) && data[0]?.visible === true) {
-                // 兼容旧版本格式：直接是 fileList 数组
-                fileList.value = data;
-                activeFile.value = data[0]?.name || "1";
-                showMessage('success', '数据导入成功');
-            } else {
-                // 兼容更旧版本格式：仅包含 groups 数组
-                const newFile = {
-                    label: `File ${fileList.value.length + 1}`,
-                    name: String(fileList.value.length + 1),
-                    visible: true,
-                    type: "FLOW",
-                    groups: data,
-                    flowData: {
-                        nodes: [],
-                        edges: [],
-                        viewport: { x: 0, y: 0, zoom: 1 }
+    // 获取当前 Tab 数据
+    const getTab = (fileName?: string) => {
+        const targetFile = fileName || activeFile.value;
+        return fileList.value.find(f => f.name === targetFile);
+    };
+
+    // 同步 LogicFlow 画布数据到 store 的内部方法
+    const syncLogicFlowDataToStore = (fileName?: string) => {
+        const logicFlowInstance = getLogicFlowInstance();
+        const targetFile = fileName || activeFile.value;
+
+        if (logicFlowInstance && targetFile) {
+            try {
+                // 获取画布最新数据
+                const graphData = logicFlowInstance.getGraphRawData();
+                const transform = logicFlowInstance.getTransform();
+
+                if (graphData) {
+                    // 直接保存原始数据到 GraphRawData
+                    const file = fileList.value.find(f => f.name === targetFile);
+                    if (file) {
+                        file.graphRawData = graphData;
+                        file.transform = transform;
+                        console.log(`已同步画布数据到文件 "${targetFile}"`);
                     }
-                };
-                addFile(newFile);
-                showMessage('success', '数据导入成功');
+                }
+            } catch (error) {
+                console.warn('同步画布数据失败:', error);
             }
-            // 导入后立即保存到 localStorage
-            saveStateToLocalStorage({
-                fileList: fileList.value,
-                activeFile: activeFile.value
-            });
-        } catch (error) {
-            console.error('Failed to import file', error);
-            showMessage('error', '数据导入失败');
         }
     };
+
+
+
+
 
     return {
+        importData,
+        exportData,
+
+        initializeWithPrompt,
+        setupAutoSave,
+
+        addTab,
+        removeTab,
+        updateTab,
+        getTab,
+
         fileList,
         activeFile,
         visibleFiles,
-        activeFileNodes,
-        activeFileEdges,
-        addFile,
-        closeTab,
-        addNode,
-        updateNode,
-        removeNode,
-        addEdge,
-        removeEdge,
-        updateNodePosition,
-        updateNodesOrder,
-        updateFileViewport,
-        getFileViewport,
-        updateFileFlowData,
-        getFileFlowData,
-        initializeWithPrompt,
-        setupAutoSave,
-        exportData,
-        importData,
-        setLogicFlowInstance,
     };
 });

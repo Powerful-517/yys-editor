@@ -82,6 +82,7 @@ import updateLogs from "../data/updateLog.json"
 import {useFilesStore} from "@/ts/useStore";
 import {ElMessageBox} from "element-plus";
 import {useGlobalMessage} from "@/ts/useGlobalMessage";
+import { getLogicFlowInstance } from "@/ts/useLogicFlow";
 // import { useScreenshot } from '@/ts/useScreenshot';
 import { getCurrentInstance } from 'vue';
 
@@ -99,6 +100,23 @@ const state = reactive({
   showUpdateLogDialog: false, // 控制更新日志对话框的显示状态
   showFeedbackFormDialog: false, // 控制反馈表单对话框的显示状态
 });
+
+// 重新渲染 LogicFlow 画布的通用方法
+const refreshLogicFlowCanvas = (message?: string) => {
+  setTimeout(() => {
+    const logicFlowInstance = getLogicFlowInstance();
+    if (logicFlowInstance) {
+      // 获取当前活动文件的数据
+      const currentFileData = filesStore.getTab(filesStore.activeFile);
+      if (currentFileData) {
+        // 清空画布并重新渲染
+        logicFlowInstance.clearData();
+        logicFlowInstance.render(currentFileData);
+        console.log(message || 'LogicFlow 画布已重新渲染');
+      }
+    }
+  }, 100); // 延迟一点确保数据更新完成
+};
 
 const loadExample = () => {
   ElMessageBox.confirm(
@@ -133,6 +151,7 @@ const loadExample = () => {
       activeFile: "example"
     };
     filesStore.importData(defaultState);
+    refreshLogicFlowCanvas('LogicFlow 画布已重新渲染（示例数据）');
     showMessage('success', '数据已恢复');
   }).catch(() => {
     showMessage('info', '选择了不恢复旧数据');
@@ -161,7 +180,13 @@ const showFeedbackForm = () => {
 };
 
 const handleExport = () => {
-  filesStore.exportData();
+  // 导出前先更新当前数据，确保不丢失最新修改
+  filesStore.updateTab();
+
+  // 延迟一点确保更新完成后再导出
+  setTimeout(() => {
+    filesStore.exportData();
+  }, 2000);
 };
 
 const handleImport = () => {
@@ -178,6 +203,7 @@ const handleImport = () => {
           const target = e.target as FileReader;
           const data = JSON.parse(target.result as string);
           filesStore.importData(data);
+          // refreshLogicFlowCanvas('LogicFlow 画布已重新渲染（导入数据）');
         } catch (error) {
           console.error('Failed to import file', error);
           showMessage('error', '文件格式错误');

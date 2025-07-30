@@ -36,13 +36,9 @@ import { useFilesStore } from "@/ts/useStore";
 import { setLogicFlowInstance, destroyLogicFlowInstance } from '@/ts/useLogicFlow';
 
 const props = defineProps<{
-  nodes: any[];
-  edges: any[];
-  viewport?: { x: number; y: number; zoom: number };
   height?: string;
 }>();
 
-const filesStore = useFilesStore();
 const containerRef = ref<HTMLElement | null>(null);
 const lf = ref<LogicFlow | null>(null);
 
@@ -70,13 +66,17 @@ function registerNodes(lfInstance: LogicFlow) {
 // 初始化 LogicFlow
 onMounted(() => {
   lf.value = new LogicFlow({
-    container: containerRef.value as HTMLElement,
+    container: containerRef.value,
+    // container: document.querySelector('#container'),
     grid: true,
+    allowResize: true,
+    allowRotate : true
   });
   registerNodes(lf.value);
-  renderFlow();
   setLogicFlowInstance(lf.value);
-
+  lf.value.render({
+    // 渲染的数据
+  })
   // 监听节点点击事件，更新 selectedNode
   lf.value.on(EventType.NODE_CLICK, ({ data }) => {
     selectedNode.value = data;
@@ -112,46 +112,8 @@ onBeforeUnmount(() => {
   destroyLogicFlowInstance();
 });
 
-// 响应式更新 nodes/edges
-// watch(
-//     () => [props.nodes, props.edges],
-//     () => {
-//       renderFlow();
-//     },
-//     { deep: true }
-// );
 
-// 响应式更新 viewport
-watch(
-    () => props.viewport,
-    (val) => {
-      if (val) setViewport(val);
-    }
-);
 
-function renderFlow() {
-  if (!lf.value) return;
-  lf.value.render({
-    nodes: props.nodes,
-    edges: props.edges,
-  });
-}
-
-function setViewport(viewport?: { x: number; y: number; zoom: number }) {
-  if (!lf.value || !viewport) return;
-  lf.value.zoom(viewport.zoom);
-  // lf.value.focusOn({ x: viewport.x, y: viewport.y });
-}
-
-function getViewport() {
-  if (!lf.value) return { x: 0, y: 0, zoom: 1 };
-  const t = lf.value.getTransform();
-  return {
-    x: t.TRANSLATE_X,
-    y: t.TRANSLATE_Y,
-    zoom: t.SCALE_X
-  };
-}
 
 // 右键菜单相关
 function handleNodeContextMenu({ data, e }: { data: any; e: MouseEvent }) {
@@ -174,23 +136,6 @@ function handleLayerOrder(action: string) {
   contextMenu.value.show = false;
 }
 
-function getGraphRawData() {
-  if (!lf) return null;
-  return lf.value.getGraphRawData();
-}
-
-function renderRawData(data: any) {
-  if (!lf) return;
-  lf.value.renderRawData(data);
-}
-
-defineExpose({
-  getViewport,
-  setViewport,
-  renderFlow,
-  getGraphRawData,
-  renderRawData,
-});
 </script>
 
 <style scoped>

@@ -2,16 +2,17 @@
 import Toolbar from './components/Toolbar.vue';
 import ProjectExplorer from './components/ProjectExplorer.vue';
 import ComponentsPanel from './components/flow/ComponentsPanel.vue';
-import { computed, ref, onMounted, onUnmounted, onBeforeUpdate, reactive, provide, inject, watch } from "vue";
-import { useFilesStore } from "@/ts/useStore";
+import {computed, ref, onMounted, onUnmounted, onBeforeUpdate, reactive, provide, inject, watch} from "vue";
+import {useFilesStore} from "@/ts/useStore";
 import Vue3DraggableResizable from 'vue3-draggable-resizable';
-import { TabPaneName, TabsPaneContext } from "element-plus";
+import {TabPaneName, TabsPaneContext} from "element-plus";
 import FlowEditor from './components/flow/FlowEditor.vue';
 import ShikigamiSelect from './components/flow/nodes/yys/ShikigamiSelect.vue';
 import YuhunSelect from './components/flow/nodes/yys/YuhunSelect.vue';
 import PropertySelect from './components/flow/nodes/yys/PropertySelect.vue';
 // import { useVueFlow } from '@vue-flow/core';
 import DialogManager from './components/DialogManager.vue';
+import {getLogicFlowInstance} from "@/ts/useLogicFlow";
 
 const filesStore = useFilesStore();
 // const { updateNode,toObject,fromObject } = useVueFlow();
@@ -22,121 +23,52 @@ const toolbarHeight = 48; // 工具栏的高度
 const windowHeight = ref(window.innerHeight);
 const contentHeight = computed(() => `${windowHeight.value - toolbarHeight}px`);
 
-const flowEditorRef = ref(null);
-const flowEditorRefs = ref({});
-const lastActiveFile = ref(filesStore.activeFile);
-
 const handleTabsEdit = (
     targetName: string | undefined,
     action: 'remove' | 'add'
 ) => {
   if (action === 'remove') {
-    filesStore.closeTab(targetName);
+    filesStore.removeTab(targetName);
   } else if (action === 'add') {
-    const newFileName = `File ${filesStore.fileList.length + 1}`;
-
-    filesStore.addFile({
-      label: newFileName,
-      name: newFileName,
-      visible: true,
-      type: 'FLOW',
-      groups: [
-        {
-          shortDescription: " ",
-          groupInfo: [{}, {}, {}, {}, {}],
-          details: ''
-        },
-        {
-          shortDescription: '',
-          groupInfo: [{}, {}, {}, {}, {}],
-          details: ''
-        }
-      ]
-    });
+    filesStore.addTab();
   }
 };
 
 onMounted(() => {
-  window.addEventListener('resize', () => {
-    windowHeight.value = window.innerHeight;
-  });
   // 初始化自动保存功能
   filesStore.initializeWithPrompt();
   filesStore.setupAutoSave();
 });
 
 onUnmounted(() => {
-  window.removeEventListener('resize', () => {
-    windowHeight.value = window.innerHeight;
-  });
+
 });
 
-const activeFileGroups = computed(() => {
-  const activeFile = filesStore.fileList.find(file => file.name === filesStore.activeFile);
-  return activeFile ? activeFile.groups : [];
-});
-
-onBeforeUpdate(() => {
-  flowEditorRefs.value = {};
-});
-
-const handleAddNode = (nodeData) => {
-  const activeEditor = flowEditorRefs.value[filesStore.activeFile];
-  if (activeEditor) {
-    const { x, y, zoom } = activeEditor.getViewport();
-    const position = { x: -x / zoom + 150, y: -y / zoom + 150 };
-    activeEditor.handleAddNode({ ...nodeData, position });
-  }
-};
 
 watch(
-  () => filesStore.activeFile,
-  async (newVal, oldVal) => {
-    // 切换前保存旧 tab 的数据和视口
-    if (oldVal && flowEditorRef.value) {
-      if (flowEditorRef.value.getGraphRawData) {
-        const rawData = flowEditorRef.value.getGraphRawData();
-        filesStore.updateFileFlowData(oldVal, rawData);
+    () => filesStore.activeFile,
+    async (newVal, oldVal) => {
+      // 保存旧 tab 数据
+      if (oldVal) {
+        filesStore.updateTab(oldVal);
       }
-      if (flowEditorRef.value.getViewport) {
-        const viewport = flowEditorRef.value.getViewport();
-        console.log(`[Tab切换] 切换前保存 tab "${oldVal}" 的视口信息:`, viewport);
-        filesStore.updateFileViewport(oldVal, viewport);
-      }
-    }
-    lastActiveFile.value = newVal;
 
-    // 切换后恢复新 tab 的数据和视口
-    if (newVal && flowEditorRef.value) {
-      if (flowEditorRef.value.renderRawData) {
-        const newRawData = filesStore.getFileFlowData(newVal);
-        if (newRawData) flowEditorRef.value.renderRawData(newRawData);
-      }
-      if (flowEditorRef.value.setViewport) {
-        const newViewport = filesStore.getFileViewport(newVal);
-        console.log(`[Tab切换] 切换后恢复 tab "${newVal}" 的视口信息:`, newViewport);
-        requestAnimationFrame(() => {
-          flowEditorRef.value.setViewport(newViewport);
-        });
+      // 渲染新 tab 数据
+      if (newVal) {
+        const logicFlowInstance = getLogicFlowInstance();
+        const currentTab = filesStore.getTab(newVal);
+
+        if (logicFlowInstance && currentTab?.graphRawData) {
+          try {
+            logicFlowInstance.render(currentTab.graphRawData);
+            logicFlowInstance.zoom(currentTab.transform.SCALE_X, [currentTab.transform.TRANSLATE_X, currentTab.transform.TRANSLATE_Y]);
+          } catch (error) {
+            console.warn('渲染画布数据失败:', error);
+          }
+        }
       }
     }
-  }
 );
-
-const handleDropOnCanvas = (event: DragEvent) => {
-  event.preventDefault();
-  const nodeData = JSON.parse(event.dataTransfer?.getData('application/json') || '{}');
-  // 计算画布坐标（这里简单用鼠标坐标，后续可结合 LogicFlow 视口变换优化）
-  const rect = (event.target as HTMLElement).getBoundingClientRect();
-  const x = event.clientX - rect.left;
-  const y = event.clientY - rect.top;
-  const id = `node-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-  filesStore.addNode({ id, type: nodeData.type, x, y, ...nodeData.data });
-};
-
-const handleDragOverOnCanvas = (event: DragEvent) => {
-  event.preventDefault();
-};
 
 </script>
 
@@ -147,7 +79,7 @@ const handleDragOverOnCanvas = (event: DragEvent) => {
     <!-- 侧边栏和工作区 -->
     <div class="main-content">
       <!-- 侧边栏 -->
-      <ComponentsPanel @add-node="handleAddNode" />
+      <ComponentsPanel/>
       <!-- 工作区 -->
       <div class="workspace">
         <el-tabs
@@ -164,22 +96,14 @@ const handleDragOverOnCanvas = (event: DragEvent) => {
               :name="file.name.toString()"
           />
         </el-tabs>
-        <div id="main-container" :style="{ height: contentHeight, overflow: 'auto' }"
-          @dragover="handleDragOverOnCanvas"
-          @drop="handleDropOnCanvas"
-        >
+        <div id="main-container" :style="{ height: contentHeight, overflow: 'auto' }">
           <FlowEditor
-            ref="flowEditorRef"
-            :height="contentHeight"
-            :nodes="filesStore.getFileFlowData(filesStore.activeFile)?.nodes || []"
-            :edges="filesStore.getFileFlowData(filesStore.activeFile)?.edges || []"
-            :viewport="filesStore.getFileFlowData(filesStore.activeFile)?.viewport || { x: 0, y: 0, zoom: 1 }"
-            :key="filesStore.activeFile"
+              :height="contentHeight"
           />
         </div>
       </div>
     </div>
-    <DialogManager />
+    <DialogManager/>
   </div>
 </template>
 
