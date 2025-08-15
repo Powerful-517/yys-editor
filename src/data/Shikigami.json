@@ -1,5 +1,15 @@
 [
     {
+        "avatar": "/assets/Shikigami/l/588.png",
+        "name": "李小狼",
+        "rarity": "L"
+    },
+    {
+        "avatar": "/assets/Shikigami/l/587.png",
+        "name": "木之本樱",
+        "rarity": "L"
+    },
+    {
         "avatar": "/assets/Shikigami/sp/586.png",
         "name": "云间不见岳",
         "rarity": "SP"
