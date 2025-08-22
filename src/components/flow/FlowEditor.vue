@@ -70,7 +70,12 @@ onMounted(() => {
     // container: document.querySelector('#container'),
     grid: true,
     allowResize: true,
-    allowRotate : true
+    allowRotate : true,
+
+    // 启用内置快捷键
+    keyboard: {
+      enabled: true,
+    },
   });
   registerNodes(lf.value);
   setLogicFlowInstance(lf.value);
@@ -85,6 +90,7 @@ onMounted(() => {
   // 监听空白点击事件，取消选中
   lf.value.on(EventType.BLANK_CLICK, () => {
     selectedNode.value = null;
+    handleNodeContextMenu({ data: {}, e: new MouseEvent('') });
   });
 
   // 节点属性改变，如果当前节点是选中节点，则同步更新 selectedNode
@@ -103,6 +109,14 @@ onMounted(() => {
   // 右键事件
   lf.value.on('node:contextmenu', handleNodeContextMenu);
   lf.value.on('blank:contextmenu', handlePaneContextMenu);
+
+  lf.value.on('node:delete', (data) => {
+    // 如果删除的节点是当前选中节点，则清空 selectedNode
+    if (selectedNode.value && data.data.id === selectedNode.value.id) {
+      selectedNode.value = null;
+      handleNodeContextMenu({ data: {}, e: new MouseEvent('') });
+    }
+  });
 });
 
 // 销毁 LogicFlow
@@ -120,7 +134,7 @@ function handleNodeContextMenu({ data, e }: { data: any; e: MouseEvent }) {
   e.preventDefault();
   e.stopPropagation();
   contextMenu.value = {
-    show: true,
+    show: data.id !== undefined,
     x: e.clientX,
     y: e.clientY,
     nodeId: data.id
