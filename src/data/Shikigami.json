@@ -1,5 +1,10 @@
 [
     {
+        "avatar": "/assets/Shikigami/ssr/592.png",
+        "name": "平将门",
+        "rarity": "SSR"
+    },
+    {
         "avatar": "/assets/Shikigami/ssr/591.png",
         "name": "雪御前",
         "rarity": "SSR"
