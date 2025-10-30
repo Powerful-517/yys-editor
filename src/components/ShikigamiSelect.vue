@@ -75,6 +75,7 @@ const show = ref(false)
 
 const rarityLevels = [
   { label: "全部", name: "ALL" },
+  { label: "UR", name: "UR" },
   { label: "SP", name: "SP" },
   { label: "SSR", name: "SSR" },
   { label: "SR", name: "SR" },
