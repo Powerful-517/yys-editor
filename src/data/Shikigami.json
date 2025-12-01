@@ -1,5 +1,10 @@
 [
     {
+        "avatar": "/assets/Shikigami/sp/594.png",
+        "name": "梦引蝴蝶精",
+        "rarity": "SP"
+    },
+    {
         "avatar": "/assets/Shikigami/ur/593.png",
         "name": "妖刀姬·绯夜猎刃",
         "rarity": "UR"
