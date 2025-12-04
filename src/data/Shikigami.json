@@ -1,5 +1,40 @@
 [
     {
+        "avatar": "/assets/Shikigami/sp/594.png",
+        "name": "梦引蝴蝶精",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/ur/593.png",
+        "name": "妖刀姬·绯夜猎刃",
+        "rarity": "UR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/592.png",
+        "name": "平将门",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/591.png",
+        "name": "雪御前",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/sp/590.png",
+        "name": "妙主九命猫",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/l/588.png",
+        "name": "李小狼",
+        "rarity": "L"
+    },
+    {
+        "avatar": "/assets/Shikigami/l/587.png",
+        "name": "木之本樱",
+        "rarity": "L"
+    },
+    {
         "avatar": "/assets/Shikigami/sp/586.png",
         "name": "云间不见岳",
         "rarity": "SP"
