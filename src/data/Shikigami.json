@@ -1,5 +1,10 @@
 [
     {
+        "avatar": "/assets/Shikigami/sp/595.png",
+        "name": "梦山白藏主",
+        "rarity": "SP"
+    },
+    {
         "avatar": "/assets/Shikigami/sp/594.png",
         "name": "梦引蝴蝶精",
         "rarity": "SP"
