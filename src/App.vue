@@ -2,7 +2,7 @@
 import Toolbar from './components/Toolbar.vue';
 import ProjectExplorer from './components/ProjectExplorer.vue';
 import ComponentsPanel from './components/flow/ComponentsPanel.vue';
-import {computed, ref, onMounted, onUnmounted, onBeforeUpdate, reactive, provide, inject, watch} from "vue";
+import {computed, ref, onMounted, onUnmounted, reactive, watch} from "vue";
 import {useFilesStore} from "@/ts/useStore";
 import Vue3DraggableResizable from 'vue3-draggable-resizable';
 import {TabPaneName, TabsPaneContext} from "element-plus";
@@ -10,12 +10,10 @@ import FlowEditor from './components/flow/FlowEditor.vue';
 import ShikigamiSelect from './components/flow/nodes/yys/ShikigamiSelect.vue';
 import YuhunSelect from './components/flow/nodes/yys/YuhunSelect.vue';
 import PropertySelect from './components/flow/nodes/yys/PropertySelect.vue';
-// import { useVueFlow } from '@vue-flow/core';
 import DialogManager from './components/DialogManager.vue';
 import {getLogicFlowInstance} from "@/ts/useLogicFlow";
 
 const filesStore = useFilesStore();
-// const { updateNode,toObject,fromObject } = useVueFlow();
 
 const width = ref('100%');
 const height = ref('100vh');
@@ -44,30 +42,54 @@ onUnmounted(() => {
 
 });
 
-
+// 1) 切换激活文件：仅当 id 变化时保存旧数据并渲染新数据
 watch(
-    () => filesStore.activeFile,
-    async (newVal, oldVal) => {
-      // 保存旧 tab 数据
-      if (oldVal) {
-        filesStore.updateTab(oldVal);
-      }
+  () => filesStore.activeFileId,
+  async (newId, oldId) => {
+    if (oldId && newId !== oldId) {
+      filesStore.updateTab(oldId);
+    }
 
-      // 渲染新 tab 数据
-      if (newVal) {
-        const logicFlowInstance = getLogicFlowInstance();
-        const currentTab = filesStore.getTab(newVal);
+    if (newId) {
+      const logicFlowInstance = getLogicFlowInstance();
+      const currentTab = filesStore.getTab(newId);
 
-        if (logicFlowInstance && currentTab?.graphRawData) {
-          try {
-            logicFlowInstance.render(currentTab.graphRawData);
-            logicFlowInstance.zoom(currentTab.transform.SCALE_X, [currentTab.transform.TRANSLATE_X, currentTab.transform.TRANSLATE_Y]);
-          } catch (error) {
-            console.warn('渲染画布数据失败:', error);
-          }
+      if (logicFlowInstance && currentTab?.graphRawData) {
+        try {
+          logicFlowInstance.render(currentTab.graphRawData);
+          logicFlowInstance.zoom(
+            currentTab.transform?.SCALE_X ?? 1,
+            [currentTab.transform?.TRANSLATE_X ?? 0, currentTab.transform?.TRANSLATE_Y ?? 0]
+          );
+        } catch (error) {
+          console.warn('渲染画布数据失败:', error);
         }
       }
     }
+  },
+  { flush: 'post' }
+);
+
+// 2) 导入等替换 fileList 引用时，主动按当前 activeFileId 渲染一次，不保存旧数据
+watch(
+  () => filesStore.fileList,
+  () => {
+    const logicFlowInstance = getLogicFlowInstance();
+    const currentTab = filesStore.getTab(filesStore.activeFileId);
+
+    if (logicFlowInstance && currentTab?.graphRawData) {
+      try {
+        logicFlowInstance.render(currentTab.graphRawData);
+        logicFlowInstance.zoom(
+          currentTab.transform?.SCALE_X ?? 1,
+          [currentTab.transform?.TRANSLATE_X ?? 0, currentTab.transform?.TRANSLATE_Y ?? 0]
+        );
+      } catch (error) {
+        console.warn('渲染画布数据失败:', error);
+      }
+    }
+  },
+  { flush: 'post' }
 );
 
 </script>
@@ -83,7 +105,7 @@ watch(
       <!-- 工作区 -->
       <div class="workspace">
         <el-tabs
-            v-model="filesStore.activeFile"
+            v-model="filesStore.activeFileId"
             type="card"
             class="demo-tabs"
             editable
@@ -91,9 +113,9 @@ watch(
         >
           <el-tab-pane
               v-for="(file, index) in filesStore.visibleFiles"
-              :key="`${file.name}-${filesStore.activeFile}`"
+              :key="`${file.id}-${filesStore.activeFileId}`"
               :label="file.label"
-              :name="file.name.toString()"
+              :name="file.id"
           />
         </el-tabs>
         <div id="main-container" :style="{ height: contentHeight, overflow: 'auto' }">

@@ -12,6 +12,7 @@ let localStorageDebounceTimer: NodeJS.Timeout | null = null;
 const LOCALSTORAGE_DEBOUNCE_DELAY = 1000; // 1秒防抖
 
 interface FlowFile {
+    id: string; // stable identity, do not rely on name for selection
     label: string;
     name: string;
     visible: boolean;
@@ -26,9 +27,11 @@ interface FlowFile {
 }
 
 function getDefaultState() {
+    const id = 'f_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
     return {
         "fileList": [
             {
+                "id": id,
                 "label": "File 1",
                 "name": "File 1",
                 "visible": true,
@@ -45,8 +48,10 @@ function getDefaultState() {
                 }
             }
         ],
-        "activeFile": "File 1"
-    };
+        // legacy: kept for compatibility, actual selection uses activeFileId
+        "activeFile": "File 1",
+        "activeFileId": id
+    } as any;
 }
 
 function clearFilesStoreLocalStorage() {
@@ -89,63 +94,94 @@ function saveStateToLocalStorage(state: any) {
 
 
 export const useFilesStore = defineStore('files', () => {
-    // 文件列表状态
+    // Helper: generate stable ids
+    const genId = () => 'f_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
+    // 文件列表状态（以 id 作为主键）
     const fileList = ref<FlowFile[]>([]);
-    const activeFile = ref<string>('');
+    const activeFileId = ref<string>('');
 
     // 计算属性：获取可见的文件
     const visibleFiles = computed(() => {
         return fileList.value.filter(file => file.visible);
     });
 
-    // 导入数据
+    // 根据传入列表补全缺省字段并补齐 id
+    const normalizeList = (list: any[]): FlowFile[] => {
+        return (list || []).map((f: any, i: number) => ({
+            id: f?.id || genId(),
+            label: f?.label ?? f?.name ?? `File ${i + 1}`,
+            name: f?.name ?? f?.label ?? `File ${i + 1}`,
+            visible: f?.visible ?? true,
+            type: f?.type ?? 'FLOW',
+            graphRawData: (f?.graphRawData && typeof f.graphRawData === 'object') ? f.graphRawData : { nodes: [], edges: [] },
+            transform: f?.transform ?? {
+                SCALE_X: 1,
+                SCALE_Y: 1,
+                TRANSLATE_X: 0,
+                TRANSLATE_Y: 0
+            },
+        }));
+    };
+
+    const findById = (id?: string) => fileList.value.find(f => f.id === id);
+    const findByName = (name?: string) => fileList.value.find(f => f.name === name);
+
+    // 导入数据（兼容旧格式 activeFile/name）
     const importData = (data: any) => {
         try {
-            if (data.fileList && Array.isArray(data.fileList)) {
-                // 新版本格式：包含 fileList 和 activeFile
-                fileList.value = data.fileList;
-                activeFile.value = data.activeFile || data[0]?.name;
-                showMessage('success', '数据导入成功');
-            } else if (Array.isArray(data) && data[0]?.visible === true) {
-                // 兼容旧版本格式：直接是 fileList 数组
-                fileList.value = data;
-                activeFile.value = data[0]?.name || "1";
-                showMessage('success', '数据导入成功');
+            let incoming: any[] = [];
+            if (data && Array.isArray(data.fileList)) {
+                incoming = data.fileList;
+            } else if (Array.isArray(data)) {
+                incoming = data; // old shape: file array directly
             } else {
-                // 兼容更旧版本格式：仅包含 groups 数组
-                const newFile = {
-                    label: `File ${fileList.value.length + 1}`,
-                    name: String(fileList.value.length + 1),
+                // older: only groups array -> wrap as one file
+                const index = fileList.value.length + 1;
+                const newFile: FlowFile = {
+                    id: genId(),
+                    label: `File ${index}`,
+                    name: `File ${index}`,
                     visible: true,
-                    type: "FLOW",
-                    groups: data,
-                    graphRawData: {
-                        nodes: [],
-                        edges: []
-                    },
-                    transform: {
-                        SCALE_X: 1,
-                        SCALE_Y: 1,
-                        TRANSLATE_X: 0,
-                        TRANSLATE_Y: 0
-                    }
+                    type: 'FLOW',
+                    graphRawData: { nodes: [], edges: [] },
+                    transform: { SCALE_X: 1, SCALE_Y: 1, TRANSLATE_X: 0, TRANSLATE_Y: 0 },
                 };
                 fileList.value.push(newFile);
-                activeFile.value = newFile.name;
+                activeFileId.value = newFile.id;
                 showMessage('success', '数据导入成功');
+                return;
             }
+
+            const normalized = normalizeList(incoming);
+            fileList.value = normalized;
+
+            // 选中逻辑：优先 activeFileId -> 其次 activeFile(name) -> 首个
+            let nextActiveId: string | undefined = undefined;
+            const idFromData = (data as any).activeFileId;
+            if (idFromData && normalized.some(f => f.id === idFromData)) {
+                nextActiveId = idFromData;
+            } else if ((data as any).activeFile) {
+                const byName = normalized.find(f => f.name === (data as any).activeFile);
+                nextActiveId = byName?.id;
+            }
+            activeFileId.value = nextActiveId || normalized[0]?.id || '';
+
+            showMessage('success', '数据导入成功');
         } catch (error) {
             console.error('Failed to import file', error);
             showMessage('error', '数据导入失败');
         }
     };
 
-    // 导出数据
+    // 导出数据（同时携带 activeFile 与 activeFileId 以兼容旧版）
     const exportData = () => {
         try {
+            const activeName = findById(activeFileId.value)?.name || '';
             const dataStr = JSON.stringify({
                 fileList: fileList.value,
-                activeFile: activeFile.value
+                activeFileId: activeFileId.value,
+                activeFile: activeName,
             }, null, 2);
             const blob = new Blob([dataStr], {type: 'application/json;charset=utf-8'});
             const url = URL.createObjectURL(blob);
@@ -161,43 +197,36 @@ export const useFilesStore = defineStore('files', () => {
         }
     };
 
-    // 初始化时检查是否有未保存的数据
+    // 启动自动恢复；如有保存的数据则直接恢复；否则用默认
     const initializeWithPrompt = () => {
         const savedState = loadStateFromLocalStorage();
         const defaultState = getDefaultState();
 
-        // 如果没有保存的数据，使用默认状态
-        if (!savedState) {
-            fileList.value = defaultState.fileList;
-            activeFile.value = defaultState.activeFile;
+        if (savedState && savedState.fileList) {
+            const normalized = normalizeList(savedState.fileList || []);
+            fileList.value = normalized;
+            const id = savedState.activeFileId;
+            let next = (id && normalized.find(f => f.id === id)?.id) || undefined;
+            if (!next && savedState.activeFile) {
+                next = normalized.find(f => f.name === savedState.activeFile)?.id;
+            }
+            activeFileId.value = next || normalized[0]?.id || '';
+            showMessage('success', '已恢复上次工作区');
             return;
         }
 
-        const isSame = JSON.stringify(savedState) === JSON.stringify(defaultState);
-        if (savedState && !isSame) {
-            ElMessageBox.confirm(
-                '检测到有未保存的旧数据，是否恢复？',
-                '提示',
-                {
-                    confirmButtonText: '恢复',
-                    cancelButtonText: '不恢复',
-                    type: 'warning',
-                }
-            ).then(() => {
-                fileList.value = savedState.fileList || [];
-                activeFile.value = savedState.activeFile || "1";
-                showMessage('success', '数据已恢复');
-            }).catch(() => {
-                clearFilesStoreLocalStorage();
-                fileList.value = defaultState.fileList;
-                activeFile.value = defaultState.activeFile;
-                showMessage('info', '选择了不恢复旧数据');
-            });
-        } else {
-            // 如果有保存的数据且与默认状态相同，直接使用保存的数据
-            fileList.value = savedState.fileList || defaultState.fileList;
-            activeFile.value = savedState.activeFile || defaultState.activeFile;
-        }
+        // 无保存数据：使用默认
+        fileList.value = normalizeList(defaultState.fileList);
+        activeFileId.value = fileList.value[0]?.id || '';
+    };
+
+    // 提供重置接口：清空本地并回到默认
+    const resetWorkspace = () => {
+        clearFilesStoreLocalStorage();
+        const def = getDefaultState();
+        fileList.value = normalizeList(def.fileList);
+        activeFileId.value = fileList.value[0]?.id || '';
+        showMessage('success', '已重置工作区');
     };
 
     // 设置自动更新
@@ -215,7 +244,8 @@ export const useFilesStore = defineStore('files', () => {
 
         requestAnimationFrame(() => {
             const newFileName = `File ${fileList.value.length + 1}`;
-            const newFile = {
+            const newFile: FlowFile = {
+                id: genId(),
                 label: newFileName,
                 name: newFileName,
                 visible: true,
@@ -229,22 +259,22 @@ export const useFilesStore = defineStore('files', () => {
                 }
             };
             fileList.value.push(newFile);
-            activeFile.value = newFileName;
+            activeFileId.value = newFile.id;
         });
     };
 
     // 关闭文件标签
-    const removeTab = (fileName: string | undefined) => {
-        if (!fileName) return;
+    const removeTab = (fileId: string | undefined) => {
+        if (!fileId) return;
 
-        const index = fileList.value.findIndex(file => file.name === fileName);
+        const index = fileList.value.findIndex(file => file.id === fileId);
         if (index === -1) return;
 
         fileList.value.splice(index, 1);
 
         // 如果关闭的是当前活动文件，则切换到其他文件
-        if (activeFile.value === fileName) {
-            activeFile.value = fileList.value[Math.max(0, index - 1)]?.name || '';
+        if (activeFileId.value === fileId) {
+            activeFileId.value = fileList.value[Math.max(0, index - 1)]?.id || '';
         }
 
         // 关闭文件后立即更新
@@ -252,17 +282,18 @@ export const useFilesStore = defineStore('files', () => {
     };
 
     // 更新指定 Tab - 内存操作即时，localStorage 操作防抖
-    const updateTab = (fileName?: string) => {
+    const updateTab = (fileId?: string) => {
         try {
-            const targetFile = fileName || activeFile.value;
+            const targetId = fileId || activeFileId.value;
 
             // 先同步 LogicFlow 数据到内存
-            syncLogicFlowDataToStore(targetFile);
+            syncLogicFlowDataToStore(targetId);
 
             // 再保存到 localStorage（带防抖）
             const state = {
                 fileList: fileList.value,
-                activeFile: activeFile.value
+                activeFileId: activeFileId.value,
+                activeFile: findById(activeFileId.value)?.name || ''
             };
             saveStateToLocalStorage(state);
         } catch (error) {
@@ -271,18 +302,18 @@ export const useFilesStore = defineStore('files', () => {
         }
     };
 
-    // 获取当前 Tab 数据
-    const getTab = (fileName?: string) => {
-        const targetFile = fileName || activeFile.value;
-        return fileList.value.find(f => f.name === targetFile);
+    // 获取当前 Tab 数据（优先按 id，兼容按 name）
+    const getTab = (fileKey?: string) => {
+        const targetId = fileKey || activeFileId.value;
+        return findById(targetId) || findByName(fileKey || '');
     };
 
     // 同步 LogicFlow 画布数据到 store 的内部方法
-    const syncLogicFlowDataToStore = (fileName?: string) => {
+    const syncLogicFlowDataToStore = (fileId?: string) => {
         const logicFlowInstance = getLogicFlowInstance();
-        const targetFile = fileName || activeFile.value;
+        const targetId = fileId || activeFileId.value;
 
-        if (logicFlowInstance && targetFile) {
+        if (logicFlowInstance && targetId) {
             try {
                 // 获取画布最新数据
                 const graphData = logicFlowInstance.getGraphRawData();
@@ -290,11 +321,11 @@ export const useFilesStore = defineStore('files', () => {
 
                 if (graphData) {
                     // 直接保存原始数据到 GraphRawData
-                    const file = fileList.value.find(f => f.name === targetFile);
+                    const file = findById(targetId);
                     if (file) {
                         file.graphRawData = graphData;
                         file.transform = transform;
-                        console.log(`已同步画布数据到文件 "${targetFile}"`);
+                        console.log(`已同步画布数据到文件 "${file.name}"(${targetId})`);
                     }
                 }
             } catch (error) {
@@ -303,15 +334,12 @@ export const useFilesStore = defineStore('files', () => {
         }
     };
 
-
-
-
-
     return {
         importData,
         exportData,
 
         initializeWithPrompt,
+        resetWorkspace,
         setupAutoSave,
 
         addTab,
@@ -320,7 +348,7 @@ export const useFilesStore = defineStore('files', () => {
         getTab,
 
         fileList,
-        activeFile,
+        activeFileId,
         visibleFiles,
     };
-});
+});;;
