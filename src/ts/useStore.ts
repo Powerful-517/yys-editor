@@ -1,15 +1,22 @@
 import {defineStore} from 'pinia';
+import {defineStore} from 'pinia';
 import {ref, computed} from 'vue';
 // import type { Edge, Node, ViewportTransform } from '@vue-flow/core';
 import {ElMessageBox} from "element-plus";
 import {useGlobalMessage} from "./useGlobalMessage";
 import {getLogicFlowInstance} from "./useLogicFlow";
+import {CURRENT_SCHEMA_VERSION, migrateToV1, RootDocument} from "./schema";
 
 const {showMessage} = useGlobalMessage();
 
 // localStorage 防抖定时器
 let localStorageDebounceTimer: NodeJS.Timeout | null = null;
 const LOCALSTORAGE_DEBOUNCE_DELAY = 1000; // 1秒防抖
+
+type PersistedRoot = RootDocument & {
+    activeFileId?: string;
+    activeFile?: string;
+};
 
 interface FlowFile {
     id: string; // stable identity, do not rely on name for selection
@@ -130,40 +137,25 @@ export const useFilesStore = defineStore('files', () => {
     // 导入数据（兼容旧格式 activeFile/name）
     const importData = (data: any) => {
         try {
-            let incoming: any[] = [];
-            if (data && Array.isArray(data.fileList)) {
-                incoming = data.fileList;
-            } else if (Array.isArray(data)) {
-                incoming = data; // old shape: file array directly
-            } else {
-                // older: only groups array -> wrap as one file
-                const index = fileList.value.length + 1;
-                const newFile: FlowFile = {
-                    id: genId(),
-                    label: `File ${index}`,
-                    name: `File ${index}`,
-                    visible: true,
-                    type: 'FLOW',
-                    graphRawData: { nodes: [], edges: [] },
-                    transform: { SCALE_X: 1, SCALE_Y: 1, TRANSLATE_X: 0, TRANSLATE_Y: 0 },
-                };
-                fileList.value.push(newFile);
-                activeFileId.value = newFile.id;
-                showMessage('success', '数据导入成功');
-                return;
-            }
+            // 如果已有 schemaVersion，则视为 v1 RootDocument；否则通过迁移器补齐
+            const root: PersistedRoot = (data && typeof data === 'object' && (data as any).schemaVersion)
+                ? (data as PersistedRoot)
+                : migrateToV1(data) as PersistedRoot;
 
-            const normalized = normalizeList(incoming);
+            const normalized = normalizeList(root.fileList || []);
             fileList.value = normalized;
 
             // 选中逻辑：优先 activeFileId -> 其次 activeFile(name) -> 首个
             let nextActiveId: string | undefined = undefined;
-            const idFromData = (data as any).activeFileId;
+            const idFromData = (data as any).activeFileId ?? root.activeFileId;
             if (idFromData && normalized.some(f => f.id === idFromData)) {
                 nextActiveId = idFromData;
-            } else if ((data as any).activeFile) {
-                const byName = normalized.find(f => f.name === (data as any).activeFile);
-                nextActiveId = byName?.id;
+            } else {
+                const nameFromData = (data as any).activeFile ?? root.activeFile;
+                if (nameFromData) {
+                    const byName = normalized.find(f => f.name === nameFromData);
+                    nextActiveId = byName?.id;
+                }
             }
             activeFileId.value = nextActiveId || normalized[0]?.id || '';
 
@@ -179,6 +171,7 @@ export const useFilesStore = defineStore('files', () => {
         try {
             const activeName = findById(activeFileId.value)?.name || '';
             const dataStr = JSON.stringify({
+                schemaVersion: CURRENT_SCHEMA_VERSION,
                 fileList: fileList.value,
                 activeFileId: activeFileId.value,
                 activeFile: activeName,
@@ -199,16 +192,27 @@ export const useFilesStore = defineStore('files', () => {
 
     // 启动自动恢复；如有保存的数据则直接恢复；否则用默认
     const initializeWithPrompt = () => {
-        const savedState = loadStateFromLocalStorage();
+        const savedStateRaw = loadStateFromLocalStorage();
         const defaultState = getDefaultState();
 
-        if (savedState && savedState.fileList) {
-            const normalized = normalizeList(savedState.fileList || []);
+        if (savedStateRaw && (savedStateRaw as any).fileList) {
+            // 若已有 schemaVersion，则视为 v1；否则通过迁移器补齐到 RootDocument 形态
+            const root: PersistedRoot = ((savedStateRaw as any).schemaVersion)
+                ? (savedStateRaw as PersistedRoot)
+                : migrateToV1(savedStateRaw) as PersistedRoot;
+
+            const normalized = normalizeList(root.fileList || []);
             fileList.value = normalized;
-            const id = savedState.activeFileId;
-            let next = (id && normalized.find(f => f.id === id)?.id) || undefined;
-            if (!next && savedState.activeFile) {
-                next = normalized.find(f => f.name === savedState.activeFile)?.id;
+
+            let next: string | undefined;
+            const idFromData = (savedStateRaw as any).activeFileId ?? root.activeFileId;
+            if (idFromData && normalized.some(f => f.id === idFromData)) {
+                next = idFromData;
+            } else {
+                const nameFromData = (savedStateRaw as any).activeFile ?? root.activeFile;
+                if (nameFromData) {
+                    next = normalized.find(f => f.name === nameFromData)?.id;
+                }
             }
             activeFileId.value = next || normalized[0]?.id || '';
             showMessage('success', '已恢复上次工作区');
@@ -290,8 +294,9 @@ export const useFilesStore = defineStore('files', () => {
             syncLogicFlowDataToStore(targetId);
 
             // 再保存到 localStorage（带防抖）
-            const state = {
-                fileList: fileList.value,
+            const state: PersistedRoot = {
+                schemaVersion: CURRENT_SCHEMA_VERSION,
+                fileList: fileList.value as any,
                 activeFileId: activeFileId.value,
                 activeFile: findById(activeFileId.value)?.name || ''
             };
