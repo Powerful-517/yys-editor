@@ -278,7 +278,7 @@ export const useFilesStore = defineStore('files', () => {
         }
 
         // 关闭文件后立即更新
-        updateTab();
+        // updateTab();
     };
 
     // 更新指定 Tab - 内存操作即时，localStorage 操作防抖

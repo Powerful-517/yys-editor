@@ -8,6 +8,7 @@
       <el-button type="info" @click="loadExample">{{ t('loadExample') }}</el-button>
       <el-button type="info" @click="showUpdateLog">{{ t('updateLog') }}</el-button>
       <el-button type="warning" @click="showFeedbackForm">{{ t('feedback') }}</el-button>
+      <el-button type="danger" @click="handleResetWorkspace">重置工作区</el-button>
     </div>
 
     <!-- 更新日志对话框 -->
@@ -107,11 +108,13 @@ const refreshLogicFlowCanvas = (message?: string) => {
     const logicFlowInstance = getLogicFlowInstance();
     if (logicFlowInstance) {
       // 获取当前活动文件的数据
-      const currentFileData = filesStore.getTab(filesStore.activeFile);
+      const currentFileData = filesStore.getTab(filesStore.activeFileId);
       if (currentFileData) {
         // 清空画布并重新渲染
         logicFlowInstance.clearData();
-        logicFlowInstance.render(currentFileData);
+        // 注意：此处根据你的画布 API 传入 graphRawData 或整个文件数据
+        const data = (currentFileData as any).graphRawData || currentFileData;
+        logicFlowInstance.render(data);
         console.log(message || 'LogicFlow 画布已重新渲染');
       }
     }
@@ -213,6 +216,18 @@ const handleImport = () => {
     }
   };
   input.click();
+};
+
+const handleResetWorkspace = () => {
+  ElMessageBox.confirm('确定重置当前工作区？该操作不可撤销', '提示', {
+    confirmButtonText: '重置',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    filesStore.resetWorkspace();
+  }).catch(() => {
+    // 用户取消
+  });
 };
 
 const watermark = reactive({
