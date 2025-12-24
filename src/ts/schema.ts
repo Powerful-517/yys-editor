@@ -84,22 +84,12 @@ export interface GraphEdge {
 
 export interface GraphDocument { nodes: GraphNode[]; edges: GraphEdge[]; }
 
-export interface FlowFile {
-  label: string;
-  name: string;
-  visible: boolean;
-  type: string; // 'FLOW'
-  graphRawData: GraphDocument;
-  transform: Transform;
-  createdAt?: number;
-  updatedAt?: number;
-  id?: string;
-}
-
 export interface RootDocument {
   schemaVersion: string;
   fileList: FlowFile[];
   activeFile: string;
+  // 可以缺省，旧数据会在加载时通过名称回退
+  activeFileId?: string;
 }
 
 export const DefaultNodeStyle: NodeStyle = {
@@ -187,10 +177,8 @@ export function migrateToV1(input: any): RootDocument {
     const edges = Array.isArray(raw.edges) ? raw.edges : [];
     return { nodes, edges };
   };
-
-  const wrap = (files: any[], active?: string): RootDocument => ({
-    schemaVersion: CURRENT_SCHEMA_VERSION,
-    fileList: files.map((f, i) => ({
+  const wrap = (files: any[], activeName?: string): RootDocument => {
+    const normalizedFiles = files.map((f, i) => ({
       label: f?.label ?? `File ${i + 1}`,
       name: f?.name ?? `File ${i + 1}`,
       visible: f?.visible ?? true,
@@ -200,9 +188,19 @@ export function migrateToV1(input: any): RootDocument {
       createdAt: f?.createdAt ?? now,
       updatedAt: f?.updatedAt ?? now,
       id: f?.id,
-    })),
-    activeFile: active ?? (files[0]?.name ?? 'File 1'),
-  });
+    }));
+
+    const fallbackName = normalizedFiles[0]?.name ?? 'File 1';
+    const resolvedActiveName = activeName ?? fallbackName;
+    const activeFile = normalizedFiles.find(f => f.name === resolvedActiveName) ?? normalizedFiles[0];
+
+    return {
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      fileList: normalizedFiles,
+      activeFile: resolvedActiveName,
+      activeFileId: activeFile?.id,
+    };
+  };
 
   if (!input) {
     return wrap([{ label: 'File 1', name: 'File 1', visible: true, type: 'FLOW' }]);

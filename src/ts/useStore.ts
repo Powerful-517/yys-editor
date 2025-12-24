@@ -1,5 +1,4 @@
 import {defineStore} from 'pinia';
-import {defineStore} from 'pinia';
 import {ref, computed} from 'vue';
 // import type { Edge, Node, ViewportTransform } from '@vue-flow/core';
 import {ElMessageBox} from "element-plus";
@@ -13,10 +12,7 @@ const {showMessage} = useGlobalMessage();
 let localStorageDebounceTimer: NodeJS.Timeout | null = null;
 const LOCALSTORAGE_DEBOUNCE_DELAY = 1000; // 1秒防抖
 
-type PersistedRoot = RootDocument & {
-    activeFileId?: string;
-    activeFile?: string;
-};
+type PersistedRoot = RootDocument;
 
 interface FlowFile {
     id: string; // stable identity, do not rely on name for selection
@@ -356,4 +352,4 @@ export const useFilesStore = defineStore('files', () => {
         activeFileId,
         visibleFiles,
     };
-});;;
+});
