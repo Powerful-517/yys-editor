@@ -64,87 +64,77 @@ onMounted(() => {
     // container: document.querySelector('#container'),
     grid: true,
     allowResize: true,
-    allowRotate : true,
+    allowRotate: true,
     plugins: [Menu],
+    overlapMode:-1
   });
-  lf.value.addMenuConfig({
+
+  const lfInstance = lf.value;
+  if (!lfInstance) return;
+
+  lfInstance.extension.menu.addMenuConfig({
     nodeMenu: [
       {
-        text: '分享',
-        callback() {
-          alert('分享成功！')
-        },
+        text: '置于顶层',
+        callback(node: NodeData) {
+          console.log(lfInstance.getNodeModelById(node.id).zIndex)
+          lfInstance.setElementZIndex(node.id, 'top');
+        }
       },
       {
-        text: '属性',
+        text: '置于底层',
         callback(node: NodeData) {
-          alert(`
-              节点id：${node.id}
-              节点类型：${node.type}
-              节点坐标：(x: ${node.x}, y: ${node.y})
-            `)
-        },
+          console.log(lfInstance.getNodeModelById(node.id).zIndex)
+          lfInstance.setElementZIndex(node.id, 'bottom');
+        }
       },
+      {
+        text: '删除节点',
+        callback(node: NodeData) {
+          lfInstance.deleteNode(node.id);
+        }
+      }
     ],
     edgeMenu: [
       {
-        text: '属性',
+        text: '删除边',
         callback(edge: EdgeData) {
-          const {
-            id,
-            type,
-            startPoint,
-            endPoint,
-            sourceNodeId,
-            targetNodeId,
-          } = edge
-          alert(`
-              边id：${id}
-              边类型：${type}
-              边起点坐标：(startPoint: [${startPoint.x}, ${startPoint.y}])
-              边终点坐标：(endPoint: [${endPoint.x}, ${endPoint.y}])
-              源节点id：${sourceNodeId}
-              目标节点id：${targetNodeId}
-            `)
-        },
-      },
+          lfInstance.deleteEdge(edge.id);
+        }
+      }
     ],
     graphMenu: [
       {
-        text: '分享',
-        callback() {
-          alert('分享成功！')
-        },
-      },
-      {
         text: '添加节点',
         callback(data: Position) {
-          lf.addNode({
+          lfInstance.addNode({
             type: 'rect',
             x: data.x,
-            y: data.y,
-          })
-        },
-      },
-    ],
+            y: data.y
+          });
+        }
+      }
+    ]
   });
-  registerNodes(lf.value);
-  setLogicFlowInstance(lf.value);
-  lf.value.render({
+
+  registerNodes(lfInstance);
+  setLogicFlowInstance(lfInstance);
+  lfInstance.render({
     // 渲染的数据
-  })
+  });
+
   // 监听节点点击事件，更新 selectedNode
-  lf.value.on(EventType.NODE_CLICK, ({ data }) => {
+  lfInstance.on(EventType.NODE_CLICK, ({ data }) => {
     selectedNode.value = data;
   });
 
   // 监听空白点击事件，取消选中
-  lf.value.on(EventType.BLANK_CLICK, () => {
+  lfInstance.on(EventType.BLANK_CLICK, () => {
     selectedNode.value = null;
   });
 
   // 节点属性改变，如果当前节点是选中节点，则同步更新 selectedNode
-  lf.value.on(EventType.NODE_PROPERTIES_CHANGE, (data) => {
+  lfInstance.on(EventType.NODE_PROPERTIES_CHANGE, (data) => {
     const nodeId = data.id;
     if (selectedNode.value && nodeId === selectedNode.value.id) {
       if (data.properties) {
@@ -155,7 +145,6 @@ onMounted(() => {
       }
     }
   });
-
 });
 
 // 销毁 LogicFlow
