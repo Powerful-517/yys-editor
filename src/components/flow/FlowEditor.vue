@@ -3,18 +3,6 @@
     <!-- 中间流程图区域 -->
     <div class="flow-container">
       <div class="container" ref="containerRef" :style="{ height: '100%' }"></div>
-      <!-- 右键菜单 -->
-      <Teleport to="body">
-        <div v-if="contextMenu.show"
-             class="context-menu"
-             :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }"
-             @click.stop>
-          <div class="menu-item" @click="handleLayerOrder('bringToFront')">移至最前</div>
-          <div class="menu-item" @click="handleLayerOrder('sendToBack')">移至最后</div>
-          <div class="menu-item" @click="handleLayerOrder('bringForward')">上移一层</div>
-          <div class="menu-item" @click="handleLayerOrder('sendBackward')">下移一层</div>
-        </div>
-      </Teleport>
     </div>
     <!-- 右侧属性面板 -->
     <PropertyPanel :height="height" :node="selectedNode" :lf="lf" />
@@ -25,6 +13,9 @@
 import { ref, watch, onMounted, onBeforeUnmount, defineExpose } from 'vue';
 import LogicFlow, { EventType } from '@logicflow/core';
 import '@logicflow/core/lib/style/index.css';
+import { Menu } from "@logicflow/extension";
+import "@logicflow/extension/lib/style/index.css";
+
 import { register } from '@logicflow/vue-node-registry';
 import ShikigamiSelectNode from './nodes/yys/ShikigamiSelectNode.vue';
 import YuhunSelectNode from './nodes/yys/YuhunSelectNode.vue';
@@ -34,6 +25,9 @@ import PropertySelectNode from './nodes/yys/PropertySelectNode.vue';
 import PropertyPanel from './PropertyPanel.vue';
 import { useFilesStore } from "@/ts/useStore";
 import { setLogicFlowInstance, destroyLogicFlowInstance } from '@/ts/useLogicFlow';
+import Position = LogicFlow.Position;
+import NodeData = LogicFlow.NodeData;
+import EdgeData = LogicFlow.EdgeData;
 
 const props = defineProps<{
   height?: string;
@@ -70,7 +64,69 @@ onMounted(() => {
     // container: document.querySelector('#container'),
     grid: true,
     allowResize: true,
-    allowRotate : true
+    allowRotate : true,
+    plugins: [Menu],
+  });
+  lf.value.addMenuConfig({
+    nodeMenu: [
+      {
+        text: '分享',
+        callback() {
+          alert('分享成功！')
+        },
+      },
+      {
+        text: '属性',
+        callback(node: NodeData) {
+          alert(`
+              节点id：${node.id}
+              节点类型：${node.type}
+              节点坐标：(x: ${node.x}, y: ${node.y})
+            `)
+        },
+      },
+    ],
+    edgeMenu: [
+      {
+        text: '属性',
+        callback(edge: EdgeData) {
+          const {
+            id,
+            type,
+            startPoint,
+            endPoint,
+            sourceNodeId,
+            targetNodeId,
+          } = edge
+          alert(`
+              边id：${id}
+              边类型：${type}
+              边起点坐标：(startPoint: [${startPoint.x}, ${startPoint.y}])
+              边终点坐标：(endPoint: [${endPoint.x}, ${endPoint.y}])
+              源节点id：${sourceNodeId}
+              目标节点id：${targetNodeId}
+            `)
+        },
+      },
+    ],
+    graphMenu: [
+      {
+        text: '分享',
+        callback() {
+          alert('分享成功！')
+        },
+      },
+      {
+        text: '添加节点',
+        callback(data: Position) {
+          lf.addNode({
+            type: 'rect',
+            x: data.x,
+            y: data.y,
+          })
+        },
+      },
+    ],
   });
   registerNodes(lf.value);
   setLogicFlowInstance(lf.value);
@@ -100,9 +156,6 @@ onMounted(() => {
     }
   });
 
-  // 右键事件
-  lf.value.on('node:contextmenu', handleNodeContextMenu);
-  lf.value.on('blank:contextmenu', handlePaneContextMenu);
 });
 
 // 销毁 LogicFlow
@@ -131,10 +184,7 @@ function handlePaneContextMenu({ e }: { e: MouseEvent }) {
   e.stopPropagation();
   contextMenu.value.show = false;
 }
-function handleLayerOrder(action: string) {
-  // 这里需要结合你的 store 或数据结构实现节点顺序调整
-  contextMenu.value.show = false;
-}
+
 
 </script>
 
