@@ -1,65 +1,94 @@
-<!--<script setup lang="ts">-->
-<!--import {ref, watch} from 'vue';-->
-<!--import {Handle, useVueFlow} from '@vue-flow/core';-->
-<!--import {NodeResizer} from '@vue-flow/node-resizer';-->
-<!--import '@vue-flow/node-resizer/dist/style.css';-->
+<script setup lang="ts">
+import { inject, onBeforeUnmount, onMounted, ref } from 'vue';
+import { EventType } from '@logicflow/core';
 
-<!--const props = defineProps({-->
-<!--  data: Object,-->
-<!--  id: String,-->
-<!--  selected: Boolean-->
-<!--});-->
+type FitMode = 'contain' | 'cover' | 'fill';
 
-<!--const nodeWidth = ref(180);-->
-<!--const nodeHeight = ref(120);-->
+const getNode = inject('getNode') as (() => any) | undefined;
+const getGraph = inject('getGraph') as (() => any) | undefined;
 
-<!--// 监听props.data变化，支持外部更新图片-->
-<!--watch(() => props.data, (newData) => {-->
-<!--  if (newData && newData.width) nodeWidth.value = newData.width;-->
-<!--  if (newData && newData.height) nodeHeight.value = newData.height;-->
-<!--}, {immediate: true});-->
+const imageUrl = ref('');
+const fit = ref<FitMode>('contain');
 
-<!--</script>-->
-<!--<template>-->
-<!--  <NodeResizer v-if="selected" :min-width="60" :min-height="60" :max-width="400" :max-height="400"/>-->
-<!--  <div class="image-node">-->
-<!--    <Handle type="target" position="left" :id="`${id}-target`"/>-->
-<!--    <div class="image-content">-->
-<!--      <img v-if="props.data && props.data.url" :src="props.data.url" alt="图片节点"-->
-<!--           style="width:100%;height:100%;object-fit:contain;"/>-->
-<!--      <div v-else class="image-placeholder">未上传图片</div>-->
-<!--    </div>-->
-<!--    <Handle type="source" position="right" :id="`${id}-source`"/>-->
-<!--  </div>-->
-<!--</template>-->
-<!--<style scoped>-->
-<!--.image-node {-->
-<!--  background: #fff;-->
-<!--  border: 1px solid #dcdfe6;-->
-<!--  border-radius: 4px;-->
-<!--  display: flex;-->
-<!--  flex-direction: column;-->
-<!--  align-items: center;-->
-<!--  justify-content: center;-->
-<!--  overflow: hidden;-->
-<!--  position: relative;-->
-<!--  width: 100%;-->
-<!--  height: 100%;-->
-<!--  min-width: 180px;-->
-<!--  min-height: 180px;-->
-<!--}-->
+const refreshFromProps = (props?: any, node?: any) => {
+  const targetProps = props ?? node?.properties ?? {};
+  imageUrl.value = targetProps.image?.url ?? targetProps.url ?? '';
+  fit.value = targetProps.image?.fit ?? targetProps.fit ?? 'contain';
+};
 
-<!--.image-content {-->
-<!--  position: relative;-->
-<!--  width: 100%;-->
-<!--  height: 100%;-->
-<!--  display: flex;-->
-<!--  align-items: center;-->
-<!--  justify-content: center;-->
-<!--}-->
+let offChange: (() => void) | null = null;
 
-<!--.image-placeholder {-->
-<!--  color: #bbb;-->
-<!--  font-size: 14px;-->
-<!--}-->
-<!--</style>-->
+onMounted(() => {
+  const node = getNode?.();
+  refreshFromProps(node?.properties, node);
+
+  const graph = getGraph?.();
+  const handler = (eventData: any) => {
+    if (node && eventData.id === node.id) {
+      refreshFromProps(eventData.properties, node);
+    }
+  };
+  graph?.eventCenter.on(EventType.NODE_PROPERTIES_CHANGE, handler);
+  offChange = () => graph?.eventCenter.off(EventType.NODE_PROPERTIES_CHANGE, handler);
+});
+
+onBeforeUnmount(() => {
+  offChange?.();
+});
+</script>
+
+<template>
+  <div class="image-node">
+    <div class="image-wrapper">
+      <img v-if="imageUrl" :src="imageUrl" alt="图片节点" :style="{ objectFit: fit }" draggable="false" />
+      <div v-else class="placeholder">
+        <div class="placeholder-text">未上传图片</div>
+        <div class="placeholder-hint">在右侧属性面板上传或填写 URL</div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.image-node {
+  width: 100%;
+  height: 100%;
+  min-width: 150px;
+  min-height: 120px;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  display: flex;
+}
+
+.image-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+}
+
+.image-wrapper img {
+  width: 100%;
+  height: 100%;
+}
+
+.placeholder {
+  color: #909399;
+  text-align: center;
+  line-height: 1.4;
+  padding: 12px;
+}
+
+.placeholder-text {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.placeholder-hint {
+  font-size: 12px;
+}
+</style>

@@ -20,7 +20,7 @@ import { register } from '@logicflow/vue-node-registry';
 import ShikigamiSelectNode from './nodes/yys/ShikigamiSelectNode.vue';
 import YuhunSelectNode from './nodes/yys/YuhunSelectNode.vue';
 import PropertySelectNode from './nodes/yys/PropertySelectNode.vue';
-// import ImageNode from './nodes/common/ImageNode.vue';
+import ImageNode from './nodes/common/ImageNode.vue';
 // import TextNode from './nodes/common/TextNode.vue';
 import PropertyPanel from './PropertyPanel.vue';
 import { useFilesStore } from "@/ts/useStore";
@@ -53,7 +53,7 @@ function registerNodes(lfInstance: LogicFlow) {
   register({ type: 'yuhunSelect', component: YuhunSelectNode }, lfInstance);
   register({ type: 'propertySelect', component: PropertySelectNode }, lfInstance);
 
-  // register({ type: 'imageNode', component: ImageNode }, lfInstance);
+  register({ type: 'imageNode', component: ImageNode }, lfInstance);
   // register({ type: 'textNode', component: TextNode }, lfInstance);
 }
 
@@ -77,15 +77,15 @@ onMounted(() => {
       {
         text: '置于顶层',
         callback(node: NodeData) {
-          console.log(lfInstance.getNodeModelById(node.id).zIndex)
           lfInstance.setElementZIndex(node.id, 'top');
+          console.log("置顶"+lfInstance.getNodeModelById(node.id).zIndex)
         }
       },
       {
         text: '置于底层',
         callback(node: NodeData) {
-          console.log(lfInstance.getNodeModelById(node.id).zIndex)
           lfInstance.setElementZIndex(node.id, 'bottom');
+          console.log("置底"+lfInstance.getNodeModelById(node.id).zIndex)
         }
       },
       {
