@@ -1,17 +1,17 @@
 ﻿# 模块状态总览（重写）
 
-总体完成度（粗略）：约 68%
+总体完成度（粗略）：约 73%
 
-## 1. 画布（LogicFlow） — 完成度：68%
+## 1. 画布（LogicFlow） — 完成度：75%
 - 已完成：
   - 初始化与销毁：LogicFlow 实例、网格/缩放/旋转、节点选中/空白取消（src/components/flow/FlowEditor.vue）
   - 自定义节点注册：`shikigamiSelect`、`yuhunSelect`、`propertySelect`、`imageNode`
   - 与 Store 联动：读取/写入 `graphRawData` 与 `transform`（缩放/位移）（src/ts/useStore.ts, src/ts/useLogicFlow.ts）
   - DnD 接入：由组件库触发拖拽放置
   - 右键菜单：节点置顶/置底与删除、边删除、画布添加节点（基于 LogicFlow Menu + `setElementZIndex`）
+  - 多选/框选、对齐线、吸附网格；左/右/上/下/水平/垂直居中与横/纵等距分布（SelectionSelect + snapline + 自定义对齐分布指令）
 - 未完成：
   - 右键菜单层级命令：已接通置顶/置底，单步前移/后移（`bringForward`/`sendBackward`）未实现
-  - 多选/框选、对齐线、对齐/平均分布、吸附到网格
   - 撤销重做、组合/锁定/隐藏、快捷键（Del/Ctrl+C/V、方向键微移、Ctrl+Z/Y）
   - MiniMap/控制条/Snapshot 等扩展能力
 
@@ -33,13 +33,12 @@
   - `textNode` 富文本编辑与同步
   - 字段校验/联动、常用模板一键填充、更多样式项（填充/描边/圆角/阴影/透明度）
 
-## 4. 工具栏（Toolbar） — 完成度：70%
+## 4. 工具栏（Toolbar） — 完成度：80%
 - 已完成：
   - 导入/导出（走 store）、更新日志、问题反馈（src/components/Toolbar.vue）
   - 水印设置（文本/字号/颜色/角度/行列）并持久化到 localStorage
-  - 截图预览弹窗框架
+  - 截图预览与导出：基于 LogicFlow Snapshot 获取 PNG，叠加自定义水印，预览/下载
 - 未完成：
-  - 截图逻辑仍按旧的 VueFlow 容器选择器查找，未对接 LogicFlow 容器；`captureFlow` 未实现/被注释
   - 导出文件命名/版本号与 `schemaVersion`，导入时的校验与迁移提示
 
 ## 5. 弹窗系统（Dialogs） — 完成度：75%
@@ -104,9 +103,9 @@
 
 - 推荐开发顺序（每步可独立验收）
   1) 节点最小化打通：已注册并可用 `imageNode`（上传/URL/fit/宽高）；`textNode` 待注册 + 富文本/样式；PropertyPanel 已按类型拆分子组件（`src/components/flow/FlowEditor.vue`, `src/components/flow/PropertyPanel.vue`）。
-  2) 截图修复：改为基于 LogicFlow 容器导出 PNG，沿用水印配置（`src/components/Toolbar.vue`）。
+  2) 截图修复：改为基于 LogicFlow 容器导出 PNG，沿用水印配置（`src/components/Toolbar.vue`）。已完成
   3) 图层命令 MVP：基于 LogicFlow 的层级/前后置 API 封装 bringToFront/sendToBack/bringForward/sendBackward + 右键菜单，如需持久化仅同步引擎提供的层级信息（`src/components/flow/FlowEditor.vue`）。已完成：置顶/置底 + 右键菜单；待补：单步前移/后移。
-  4) 多选/对齐/吸附：框选、对齐线、吸附网格；左/右/上/下/水平/垂直居中与横/纵等距分布（FlowEditor/extension）。
+  4) 多选/对齐/吸附：框选、对齐线、吸附网格；左/右/上/下/水平/垂直居中与横/纵等距分布（FlowEditor/extension）。已完成
   5) 快捷键与微调：Del 删除、方向键微移、Ctrl+C/V 复制粘贴、Ctrl+G/U 组/解组（简单组：父 meta id + 同步移动）、锁定/隐藏（`properties.locked`/`visible`）。
   6) 样式模型补齐：统一 `properties.style` 字段并在 PropertyPanel 全量编辑（填充/描边/圆角/阴影/透明度/文字对齐/行高/字重）。
   7) 扩展与控制：接入 MiniMap/Control/Snapshot；Toolbar 增加吸附/对齐开关与清空画布。
@@ -126,7 +125,7 @@
   - 截图基于 DOM 选择器易漂移；由 FlowEditor 提供 `getCanvasEl()`，Toolbar 仅依赖该接口。
 
 - 验收停靠点
-  - 1/2 结束：冻结顶层导出结构 v1（Root Document + LogicFlow GraphData）与截图容器约定；filesStore 开始写入 `schemaVersion`。（当前已完成：Root Document + GraphData + schemaVersion 持久化；截图容器约定待完成）
+  - 1/2 结束：冻结顶层导出结构 v1（Root Document + LogicFlow GraphData）与截图容器约定；filesStore 开始写入 `schemaVersion`。（当前已完成：Root Document + GraphData + schemaVersion 持久化；截图容器约定已完成：LogicFlow Snapshot + 水印）
   - 3/4 结束：冻结 CanvasService API；层级/对齐操作均能回放。
   - 6 结束：统一样式模型，三类节点在 UI 中可一致编辑。
   - 8 结束：确认 SVG 导入/导出链路稳定。
