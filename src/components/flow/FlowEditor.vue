@@ -13,7 +13,7 @@
 import { ref, watch, onMounted, onBeforeUnmount, defineExpose } from 'vue';
 import LogicFlow, { EventType } from '@logicflow/core';
 import '@logicflow/core/lib/style/index.css';
-import { Menu,Label  } from "@logicflow/extension";
+import { Menu, Label, Snapshot } from "@logicflow/extension";
 import "@logicflow/extension/lib/style/index.css";
 import '@logicflow/core/es/index.css';
 import '@logicflow/extension/es/index.css';
@@ -68,7 +68,7 @@ onMounted(() => {
     allowResize: true,
     allowRotate: true,
     overlapMode:-1,
-    plugins: [Menu,Label],
+    plugins: [Menu, Label, Snapshot],
     pluginsOptions: {
       label: {
         isMultiple: true,

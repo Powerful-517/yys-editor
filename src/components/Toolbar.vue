@@ -77,15 +77,13 @@
 </template>
 
 <script setup lang="ts">
-import {ref, reactive, onMounted} from 'vue';
-import {useI18n} from 'vue-i18n';
+import { reactive, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import updateLogs from "../data/updateLog.json"
-import {useFilesStore} from "@/ts/useStore";
-import {ElMessageBox} from "element-plus";
-import {useGlobalMessage} from "@/ts/useGlobalMessage";
+import { useFilesStore } from "@/ts/useStore";
+import { ElMessageBox } from "element-plus";
+import { useGlobalMessage } from "@/ts/useGlobalMessage";
 import { getLogicFlowInstance } from "@/ts/useLogicFlow";
-// import { useScreenshot } from '@/ts/useScreenshot';
-import { getCurrentInstance } from 'vue';
 
 const filesStore = useFilesStore();
 const { showMessage } = useGlobalMessage();
@@ -252,44 +250,85 @@ const applyWatermarkSettings = () => {
 };
 
 
-// 获取 App 根实例，便于跨组件获取 flowEditorRef
-const appInstance = getCurrentInstance();
+const addWatermarkToImage = (base64: string) => {
+  const rows = Math.max(1, Number(watermark.rows) || 1);
+  const cols = Math.max(1, Number(watermark.cols) || 1);
+  const angle = (Number(watermark.angle) * Math.PI) / 180;
 
-// const { captureFlow, dataUrl } = useScreenshot();
+  return new Promise<string>((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      if (!ctx) {
+        reject(new Error('无法创建画布上下文'));
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0);
+      ctx.font = `${watermark.fontSize}px sans-serif`;
+      ctx.fillStyle = watermark.color;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      const rowStep = canvas.height / rows;
+      const colStep = canvas.width / cols;
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const x = (c + 0.5) * colStep;
+          const y = (r + 0.5) * rowStep;
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(angle);
+          ctx.fillText(watermark.text, 0, 0);
+          ctx.restore();
+        }
+      }
+
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => reject(new Error('快照加载失败'));
+    img.src = base64;
+  });
+};
+
+const captureLogicFlowSnapshot = async () => {
+  const logicFlowInstance = getLogicFlowInstance() as any;
+  if (!logicFlowInstance || typeof logicFlowInstance.getSnapshotBase64 !== 'function') {
+    showMessage('error', '未找到 LogicFlow 实例，无法截图');
+    return null;
+  }
+
+  const snapshotResult = await logicFlowInstance.getSnapshotBase64(
+    undefined,
+    undefined,
+    {
+      fileType: 'png',
+      backgroundColor: '#ffffff',
+      partial: false,
+      padding: 20,
+    },
+  );
+
+  const base64 = typeof snapshotResult === 'string' ? snapshotResult : snapshotResult?.data;
+  if (!base64) {
+    showMessage('error', '未获取到截图数据');
+    return null;
+  }
+
+  return addWatermarkToImage(base64);
+};
 
 const prepareCapture = async () => {
-  // 获取 FlowEditor 实例
-  // 这里假设 App.vue 已将 flowEditorRef 作为全局 property 或 provide
-  // 或者你可以通过 window.__VUE_DEVTOOLS_GLOBAL_HOOK__.$vm0.$refs.flowEditorRef 方式调试
-  let flowEditor = null;
   try {
-    // 通过 DOM 查找
-    const flowEditorDom = document.querySelector('#main-container .flow-editor');
-    if (!flowEditorDom) {
-      showMessage('error', '未找到流程图编辑器');
-      return;
-    }
-    // 通过 ref 获取 vueflow 根元素
-    const vueflowRoot = flowEditorDom.querySelector('.vue-flow');
-    if (!vueflowRoot || !(vueflowRoot instanceof HTMLElement)) {
-      showMessage('error', '未找到 VueFlow 画布');
-      return;
-    }
-    state.previewVisible = true;
-    // 截图
-    const img = await captureFlow(vueflowRoot as HTMLElement, {
-      type: 'png',
-      shouldDownload: false,
-      watermark: {
-        text: watermark.text,
-        fontSize: watermark.fontSize,
-        color: watermark.color,
-        angle: watermark.angle,
-        rows: watermark.rows,
-        cols: watermark.cols,
-      },
-    });
+    const img = await captureLogicFlowSnapshot();
+    if (!img) return;
     state.previewImage = img;
+    state.previewVisible = true;
   } catch (e) {
     showMessage('error', '截图失败: ' + (e?.message || e));
   }
