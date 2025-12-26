@@ -1,15 +1,16 @@
 ﻿# 模块状态总览（重写）
 
-总体完成度（粗略）：约 65%
+总体完成度（粗略）：约 66%
 
-## 1. 画布（LogicFlow） — 完成度：60%
+## 1. 画布（LogicFlow） — 完成度：65%
 - 已完成：
   - 初始化与销毁：LogicFlow 实例、网格/缩放/旋转、节点选中/空白取消（src/components/flow/FlowEditor.vue）
   - 自定义节点注册：`shikigamiSelect`、`yuhunSelect`、`propertySelect`
   - 与 Store 联动：读取/写入 `graphRawData` 与 `transform`（缩放/位移）（src/ts/useStore.ts, src/ts/useLogicFlow.ts）
   - DnD 接入：由组件库触发拖拽放置
+  - 右键菜单：节点置顶/置底与删除、边删除、画布添加节点（基于 LogicFlow Menu + `setElementZIndex`）
 - 未完成：
-  - 右键菜单层级命令未实现：`bringToFront`/`sendToBack`/`bringForward`/`sendBackward`
+  - 右键菜单层级命令：已接通置顶/置底，单步前移/后移（`bringForward`/`sendBackward`）未实现
   - 多选/框选、对齐线、对齐/平均分布、吸附到网格
   - 撤销重做、组合/锁定/隐藏、快捷键（Del/Ctrl+C/V、方向键微移、Ctrl+Z/Y）
   - MiniMap/控制条/Snapshot 等扩展能力
@@ -96,14 +97,14 @@
 
 - 底层设计先行
   - 数据模型与 `schemaVersion`：以 LogicFlow 原生 GraphData 为基础，只定义顶层 Root Document（fileList/transform/activeFileId 等）和节点业务字段（shikigami/yuhun/property 等）；在 `src/ts/useStore.ts` 引入 `schemaVersion` 与迁移逻辑。（已完成）
-  - 图层模型：优先使用 LogicFlow 提供的节点层级/前后置 API，必要时仅持久化引擎暴露的层级信息，而不额外定义独立的 `properties.z` 排序规则。
+  - 图层模型：优先使用 LogicFlow 提供的节点层级/前后置 API，必要时仅持久化引擎暴露的层级信息，而不额外定义独立的 `properties.z` 排序规则。（已完成：基于 LogicFlow Menu + `setElementZIndex` 置顶/置底）
   - 操作服务化：通过 `useLogicFlow` 等轻量服务统一封装 LogicFlow 的常用 API 和插件能力（层级/对齐/组合/锁定/快捷键/历史），避免再设计一整套独立的 Canvas/History 引擎。
   - 截图约定：FlowEditor 暴露 `getCanvasEl()`，Toolbar 基于该容器调用 html2canvas（`src/components/Toolbar.vue`）。
 
 - 推荐开发顺序（每步可独立验收）
   1) 节点最小化打通：注册并可用 imageNode/textNode；PropertyPanel 提供基础属性（图片 url/宽高；文本 content/颜色/字号）（`src/components/flow/FlowEditor.vue`, `src/components/flow/PropertyPanel.vue`）。
   2) 截图修复：改为基于 LogicFlow 容器导出 PNG，沿用水印配置（`src/components/Toolbar.vue`）。
-  3) 图层命令 MVP：基于 LogicFlow 的层级/前后置 API 封装 bringToFront/sendToBack/bringForward/sendBackward + 右键菜单，如需持久化仅同步引擎提供的层级信息（`src/components/flow/FlowEditor.vue`）。
+  3) 图层命令 MVP：基于 LogicFlow 的层级/前后置 API 封装 bringToFront/sendToBack/bringForward/sendBackward + 右键菜单，如需持久化仅同步引擎提供的层级信息（`src/components/flow/FlowEditor.vue`）。已完成：置顶/置底 + 右键菜单；待补：单步前移/后移。
   4) 多选/对齐/吸附：框选、对齐线、吸附网格；左/右/上/下/水平/垂直居中与横/纵等距分布（FlowEditor/extension）。
   5) 快捷键与微调：Del 删除、方向键微移、Ctrl+C/V 复制粘贴、Ctrl+G/U 组/解组（简单组：父 meta id + 同步移动）、锁定/隐藏（`properties.locked`/`visible`）。
   6) 样式模型补齐：统一 `properties.style` 字段并在 PropertyPanel 全量编辑（填充/描边/圆角/阴影/透明度/文字对齐/行高/字重）。
