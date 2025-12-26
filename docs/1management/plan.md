@@ -1,11 +1,11 @@
 ﻿# 模块状态总览（重写）
 
-总体完成度（粗略）：约 66%
+总体完成度（粗略）：约 68%
 
-## 1. 画布（LogicFlow） — 完成度：65%
+## 1. 画布（LogicFlow） — 完成度：68%
 - 已完成：
   - 初始化与销毁：LogicFlow 实例、网格/缩放/旋转、节点选中/空白取消（src/components/flow/FlowEditor.vue）
-  - 自定义节点注册：`shikigamiSelect`、`yuhunSelect`、`propertySelect`
+  - 自定义节点注册：`shikigamiSelect`、`yuhunSelect`、`propertySelect`、`imageNode`
   - 与 Store 联动：读取/写入 `graphRawData` 与 `transform`（缩放/位移）（src/ts/useStore.ts, src/ts/useLogicFlow.ts）
   - DnD 接入：由组件库触发拖拽放置
   - 右键菜单：节点置顶/置底与删除、边删除、画布添加节点（基于 LogicFlow Menu + `setElementZIndex`）
@@ -15,21 +15,22 @@
   - 撤销重做、组合/锁定/隐藏、快捷键（Del/Ctrl+C/V、方向键微移、Ctrl+Z/Y）
   - MiniMap/控制条/Snapshot 等扩展能力
 
-## 2. 左侧组件库（Palette） — 完成度：55%
+## 2. 左侧组件库（Palette） — 完成度：60%
 - 已完成：
   - 分组展示：基础组件、阴阳师、其他（占位）（src/components/flow/ComponentsPanel.vue）
   - 拖拽创建节点：`lf.dnd.startDrag({ type, properties })`
 - 未完成：
-  - `imageNode`、`textNode` 在画布侧未注册，基础组件中的“图片/文本”目前不可用
+  - `textNode` 在画布侧未注册；`imageNode` 已可用但无缩略图
   - 点击快速创建、组件预览缩略图、搜索与分组折叠
   - 外置配置（JSON）与动态加载，便于扩展
 
-## 3. 右侧属性面板（Inspector） — 完成度：65%
+## 3. 右侧属性面板（Inspector） — 完成度：70%
 - 已完成：
-  - 按节点类型切换 UI，显示基本信息（ID/类型）（src/components/flow/PropertyPanel.vue）
+  - 按节点类型切换 UI，显示基本信息（ID/类型）（src/components/flow/PropertyPanel.vue），面板按节点类型拆分子组件
   - 打开式神/御魂/属性弹窗，并通过 `lf.setProperties` 回写到节点
+  - `imageNode` 属性编辑：URL/本地上传、fit、宽高与预览，写回 `properties` 同步渲染
 - 未完成：
-  - `imageNode`/`textNode` 属性编辑未打通（图片上传后属性回写、富文本编辑器启用与同步）
+  - `textNode` 富文本编辑与同步
   - 字段校验/联动、常用模板一键填充、更多样式项（填充/描边/圆角/阴影/透明度）
 
 ## 4. 工具栏（Toolbar） — 完成度：70%
@@ -102,7 +103,7 @@
   - 截图约定：FlowEditor 暴露 `getCanvasEl()`，Toolbar 基于该容器调用 html2canvas（`src/components/Toolbar.vue`）。
 
 - 推荐开发顺序（每步可独立验收）
-  1) 节点最小化打通：注册并可用 imageNode/textNode；PropertyPanel 提供基础属性（图片 url/宽高；文本 content/颜色/字号）（`src/components/flow/FlowEditor.vue`, `src/components/flow/PropertyPanel.vue`）。
+  1) 节点最小化打通：已注册并可用 `imageNode`（上传/URL/fit/宽高）；`textNode` 待注册 + 富文本/样式；PropertyPanel 已按类型拆分子组件（`src/components/flow/FlowEditor.vue`, `src/components/flow/PropertyPanel.vue`）。
   2) 截图修复：改为基于 LogicFlow 容器导出 PNG，沿用水印配置（`src/components/Toolbar.vue`）。
   3) 图层命令 MVP：基于 LogicFlow 的层级/前后置 API 封装 bringToFront/sendToBack/bringForward/sendBackward + 右键菜单，如需持久化仅同步引擎提供的层级信息（`src/components/flow/FlowEditor.vue`）。已完成：置顶/置底 + 右键菜单；待补：单步前移/后移。
   4) 多选/对齐/吸附：框选、对齐线、吸附网格；左/右/上/下/水平/垂直居中与横/纵等距分布（FlowEditor/extension）。

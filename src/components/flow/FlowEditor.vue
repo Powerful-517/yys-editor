@@ -13,8 +13,10 @@
 import { ref, watch, onMounted, onBeforeUnmount, defineExpose } from 'vue';
 import LogicFlow, { EventType } from '@logicflow/core';
 import '@logicflow/core/lib/style/index.css';
-import { Menu } from "@logicflow/extension";
+import { Menu,Label  } from "@logicflow/extension";
 import "@logicflow/extension/lib/style/index.css";
+import '@logicflow/core/es/index.css';
+import '@logicflow/extension/es/index.css';
 
 import { register } from '@logicflow/vue-node-registry';
 import ShikigamiSelectNode from './nodes/yys/ShikigamiSelectNode.vue';
@@ -65,8 +67,17 @@ onMounted(() => {
     grid: true,
     allowResize: true,
     allowRotate: true,
-    plugins: [Menu],
-    overlapMode:-1
+    overlapMode:-1,
+    plugins: [Menu,Label],
+    pluginsOptions: {
+      label: {
+        isMultiple: true,
+        maxCount: 3,
+        labelWidth: 80,
+        // textOverflowMode -> 'ellipsis' | 'wrap' | 'clip' | 'nowrap' | 'default'
+        textOverflowMode: 'wrap',
+      },
+    },
   });
 
   const lfInstance = lf.value;
