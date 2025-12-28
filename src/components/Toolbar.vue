@@ -9,6 +9,30 @@
       <el-button type="info" @click="showUpdateLog">{{ t('updateLog') }}</el-button>
       <el-button type="warning" @click="showFeedbackForm">{{ t('feedback') }}</el-button>
       <el-button type="danger" @click="handleResetWorkspace">重置工作区</el-button>
+      <el-button type="warning" plain @click="handleClearCanvas">清空画布</el-button>
+    </div>
+    <div class="toolbar-controls">
+      <el-switch
+        v-model="selectionEnabled"
+        size="small"
+        inline-prompt
+        active-text="框选开"
+        inactive-text="框选关"
+      />
+      <el-switch
+        v-model="snapGridEnabled"
+        size="small"
+        inline-prompt
+        active-text="吸附开"
+        inactive-text="吸附关"
+      />
+      <el-switch
+        v-model="snaplineEnabled"
+        size="small"
+        inline-prompt
+        active-text="对齐线开"
+        inactive-text="对齐线关"
+      />
     </div>
 
     <!-- 更新日志对话框 -->
@@ -84,9 +108,11 @@ import { useFilesStore } from "@/ts/useStore";
 import { ElMessageBox } from "element-plus";
 import { useGlobalMessage } from "@/ts/useGlobalMessage";
 import { getLogicFlowInstance } from "@/ts/useLogicFlow";
+import { useCanvasSettings } from '@/ts/useCanvasSettings';
 
 const filesStore = useFilesStore();
 const { showMessage } = useGlobalMessage();
+const { selectionEnabled, snapGridEnabled, snaplineEnabled } = useCanvasSettings();
 
 // 获取当前的 i18n 实例
 const {t} = useI18n();
@@ -228,6 +254,39 @@ const handleResetWorkspace = () => {
   });
 };
 
+const handleClearCanvas = () => {
+  ElMessageBox.confirm('仅清空当前画布，不影响其他文件，确定继续？', '提示', {
+    confirmButtonText: '清空',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    const lfInstance = getLogicFlowInstance();
+    const activeId = filesStore.activeFileId;
+    const activeFile = filesStore.getTab(activeId);
+
+    if (lfInstance) {
+      lfInstance.clearData();
+      lfInstance.render({ nodes: [], edges: [] });
+      lfInstance.zoom(1, [0, 0]);
+    }
+
+    if (activeFile) {
+      activeFile.graphRawData = { nodes: [], edges: [] };
+      activeFile.transform = {
+        SCALE_X: 1,
+        SCALE_Y: 1,
+        TRANSLATE_X: 0,
+        TRANSLATE_Y: 0
+      };
+      filesStore.updateTab(activeId);
+    }
+
+    showMessage('success', '当前画布已清空');
+  }).catch(() => {
+    // 用户取消
+  });
+};
+
 const watermark = reactive({
   text: localStorage.getItem('watermark.text') || '示例水印',
   fontSize: Number(localStorage.getItem('watermark.fontSize')) || 30,
@@ -361,6 +420,13 @@ const handleClose = (done) => {
   align-items: center;
   padding: 0 8px;
   z-index: 100;
+}
+
+.toolbar-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
 }
 
 .title {

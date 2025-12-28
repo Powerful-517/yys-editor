@@ -10,10 +10,10 @@
   - DnD 接入：由组件库触发拖拽放置
   - 右键菜单：节点置顶/置底与删除、边删除、画布添加节点（基于 LogicFlow Menu + `setElementZIndex`）
   - 多选/框选、对齐线、吸附网格；左/右/上/下/水平/垂直居中与横/纵等距分布（SelectionSelect + snapline + 自定义对齐分布指令）
+  - 扩展与控制：接入 MiniMap + Control 插件；吸附/对齐线/框选开关共享到 Toolbar 与 FlowEditor；新增清空画布入口
 - 未完成：
   - 右键菜单层级命令：已接通置顶/置底，单步前移/后移（`bringForward`/`sendBackward`）未实现
   - 撤销重做、组合/锁定/隐藏、快捷键（Del/Ctrl+C/V、方向键微移、Ctrl+Z/Y）
-  - MiniMap/控制条/Snapshot 等扩展能力
 
 ## 2. 左侧组件库（Palette） — 完成度：60%
 - 已完成：
@@ -109,7 +109,7 @@
   4) 多选/对齐/吸附：框选、对齐线、吸附网格；左/右/上/下/水平/垂直居中与横/纵等距分布（FlowEditor/extension）。已完成
   5) 快捷键与微调：Del 删除、方向键微移、Ctrl+C/V 复制粘贴、Ctrl+G/U 组/解组（简单组：父 meta id + 同步移动）、锁定/隐藏（`properties.locked`/`visible`）。
   6) 样式模型补齐：统一 `properties.style` 字段并在 PropertyPanel 全量编辑（填充/描边/圆角/阴影/透明度/文字对齐/行高/字重）。【已完成】
-  7) 扩展与控制：接入 MiniMap/Control/Snapshot；Toolbar 增加吸附/对齐开关与清空画布。
+  7) 扩展与控制：接入 MiniMap/Control/Snapshot；Toolbar 增加吸附/对齐开关与清空画布。【已完成：MiniMap + Control 接入；Toolbar/FlowEditor 共享开关 + 清空画布；Snapshot 已有】
   8) 矢量节点 MVP：`vectorNode`（SVG path/rect/ellipse/polygon），属性面板支持 path/stroke/fill/strokeWidth；新增 SVG 导入弹窗。
   9) 资源与导出增强：图片资源选择/上传弹窗（base64 或预留 `assetId`），导出 SVG/PDF（PDF 可延后）。
   10) 历史与撤销重做：抽象 Action + HistoryService，记录增删改/移动/层级；Ctrl+Z/Y。

@@ -21,6 +21,13 @@ const toolbarHeight = 48; // 工具栏的高度
 const windowHeight = ref(window.innerHeight);
 const contentHeight = computed(() => `${windowHeight.value - toolbarHeight}px`);
 
+const normalizeGraphData = (data: any) => {
+  if (data && Array.isArray((data as any).nodes) && Array.isArray((data as any).edges)) {
+    return data;
+  }
+  return { nodes: [], edges: [] };
+};
+
 const handleTabsEdit = (
     targetName: string | undefined,
     action: 'remove' | 'add'
@@ -56,7 +63,7 @@ watch(
 
       if (logicFlowInstance && currentTab?.graphRawData) {
         try {
-          logicFlowInstance.render(currentTab.graphRawData);
+          logicFlowInstance.render(normalizeGraphData(currentTab.graphRawData));
           logicFlowInstance.zoom(
             currentTab.transform?.SCALE_X ?? 1,
             [currentTab.transform?.TRANSLATE_X ?? 0, currentTab.transform?.TRANSLATE_Y ?? 0]
@@ -79,7 +86,7 @@ watch(
 
     if (logicFlowInstance && currentTab?.graphRawData) {
       try {
-        logicFlowInstance.render(currentTab.graphRawData);
+        logicFlowInstance.render(normalizeGraphData(currentTab.graphRawData));
         logicFlowInstance.zoom(
           currentTab.transform?.SCALE_X ?? 1,
           [currentTab.transform?.TRANSLATE_X ?? 0, currentTab.transform?.TRANSLATE_Y ?? 0]

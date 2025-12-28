@@ -1,7 +1,7 @@
 <template>
   <div class="editor-layout" :style="{ height }">
     <!-- 中间流程图区域 -->
-    <div class="flow-container">
+    <div class="flow-container" :class="{ 'snapline-disabled': !snaplineEnabled }">
       <div class="flow-controls">
         <div class="control-row toggles">
           <label class="control-toggle">
@@ -12,7 +12,10 @@
             <input type="checkbox" v-model="snapGridEnabled" />
             <span>吸附网格</span>
           </label>
-          <span class="control-hint">对齐线已开启</span>
+          <label class="control-toggle">
+            <input type="checkbox" v-model="snaplineEnabled" />
+            <span>对齐线</span>
+          </label>
           <span class="control-hint">已选 {{ selectedCount }}</span>
           <button class="control-button" type="button" @click="showAllNodes">显示全部</button>
         </div>
@@ -59,7 +62,7 @@ import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import LogicFlow, { EventType } from '@logicflow/core';
 import type { Position, NodeData, EdgeData, BaseNodeModel, GraphModel, GraphData } from '@logicflow/core';
 import '@logicflow/core/lib/style/index.css';
-import { Menu, Label, Snapshot, SelectionSelect } from '@logicflow/extension';
+import { Menu, Label, Snapshot, SelectionSelect, MiniMap, Control } from '@logicflow/extension';
 import '@logicflow/extension/lib/style/index.css';
 import '@logicflow/core/es/index.css';
 import '@logicflow/extension/es/index.css';
@@ -75,6 +78,7 @@ import PropertyPanel from './PropertyPanel.vue';
 import { useGlobalMessage } from '@/ts/useGlobalMessage';
 import { setLogicFlowInstance, destroyLogicFlowInstance } from '@/ts/useLogicFlow';
 import { normalizePropertiesWithStyle, normalizeNodeStyle, styleEquals } from '@/ts/nodeStyle';
+import { useCanvasSettings } from '@/ts/useCanvasSettings';
 
 type AlignType = 'left' | 'right' | 'top' | 'bottom' | 'hcenter' | 'vcenter';
 type DistributeType = 'horizontal' | 'vertical';
@@ -90,8 +94,7 @@ const props = defineProps<{
 const containerRef = ref<HTMLElement | null>(null);
 const lf = ref<LogicFlow | null>(null);
 const selectedCount = ref(0);
-const selectionEnabled = ref(true);
-const snapGridEnabled = ref(true);
+const { selectionEnabled, snapGridEnabled, snaplineEnabled } = useCanvasSettings();
 const alignmentButtons: { key: AlignType; label: string }[] = [
   { key: 'left', label: '左对齐' },
   { key: 'right', label: '右对齐' },
@@ -578,11 +581,11 @@ onMounted(() => {
     allowResize: true,
     allowRotate: true,
     overlapMode: -1,
-    snapline: true,
+    snapline: snaplineEnabled.value,
     keyboard: {
       enabled: true
     },
-    plugins: [Menu, Label, Snapshot, SelectionSelect],
+    plugins: [Menu, Label, Snapshot, SelectionSelect, MiniMap, Control],
     pluginsOptions: {
       label: {
         isMultiple: true,
@@ -591,6 +594,14 @@ onMounted(() => {
         // textOverflowMode -> 'ellipsis' | 'wrap' | 'clip' | 'nowrap' | 'default'
         textOverflowMode: 'wrap',
       },
+      miniMap: {
+        isShowHeader: false,
+        isShowCloseIcon: true,
+        width: 200,
+        height: 140,
+        rightPosition: 16,
+        bottomPosition: 16
+      }
     },
   });
 
@@ -665,8 +676,10 @@ onMounted(() => {
   registerNodes(lfInstance);
   setLogicFlowInstance(lfInstance);
   lfInstance.render({
-    // 渲染的数据
+    nodes: [],
+    edges: []
   });
+  lfInstance.extension.miniMap.show();
   normalizeAllNodes();
   lfInstance.updateEditConfig({
     multipleSelectKey: 'shift',
@@ -721,6 +734,14 @@ watch(selectionEnabled, (enabled) => {
 
 watch(snapGridEnabled, (enabled) => {
   applySnapGrid(enabled);
+});
+
+watch(snaplineEnabled, (enabled) => {
+  const lfInstance = lf.value as any;
+  if (!lfInstance) return;
+  if (!enabled) {
+    lfInstance.snaplineModel?.clearSnapline?.();
+  }
 });
 
 // 销毁 LogicFlow
@@ -829,5 +850,9 @@ onBeforeUnmount(() => {
 .menu-item:hover {
   background-color: #f5f7fa;
   color: #409eff;
+}
+
+.snapline-disabled .lf-snapline {
+  display: none;
 }
 </style>
