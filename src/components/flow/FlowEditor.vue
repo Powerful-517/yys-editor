@@ -14,6 +14,7 @@
           </label>
           <span class="control-hint">对齐线已开启</span>
           <span class="control-hint">已选 {{ selectedCount }}</span>
+          <button class="control-button" type="button" @click="showAllNodes">显示全部</button>
         </div>
         <div class="control-row">
           <div class="control-label">对齐</div>
@@ -184,6 +185,19 @@ function updateNodeMeta(model: BaseNodeModel, updater: (meta: Record<string, any
   applyMetaToModel(model, nextMeta);
 }
 
+function getSelectedNodeModelsFiltered(options?: { includeHidden?: boolean; includeLocked?: boolean }) {
+  const includeHidden = options?.includeHidden ?? false;
+  const includeLocked = options?.includeLocked ?? false;
+  const graphModel = lf.value?.graphModel;
+  if (!graphModel) return [];
+  return graphModel.selectNodes.filter((model: BaseNodeModel) => {
+    const meta = ensureMeta((model.getProperties?.() as any)?.meta ?? (model as any)?.properties?.meta);
+    if (!includeHidden && meta.visible === false) return false;
+    if (!includeLocked && meta.locked) return false;
+    return true;
+  });
+}
+
 function getSelectedNodeModels() {
   const graphModel = lf.value?.graphModel;
   if (!graphModel) return [];
@@ -214,7 +228,7 @@ function collectGroupNodeIds(models: BaseNodeModel[]) {
 function moveSelectedNodes(deltaX: number, deltaY: number) {
   const graphModel = lf.value?.graphModel;
   if (!graphModel) return;
-  const targets = collectGroupNodeIds(getSelectedNodeModels());
+  const targets = collectGroupNodeIds(getSelectedNodeModelsFiltered());
   if (!targets.length) return;
   graphModel.moveNodes(targets, deltaX, deltaY);
 }
@@ -224,7 +238,8 @@ function deleteSelectedElements(event?: KeyboardEvent) {
   const lfInstance = lf.value;
   if (!lfInstance) return true;
 
-  const { nodes, edges } = lfInstance.getSelectElements(true);
+  const { edges } = lfInstance.getSelectElements(true);
+  const nodes = getSelectedNodeModelsFiltered({ includeHidden: false, includeLocked: true });
   const lockedNodes = nodes.filter((node) => ensureMeta((node as any).properties?.meta).locked);
   edges.forEach((edge) => edge.id && lfInstance.deleteEdge(edge.id));
   nodes
@@ -258,7 +273,7 @@ function toggleLockSelected(event?: KeyboardEvent) {
 
 function toggleVisibilitySelected(event?: KeyboardEvent) {
   if (shouldSkipShortcut(event)) return true;
-  const models = getSelectedNodeModels();
+  const models = getSelectedNodeModelsFiltered({ includeLocked: true });
   if (!models.length) {
     showMessage('info', '请选择节点后再执行显示/隐藏');
     return true;
@@ -274,9 +289,31 @@ function toggleVisibilitySelected(event?: KeyboardEvent) {
   return false;
 }
 
+function showAllNodes() {
+  const lfInstance = lf.value;
+  if (!lfInstance) return;
+  let changed = 0;
+  lfInstance.graphModel?.nodes.forEach((model: BaseNodeModel) => {
+    const props = (model.getProperties?.() as any) ?? (model as any)?.properties ?? {};
+    const meta = ensureMeta(props.meta);
+    if (meta.visible === false) {
+      meta.visible = true;
+      lfInstance.setProperties(model.id, { ...props, meta });
+      applyMetaToModel(model, meta);
+      changed += 1;
+    }
+  });
+  if (changed > 0) {
+    showMessage('success', `已显示 ${changed} 个节点`);
+  } else {
+    showMessage('info', '没有隐藏的节点');
+  }
+  updateSelectedCount();
+}
+
 function groupSelectedNodes(event?: KeyboardEvent) {
   if (shouldSkipShortcut(event)) return true;
-  const models = getSelectedNodeModels().filter((model) => !ensureMeta((model.getProperties?.() as any)?.meta).locked);
+  const models = getSelectedNodeModelsFiltered();
   if (models.length < 2) {
     showMessage('warning', '请选择至少两个未锁定的节点进行分组');
     return true;
@@ -406,11 +443,8 @@ function applySnapGrid(enabled: boolean) {
 function getSelectedRects() {
   const lfInstance = lf.value;
   if (!lfInstance) return [];
-  const unlocked = lfInstance.graphModel.selectNodes.filter((model: BaseNodeModel) => {
-    const meta = ensureMeta((model.getProperties?.() as any)?.meta ?? (model as any)?.properties?.meta);
-    return !meta.locked && meta.visible !== false;
-  });
-  return unlocked.map((model: BaseNodeModel) => {
+  const actionable = getSelectedNodeModelsFiltered();
+  return actionable.map((model: BaseNodeModel) => {
     const bounds = model.getBounds();
     const width = bounds.maxX - bounds.minX;
     const height = bounds.maxY - bounds.minY;
