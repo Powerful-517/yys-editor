@@ -1,26 +1,15 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, inject } from 'vue';
-import { EventType } from '@logicflow/core';
+import { ref } from 'vue';
+import { useNodeAppearance } from '@/ts/useNodeAppearance';
 
 const currentProperty = ref({ type: '未选择', priority: '可选' });
 
-const getNode = inject('getNode') as (() => any) | undefined;
-const getGraph = inject('getGraph') as (() => any) | undefined;
-
-
-onMounted(() => {
-  const node = getNode?.();
-  const graph = getGraph?.();
-
-  if (node?.properties?.property) {
-    currentProperty.value = node.properties.property;
-  }
-
-  graph?.eventCenter.on(EventType.NODE_PROPERTIES_CHANGE, (eventData: any) => {
-    if (eventData.id === node.id && eventData.properties?.property) {
-      currentProperty.value = eventData.properties.property;
+const { containerStyle, textStyle } = useNodeAppearance({
+  onPropsChange(props) {
+    if (props.property) {
+      currentProperty.value = props.property;
     }
-  });
+  }
 });
 
 // 辅助函数
@@ -50,19 +39,19 @@ const getPriorityName = () => {
 
 <template>
   <div class="property-node" :class="[currentProperty.priority ? `priority-${currentProperty.priority}` : '']">
-    <div class="node-content">
+    <div class="node-content" :style="containerStyle">
       <div class="node-header">
-        <div class="node-title">属性要求</div>
+        <div class="node-title" :style="textStyle">属性要求</div>
       </div>
       <div class="node-body">
         <div class="property-main">
-          <div class="property-type">{{ getPropertyTypeName() }}</div>
-          <div v-if="currentProperty.type !== '未选择'" class="property-value">{{ currentProperty.value }}</div>
-          <div v-else class="property-placeholder">点击设置属性</div>
+          <div class="property-type" :style="textStyle">{{ getPropertyTypeName() }}</div>
+          <div v-if="currentProperty.type !== '未选择'" class="property-value" :style="textStyle">{{ currentProperty.value }}</div>
+          <div v-else class="property-placeholder" :style="textStyle">点击设置属性</div>
         </div>
         <div class="property-details" v-if="currentProperty.type !== '未选择'">
-          <div class="property-priority">优先级: {{ getPriorityName() }}</div>
-          <div class="property-description" v-if="currentProperty.description">
+          <div class="property-priority" :style="textStyle">优先级: {{ getPriorityName() }}</div>
+          <div class="property-description" v-if="currentProperty.description" :style="textStyle">
             {{ currentProperty.description }}
           </div>
         </div>

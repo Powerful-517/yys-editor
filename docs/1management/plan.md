@@ -1,6 +1,6 @@
 ﻿# 模块状态总览（重写）
 
-总体完成度（粗略）：约 73%
+总体完成度（粗略）：约 75%
 
 ## 1. 画布（LogicFlow） — 完成度：75%
 - 已完成：
@@ -24,14 +24,15 @@
   - 点击快速创建、组件预览缩略图、搜索与分组折叠
   - 外置配置（JSON）与动态加载，便于扩展
 
-## 3. 右侧属性面板（Inspector） — 完成度：70%
+## 3. 右侧属性面板（Inspector） — 完成度：80%
 - 已完成：
   - 按节点类型切换 UI，显示基本信息（ID/类型）（src/components/flow/PropertyPanel.vue），面板按节点类型拆分子组件
   - 打开式神/御魂/属性弹窗，并通过 `lf.setProperties` 回写到节点
   - `imageNode` 属性编辑：URL/本地上传、fit、宽高与预览，写回 `properties` 同步渲染
+  - 样式模型：统一 `properties.style`，属性面板支持填充/描边/圆角/阴影/透明度/文字对齐/行高/字重，节点渲染消费样式
 - 未完成：
   - `textNode` 富文本编辑与同步
-  - 字段校验/联动、常用模板一键填充、更多样式项（填充/描边/圆角/阴影/透明度）
+  - 字段校验/联动、常用模板一键填充
 
 ## 4. 工具栏（Toolbar） — 完成度：80%
 - 已完成：
@@ -107,7 +108,7 @@
   3) 图层命令 MVP：基于 LogicFlow 的层级/前后置 API 封装 bringToFront/sendToBack/bringForward/sendBackward + 右键菜单，如需持久化仅同步引擎提供的层级信息（`src/components/flow/FlowEditor.vue`）。已完成：置顶/置底 + 右键菜单；待补：单步前移/后移。
   4) 多选/对齐/吸附：框选、对齐线、吸附网格；左/右/上/下/水平/垂直居中与横/纵等距分布（FlowEditor/extension）。已完成
   5) 快捷键与微调：Del 删除、方向键微移、Ctrl+C/V 复制粘贴、Ctrl+G/U 组/解组（简单组：父 meta id + 同步移动）、锁定/隐藏（`properties.locked`/`visible`）。
-  6) 样式模型补齐：统一 `properties.style` 字段并在 PropertyPanel 全量编辑（填充/描边/圆角/阴影/透明度/文字对齐/行高/字重）。
+  6) 样式模型补齐：统一 `properties.style` 字段并在 PropertyPanel 全量编辑（填充/描边/圆角/阴影/透明度/文字对齐/行高/字重）。【已完成】
   7) 扩展与控制：接入 MiniMap/Control/Snapshot；Toolbar 增加吸附/对齐开关与清空画布。
   8) 矢量节点 MVP：`vectorNode`（SVG path/rect/ellipse/polygon），属性面板支持 path/stroke/fill/strokeWidth；新增 SVG 导入弹窗。
   9) 资源与导出增强：图片资源选择/上传弹窗（base64 或预留 `assetId`），导出 SVG/PDF（PDF 可延后）。

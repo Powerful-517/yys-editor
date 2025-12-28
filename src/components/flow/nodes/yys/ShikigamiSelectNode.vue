@@ -1,41 +1,23 @@
 <script setup lang="ts">
-import {ref, onMounted, inject, watch} from 'vue';
-import { EventType } from '@logicflow/core';
+import { computed, ref } from 'vue';
+import { toTextStyle } from '@/ts/nodeStyle';
+import { useNodeAppearance } from '@/ts/useNodeAppearance';
 
 const currentShikigami = ref({ name: '未选择式神', avatar: '', rarity: '' });
 
-const getNode = inject('getNode') as (() => any) | undefined;
-const getGraph = inject('getGraph') as (() => any) | undefined;
-
-
-
-onMounted(() => {
-  const node = getNode?.();
-  const graph = getGraph?.();
-
-  // 初始化
-  if (node?.properties?.shikigami) {
-    currentShikigami.value = node.properties.shikigami;
-  }
-
-  // 监听属性变化
-  graph?.eventCenter.on(EventType.NODE_PROPERTIES_CHANGE, (eventData: any) => {
-    if (eventData.id === node.id && eventData.properties?.shikigami) {
-      currentShikigami.value = eventData.properties.shikigami;
+const { containerStyle, textStyle } = useNodeAppearance({
+  onPropsChange(props) {
+    if (props.shikigami) {
+      currentShikigami.value = props.shikigami;
     }
-  });
+  }
 });
+
+const mergedContainerStyle = computed(() => ({ ...containerStyle.value, boxSizing: 'border-box' }));
 </script>
 
 <template>
-  <div
-    class="node-content"
-    :style="{
-      boxSizing: 'border-box',
-      background: '#fff',
-      borderRadius: '8px'
-    }"
-  >
+  <div class="node-content" :style="mergedContainerStyle">
     <img
       v-if="currentShikigami.avatar"
       :src="currentShikigami.avatar"
@@ -43,8 +25,8 @@ onMounted(() => {
       class="shikigami-image"
       draggable="false"
     />
-    <div v-else class="placeholder-text">点击选择式神</div>
-    <div class="name-text">{{ currentShikigami.name }}</div>
+    <div v-else class="placeholder-text" :style="textStyle">点击选择式神</div>
+    <div class="name-text" :style="textStyle">{{ currentShikigami.name }}</div>
   </div>
 </template>
 

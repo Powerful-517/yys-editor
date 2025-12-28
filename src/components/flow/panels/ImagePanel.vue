@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { reactive, watch } from 'vue';
 import { getLogicFlowInstance } from '@/ts/useLogicFlow';
+import { normalizeNodeStyle } from '@/ts/nodeStyle';
 
 type FitMode = 'contain' | 'cover' | 'fill';
 
@@ -29,12 +30,12 @@ const parseNumber = (value: any, fallback: number) => {
 
 const getImageProps = (node?: any): ImageForm => {
   const props = node?.properties ?? {};
-  const style = props.style ?? {};
+  const style = normalizeNodeStyle(props.style, { width: props.width ?? node?.width, height: props.height ?? node?.height });
   return {
     url: props.image?.url ?? props.url ?? '',
     fit: (props.image?.fit ?? props.fit ?? 'contain') as FitMode,
-    width: parseNumber(props.width ?? style.width ?? node?.width, 180),
-    height: parseNumber(props.height ?? style.height ?? node?.height, 120)
+    width: parseNumber(style.width, 180),
+    height: parseNumber(style.height, 120)
   };
 };
 
@@ -64,17 +65,18 @@ const applyImageChanges = (partial: Partial<ImageForm>) => {
 
   const baseProps = node.properties || {};
   const merged = { ...getImageProps(node), ...partial };
+  const currentStyle = normalizeNodeStyle(baseProps.style, { width: baseProps.width ?? node.width, height: baseProps.height ?? node.height });
+  const nextStyle = normalizeNodeStyle(
+    { ...currentStyle, width: merged.width, height: merged.height },
+    { width: merged.width, height: merged.height }
+  );
 
   const nextProps = {
     ...baseProps,
     ...merged,
-    width: merged.width,
-    height: merged.height,
-    style: {
-      ...(baseProps.style || {}),
-      width: merged.width,
-      height: merged.height
-    },
+    style: nextStyle,
+    width: nextStyle.width,
+    height: nextStyle.height,
     image: {
       ...(baseProps.image || {}),
       url: merged.url,

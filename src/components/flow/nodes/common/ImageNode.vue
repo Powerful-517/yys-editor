@@ -1,44 +1,22 @@
 <script setup lang="ts">
-import { inject, onBeforeUnmount, onMounted, ref } from 'vue';
-import { EventType } from '@logicflow/core';
+import { ref } from 'vue';
+import { useNodeAppearance } from '@/ts/useNodeAppearance';
 
 type FitMode = 'contain' | 'cover' | 'fill';
-
-const getNode = inject('getNode') as (() => any) | undefined;
-const getGraph = inject('getGraph') as (() => any) | undefined;
 
 const imageUrl = ref('');
 const fit = ref<FitMode>('contain');
 
-const refreshFromProps = (props?: any, node?: any) => {
-  const targetProps = props ?? node?.properties ?? {};
-  imageUrl.value = targetProps.image?.url ?? targetProps.url ?? '';
-  fit.value = targetProps.image?.fit ?? targetProps.fit ?? 'contain';
-};
-
-let offChange: (() => void) | null = null;
-
-onMounted(() => {
-  const node = getNode?.();
-  refreshFromProps(node?.properties, node);
-
-  const graph = getGraph?.();
-  const handler = (eventData: any) => {
-    if (node && eventData.id === node.id) {
-      refreshFromProps(eventData.properties, node);
-    }
-  };
-  graph?.eventCenter.on(EventType.NODE_PROPERTIES_CHANGE, handler);
-  offChange = () => graph?.eventCenter.off(EventType.NODE_PROPERTIES_CHANGE, handler);
-});
-
-onBeforeUnmount(() => {
-  offChange?.();
+const { containerStyle } = useNodeAppearance({
+  onPropsChange(props) {
+    imageUrl.value = props.image?.url ?? props.url ?? '';
+    fit.value = props.image?.fit ?? props.fit ?? 'contain';
+  }
 });
 </script>
 
 <template>
-  <div class="image-node">
+  <div class="image-node" :style="containerStyle">
     <div class="image-wrapper">
       <img v-if="imageUrl" :src="imageUrl" alt="图片节点" :style="{ objectFit: fit }" draggable="false" />
       <div v-else class="placeholder">

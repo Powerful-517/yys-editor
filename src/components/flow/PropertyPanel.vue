@@ -5,6 +5,7 @@ import YuhunPanel from './panels/YuhunPanel.vue';
 import PropertyRulePanel from './panels/PropertyRulePanel.vue';
 import ImagePanel from './panels/ImagePanel.vue';
 import TextPanel from './panels/TextPanel.vue';
+import StylePanel from './panels/StylePanel.vue';
 
 const props = defineProps({
   height: {
@@ -58,6 +59,8 @@ const panelComponent = computed(() => panelMap[nodeType.value] || null);
           <div class="property-value">{{ nodeType }}</div>
         </div>
       </div>
+
+      <StylePanel :node="selectedNode" />
 
       <component v-if="panelComponent" :is="panelComponent" :node="selectedNode" />
       <div v-else class="property-section">

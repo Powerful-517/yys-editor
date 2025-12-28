@@ -74,6 +74,7 @@ import ImageNode from './nodes/common/ImageNode.vue';
 import PropertyPanel from './PropertyPanel.vue';
 import { useGlobalMessage } from '@/ts/useGlobalMessage';
 import { setLogicFlowInstance, destroyLogicFlowInstance } from '@/ts/useLogicFlow';
+import { normalizePropertiesWithStyle, normalizeNodeStyle, styleEquals } from '@/ts/nodeStyle';
 
 type AlignType = 'left' | 'right' | 'top' | 'bottom' | 'hcenter' | 'vcenter';
 type DistributeType = 'horizontal' | 'vertical';
@@ -152,22 +153,41 @@ function applyMetaToModel(model: BaseNodeModel, metaInput?: Record<string, any>)
   }
 }
 
+function applyStyleToModel(model: BaseNodeModel, styleInput?: Record<string, any>) {
+  const style = normalizeNodeStyle(styleInput, { width: model.width, height: model.height });
+  if (style.width && model.width !== style.width) {
+    model.width = style.width;
+  }
+  if (style.height && model.height !== style.height) {
+    model.height = style.height;
+  }
+}
+
 function normalizeNodeModel(model: BaseNodeModel) {
   const lfInstance = lf.value;
   if (!lfInstance) return;
 
   const props = (model.getProperties?.() as any) ?? (model as any)?.properties ?? {};
   const incomingMeta = ensureMeta(props.meta);
+  const normalized = normalizePropertiesWithStyle(
+    { ...props, meta: incomingMeta },
+    { width: props.width ?? model.width, height: props.height ?? model.height }
+  );
   const currentMeta = ensureMeta((model as any)?.properties?.meta);
-  const needPersist =
+  const metaChanged =
     currentMeta.visible !== incomingMeta.visible ||
     currentMeta.locked !== incomingMeta.locked ||
     currentMeta.groupId !== incomingMeta.groupId;
+  const styleChanged =
+    !styleEquals(props.style, normalized.style) ||
+    props.width !== normalized.width ||
+    props.height !== normalized.height;
 
-  if (needPersist) {
-    lfInstance.setProperties(model.id, { ...props, meta: incomingMeta });
+  if (metaChanged || styleChanged) {
+    lfInstance.setProperties(model.id, normalized);
   }
-  applyMetaToModel(model, incomingMeta);
+  applyMetaToModel(model, normalized.meta);
+  applyStyleToModel(model, normalized.style);
 }
 
 function normalizeAllNodes() {
@@ -688,9 +708,7 @@ onMounted(() => {
       }
     }
     const model = lfInstance.getNodeModelById(nodeId);
-    if (model && data.properties?.meta) {
-      applyMetaToModel(model, data.properties.meta);
-    }
+    if (model) normalizeNodeModel(model);
   });
 
   lfInstance.on('selection:selected', () => updateSelectedCount());
