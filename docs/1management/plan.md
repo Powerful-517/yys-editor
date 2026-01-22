@@ -2,13 +2,13 @@
 
 ## 📊 项目完成度总览
 
-**总体完成度：82%** | **愿景一完成度：70%** (步骤1-7/10已完成)
+**总体完成度：85%** | **愿景一完成度：75%** (步骤1-7/10已完成，步骤3完全完成)
 
 ### 核心模块完成度
 
 | 模块 | 完成度 | 状态 | 关键缺失 |
 |------|--------|------|----------|
-| 🎨 画布（LogicFlow） | 85% | ✅ 良好 | 单步前移/后移、撤销重做 |
+| 🎨 画布（LogicFlow） | 90% | ✅ 优秀 | 撤销重做 |
 | 📦 左侧组件库 | 65% | ⚠️ 可用 | textNode未注册、缩略图 |
 | ⚙️ 右侧属性面板 | 85% | ✅ 良好 | textNode富文本编辑 |
 | 🔧 工具栏 | 85% | ✅ 良好 | 导出命名优化 |
@@ -24,7 +24,7 @@
 |------|------|------|------|
 | 1 | 节点最小化打通 | ✅ 完成 | imageNode可用，textNode待注册 |
 | 2 | 截图修复 | ✅ 完成 | LogicFlow Snapshot + 水印 |
-| 3 | 图层命令MVP | ⚠️ 部分 | 置顶/置底✅，**前移/后移❌** |
+| 3 | 图层命令MVP | ✅ 完成 | 置顶/置底/前移/后移全部完成 |
 | 4 | 多选/对齐/吸附 | ✅ 完成 | 6种对齐 + 2种分布 |
 | 5 | 快捷键与微调 | ✅ 完成 | 8种快捷键全部工作 |
 | 6 | 样式模型补齐 | ✅ 完成 | 11个样式属性统一 |
@@ -36,12 +36,7 @@
 ## 🎯 下一步行动计划
 
 ### 🔴 高优先级（立即行动）
-1. **补全图层命令** - 实现 `bringForward`/`sendBackward`
-   - 位置：[FlowEditor.vue:631-674](../src/components/flow/FlowEditor.vue#L631-L674)
-   - 影响：解除步骤3阻塞，完善右键菜单
-   - 预期：调用LogicFlow层级API或自定义z-index管理
-
-2. **注册textNode** - 取消注释并验证基本功能
+1. **注册textNode** - 取消注释并验证基本功能
    - 位置：[FlowEditor.vue:76](../src/components/flow/FlowEditor.vue#L76)
    - 影响：完成步骤1，启用文本节点
    - 预期：基本渲染工作，富文本编辑可延后
@@ -71,20 +66,19 @@
 
 ## 📋 详细模块状态
 
-## 1. 画布（LogicFlow） — 完成度：85%
+## 1. 画布（LogicFlow） — 完成度：90%
 - 已完成：
   - 初始化与销毁：LogicFlow 实例、网格/缩放/旋转、节点选中/空白取消（src/components/flow/FlowEditor.vue）
   - 自定义节点注册：`shikigamiSelect`、`yuhunSelect`、`propertySelect`、`imageNode`（src/components/flow/FlowEditor.vue:567-574）
   - 与 Store 联动：读取/写入 `graphRawData` 与 `transform`（缩放/位移）（src/ts/useStore.ts, src/ts/useLogicFlow.ts）
   - DnD 接入：由组件库触发拖拽放置
-  - 右键菜单：节点置顶/置底与删除、边删除、画布添加节点（基于 LogicFlow Menu + `setElementZIndex`）（src/components/flow/FlowEditor.vue:631-674）
+  - **右键菜单完整功能**：图层控制（置顶/上移/下移/置底）、编辑操作（复制/粘贴）、组合操作（组合/解组）、状态控制（锁定/隐藏）、删除操作，所有快捷键功能均可通过右键触发（src/components/flow/FlowEditor.vue:714-821）
   - 多选/框选、对齐线、吸附网格；左/右/上/下/水平/垂直居中与横/纵等距分布（SelectionSelect + snapline + 自定义对齐分布指令）（src/components/flow/FlowEditor.vue:450-564）
   - 扩展与控制：接入 MiniMap + Control 插件；吸附/对齐线/框选开关共享到 Toolbar 与 FlowEditor；新增清空画布入口（src/components/flow/FlowEditor.vue:588,682; src/components/Toolbar.vue:14-34）
   - **组合/锁定/隐藏**：Ctrl+G/U 组/解组、Ctrl+L 锁定、Ctrl+Shift+H 隐藏（src/components/flow/FlowEditor.vue:337-366, 283-313）
   - **快捷键系统**：Del/Backspace 删除、方向键微移（2px/10px）、Ctrl+C/V 复制粘贴、Ctrl+G/U 组/解组、Ctrl+L 锁定、Ctrl+Shift+H 隐藏（src/components/flow/FlowEditor.vue:611-629）
   - **节点元数据管理**：meta.visible、meta.locked、meta.groupId 支持与规范化（src/components/flow/FlowEditor.vue:133-209）
 - 未完成：
-  - 右键菜单层级命令：已接通置顶/置底，单步前移/后移（`bringForward`/`sendBackward`）未实现
   - **撤销重做**：Ctrl+Z/Y 历史栈与操作回放
   - **textNode 注册**：已在 ComponentsPanel 定义但 FlowEditor.vue:76 中被注释未注册
 
@@ -192,7 +186,7 @@
 - 推荐开发顺序（每步可独立验收）
   1) ✅ **节点最小化打通**：imageNode 已注册并可用（上传/URL/fit/宽高）；textNode 已在 ComponentsPanel 定义但 FlowEditor 未注册；PropertyPanel 已按类型拆分子组件（ShikigamiPanel/YuhunPanel/PropertyRulePanel/ImagePanel/TextPanel/StylePanel）
   2) ✅ **截图修复**：已改为基于 LogicFlow Snapshot 导出 PNG，沿用水印配置（src/components/Toolbar.vue:prepareCapture）
-  3) ⚠️ **图层命令 MVP**：已完成置顶/置底 + 右键菜单（src/components/flow/FlowEditor.vue:631-674）；**待补：单步前移/后移（bringForward/sendBackward）**
+  3) ✅ **图层命令 MVP**：已完成置顶/置底/前移/后移 + 右键菜单（src/components/flow/FlowEditor.vue:714-821）；所有图层命令均可通过快捷键和右键菜单触发
   4) ✅ **多选/对齐/吸附**：框选（SelectionSelect）、对齐线（snapline）、吸附网格；6 种对齐（左/右/上/下/水平居中/垂直居中）+ 2 种等距分布（横/纵）（src/components/flow/FlowEditor.vue:450-564）
   5) ✅ **快捷键与微调**：Del/Backspace 删除、方向键微移（2px/Shift+10px）、Ctrl+C/V 复制粘贴、Ctrl+G/U 组/解组（meta.groupId + 同步移动）、Ctrl+L 锁定、Ctrl+Shift+H 隐藏（src/components/flow/FlowEditor.vue:611-629, 337-366, 283-313）
   6) ✅ **样式模型补齐**：统一 properties.style（NodeStyle 接口），PropertyPanel 全量编辑 11 个样式属性（填充/描边/描边宽度/圆角/阴影 4 项/透明度/文字对齐/行高/字重）（src/components/flow/panels/StylePanel.vue, src/ts/nodeStyle.ts）
@@ -214,7 +208,7 @@
 
 - 验收停靠点
   - ✅ **1/2 结束**：Root Document + LogicFlow GraphData 结构已冻结（src/ts/schema.ts），schemaVersion="1.0.0" 持久化（src/ts/useStore.ts），截图基于 LogicFlow Snapshot + 水印（src/components/Toolbar.vue）
-  - ⚠️ **3/4 结束**：层级操作部分完成（置顶/置底✅，前移/后移❌），对齐/分布操作已完成（src/components/flow/FlowEditor.vue:485-564），但无操作回放（历史栈未实现）
+  - ✅ **3/4 结束**：层级操作全部完成（置顶/置底/前移/后移），对齐/分布操作已完成（src/components/flow/FlowEditor.vue:485-564），右键菜单集成所有快捷键功能；待补：操作回放（历史栈未实现）
   - ✅ **6 结束**：样式模型已统一（NodeStyle 接口），imageNode/shikigamiSelect/yuhunSelect/propertySelect 四类节点均可通过 StylePanel 一致编辑 11 个样式属性
   - ❌ **8 结束**：vectorNode 未开始，SVG 导入/导出链路未实现
 
@@ -231,9 +225,8 @@
 - ✅ 样式模型：11 个样式属性统一编辑
 - ✅ 扩展控制：MiniMap/Control/Snapshot 插件 + Toolbar 开关
 
-### 待完成的愿景一功能（步骤 3/8/9/10，约 30%）
+### 待完成的愿景一功能（步骤 8/9/10，约 25%）
 - ⚠️ **高优先级（阻塞）**：
-  - 单步前移/后移（bringForward/sendBackward）- 步骤 3 残留
   - 撤销重做（Ctrl+Z/Y）- 步骤 10，依赖历史栈
 - ⚠️ **中优先级（功能完整性）**：
   - textNode 注册与富文本编辑 - 步骤 1 残留
@@ -242,9 +235,9 @@
   - SVG/PDF 导出 - 步骤 9
 
 ### 建议的下一步行动
-1. **立即行动**：补全 bringForward/sendBackward（解除步骤 3 阻塞）
-2. **短期目标**：注册 textNode（取消 FlowEditor.vue:76 注释）
-3. **中期目标**：实现撤销重做（Action + HistoryService）
+1. **立即行动**：注册 textNode（取消 FlowEditor.vue:76 注释）
+2. **短期目标**：实现撤销重做（Action + HistoryService）
+3. **中期目标**：textNode 富文本编辑
 4. **长期目标**：vectorNode + SVG 导出（步骤 8-9）
 ### 愿景二：联动 wiki/攻略站（浏览/复刻/继续编辑）
 - 工具栏

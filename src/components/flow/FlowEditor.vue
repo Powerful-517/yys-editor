@@ -256,6 +256,74 @@ function moveSelectedNodes(deltaX: number, deltaY: number) {
   graphModel.moveNodes(targets, deltaX, deltaY);
 }
 
+// ========== 图层命令 ==========
+function bringToFront(nodeId?: string) {
+  const lfInstance = lf.value;
+  if (!lfInstance) return;
+  const targetId = nodeId || selectedNode.value?.id;
+  if (!targetId) return;
+  lfInstance.setElementZIndex(targetId, 'top');
+}
+
+function sendToBack(nodeId?: string) {
+  const lfInstance = lf.value;
+  if (!lfInstance) return;
+  const targetId = nodeId || selectedNode.value?.id;
+  if (!targetId) return;
+  lfInstance.setElementZIndex(targetId, 'bottom');
+}
+
+function bringForward(nodeId?: string) {
+  const lfInstance = lf.value;
+  if (!lfInstance) return;
+  const targetId = nodeId || selectedNode.value?.id;
+  if (!targetId) return;
+
+  const currentNode = lfInstance.getNodeModelById(targetId);
+  if (!currentNode) return;
+
+  const currentZIndex = currentNode.zIndex;
+  const allNodes = lfInstance.graphModel.nodes;
+
+  // 找到所有 zIndex 大于当前节点的节点
+  const nodesAbove = allNodes
+    .filter((node) => node.zIndex > currentZIndex)
+    .sort((a, b) => a.zIndex - b.zIndex);
+
+  if (nodesAbove.length > 0) {
+    // 与最近的上层节点交换 zIndex
+    const nextNode = nodesAbove[0];
+    currentNode.setZIndex(nextNode.zIndex);
+    nextNode.setZIndex(currentZIndex);
+  }
+}
+
+function sendBackward(nodeId?: string) {
+  const lfInstance = lf.value;
+  if (!lfInstance) return;
+  const targetId = nodeId || selectedNode.value?.id;
+  if (!targetId) return;
+
+  const currentNode = lfInstance.getNodeModelById(targetId);
+  if (!currentNode) return;
+
+  const currentZIndex = currentNode.zIndex;
+  const allNodes = lfInstance.graphModel.nodes;
+
+  // 找到所有 zIndex 小于当前节点的节点
+  const nodesBelow = allNodes
+    .filter((node) => node.zIndex < currentZIndex)
+    .sort((a, b) => b.zIndex - a.zIndex);
+
+  if (nodesBelow.length > 0) {
+    // 与最近的下层节点交换 zIndex
+    const prevNode = nodesBelow[0];
+    currentNode.setZIndex(prevNode.zIndex);
+    prevNode.setZIndex(currentZIndex);
+  }
+}
+
+// ========== 删除操作 ==========
 function deleteSelectedElements(event?: KeyboardEvent) {
   if (shouldSkipShortcut(event)) return true;
   const lfInstance = lf.value;
@@ -278,6 +346,21 @@ function deleteSelectedElements(event?: KeyboardEvent) {
   updateSelectedCount();
   selectedNode.value = null;
   return false;
+}
+
+function deleteNode(nodeId: string) {
+  const lfInstance = lf.value;
+  if (!lfInstance) return;
+  const node = lfInstance.getNodeModelById(nodeId);
+  if (!node) return;
+
+  const meta = ensureMeta((node as any).properties?.meta);
+  if (meta.locked) {
+    showMessage('warning', '节点已锁定，无法删除');
+    return;
+  }
+
+  lfInstance.deleteNode(nodeId);
 }
 
 function toggleLockSelected(event?: KeyboardEvent) {
@@ -633,21 +716,79 @@ onMounted(() => {
       {
         text: '置于顶层',
         callback(node: NodeData) {
-          lfInstance.setElementZIndex(node.id, 'top');
-          console.log('置顶' + lfInstance.getNodeModelById(node.id).zIndex);
+          bringToFront(node.id);
+        }
+      },
+      {
+        text: '上移一层',
+        callback(node: NodeData) {
+          bringForward(node.id);
+        }
+      },
+      {
+        text: '下移一层',
+        callback(node: NodeData) {
+          sendBackward(node.id);
         }
       },
       {
         text: '置于底层',
         callback(node: NodeData) {
-          lfInstance.setElementZIndex(node.id, 'bottom');
-          console.log('置底' + lfInstance.getNodeModelById(node.id).zIndex);
+          sendToBack(node.id);
         }
       },
       {
-        text: '删除节点',
+        text: '---' // 分隔线
+      },
+      {
+        text: '复制 (Ctrl+C)',
+        callback() {
+          handleCopy();
+        }
+      },
+      {
+        text: '粘贴 (Ctrl+V)',
+        callback() {
+          handlePaste();
+        }
+      },
+      {
+        text: '---' // 分隔线
+      },
+      {
+        text: '组合 (Ctrl+G)',
+        callback() {
+          groupSelectedNodes();
+        }
+      },
+      {
+        text: '解组 (Ctrl+U)',
+        callback() {
+          ungroupSelectedNodes();
+        }
+      },
+      {
+        text: '---' // 分隔线
+      },
+      {
+        text: '锁定/解锁 (Ctrl+L)',
+        callback() {
+          toggleLockSelected();
+        }
+      },
+      {
+        text: '显示/隐藏 (Ctrl+Shift+H)',
+        callback() {
+          toggleVisibilitySelected();
+        }
+      },
+      {
+        text: '---' // 分隔线
+      },
+      {
+        text: '删除节点 (Del)',
         callback(node: NodeData) {
-          lfInstance.deleteNode(node.id);
+          deleteNode(node.id);
         }
       }
     ],
@@ -668,6 +809,70 @@ onMounted(() => {
             x: data.x,
             y: data.y
           });
+        }
+      },
+      {
+        text: '粘贴 (Ctrl+V)',
+        callback(data: Position) {
+          handlePaste();
+        }
+      }
+    ]
+  });
+
+  // 配置多选时的右键菜单（选区菜单）
+  lfInstance.extension.menu.setMenuByType({
+    type: 'lf:defaultSelectionMenu',
+    menu: [
+      {
+        text: '复制 (Ctrl+C)',
+        callback() {
+          handleCopy();
+        }
+      },
+      {
+        text: '粘贴 (Ctrl+V)',
+        callback() {
+          handlePaste();
+        }
+      },
+      {
+        text: '---' // 分隔线
+      },
+      {
+        text: '组合 (Ctrl+G)',
+        callback() {
+          groupSelectedNodes();
+        }
+      },
+      {
+        text: '解组 (Ctrl+U)',
+        callback() {
+          ungroupSelectedNodes();
+        }
+      },
+      {
+        text: '---' // 分隔线
+      },
+      {
+        text: '锁定/解锁 (Ctrl+L)',
+        callback() {
+          toggleLockSelected();
+        }
+      },
+      {
+        text: '显示/隐藏 (Ctrl+Shift+H)',
+        callback() {
+          toggleVisibilitySelected();
+        }
+      },
+      {
+        text: '---' // 分隔线
+      },
+      {
+        text: '删除选中 (Del)',
+        callback() {
+          deleteSelectedElements();
         }
       }
     ]
