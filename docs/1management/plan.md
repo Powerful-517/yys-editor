@@ -1,46 +1,125 @@
 ﻿# 模块状态总览（重写）
 
-总体完成度（粗略）：约 75%
+## 📊 项目完成度总览
 
-## 1. 画布（LogicFlow） — 完成度：75%
+**总体完成度：82%** | **愿景一完成度：70%** (步骤1-7/10已完成)
+
+### 核心模块完成度
+
+| 模块 | 完成度 | 状态 | 关键缺失 |
+|------|--------|------|----------|
+| 🎨 画布（LogicFlow） | 85% | ✅ 良好 | 单步前移/后移、撤销重做 |
+| 📦 左侧组件库 | 65% | ⚠️ 可用 | textNode未注册、缩略图 |
+| ⚙️ 右侧属性面板 | 85% | ✅ 良好 | textNode富文本编辑 |
+| 🔧 工具栏 | 85% | ✅ 良好 | 导出命名优化 |
+| 💬 弹窗系统 | 75% | ✅ 可用 | i18n完善、性能优化 |
+| 💾 状态与持久化 | 90% | ✅ 优秀 | 重命名UI |
+| 🌐 数据与国际化 | 60% | ⚠️ 基础 | UTF-8统一、日文覆盖 |
+| 📁 项目资源面板 | 30% | ❌ 未集成 | 布局集成 |
+| 🏗️ 构建与质量 | 40% | ⚠️ 基础 | 测试、CI |
+
+### 愿景一实施进度（基础排版功能）
+
+| 步骤 | 任务 | 状态 | 说明 |
+|------|------|------|------|
+| 1 | 节点最小化打通 | ✅ 完成 | imageNode可用，textNode待注册 |
+| 2 | 截图修复 | ✅ 完成 | LogicFlow Snapshot + 水印 |
+| 3 | 图层命令MVP | ⚠️ 部分 | 置顶/置底✅，**前移/后移❌** |
+| 4 | 多选/对齐/吸附 | ✅ 完成 | 6种对齐 + 2种分布 |
+| 5 | 快捷键与微调 | ✅ 完成 | 8种快捷键全部工作 |
+| 6 | 样式模型补齐 | ✅ 完成 | 11个样式属性统一 |
+| 7 | 扩展与控制 | ✅ 完成 | MiniMap/Control + 开关 |
+| 8 | 矢量节点MVP | ❌ 未开始 | vectorNode + SVG导入 |
+| 9 | 资源与导出增强 | ❌ 未开始 | 资源弹窗 + SVG/PDF导出 |
+| 10 | 历史与撤销重做 | ❌ 未开始 | Action + HistoryService |
+
+## 🎯 下一步行动计划
+
+### 🔴 高优先级（立即行动）
+1. **补全图层命令** - 实现 `bringForward`/`sendBackward`
+   - 位置：[FlowEditor.vue:631-674](../src/components/flow/FlowEditor.vue#L631-L674)
+   - 影响：解除步骤3阻塞，完善右键菜单
+   - 预期：调用LogicFlow层级API或自定义z-index管理
+
+2. **注册textNode** - 取消注释并验证基本功能
+   - 位置：[FlowEditor.vue:76](../src/components/flow/FlowEditor.vue#L76)
+   - 影响：完成步骤1，启用文本节点
+   - 预期：基本渲染工作，富文本编辑可延后
+
+### 🟡 中优先级（短期目标）
+3. **实现撤销重做系统** - 步骤10
+   - 设计：Action接口 + HistoryService
+   - 范围：记录增删改/移动/层级操作
+   - 快捷键：Ctrl+Z/Y
+
+4. **textNode富文本编辑** - 完善TextPanel
+   - 位置：[TextPanel.vue](../src/components/flow/panels/TextPanel.vue)
+   - 需求：集成富文本编辑器（TipTap/Quill）
+   - 功能：内容编辑、字体、颜色、格式化
+
+### 🟢 低优先级（长期规划）
+5. **矢量节点MVP** - 步骤8
+   - 定义vectorNode类型
+   - 支持SVG path/rect/ellipse/polygon
+   - 属性面板编辑path/stroke/fill
+
+6. **导出增强** - 步骤9
+   - 图片资源选择/上传弹窗
+   - 导出SVG/PDF格式
+
+---
+
+## 📋 详细模块状态
+
+## 1. 画布（LogicFlow） — 完成度：85%
 - 已完成：
   - 初始化与销毁：LogicFlow 实例、网格/缩放/旋转、节点选中/空白取消（src/components/flow/FlowEditor.vue）
-  - 自定义节点注册：`shikigamiSelect`、`yuhunSelect`、`propertySelect`、`imageNode`
+  - 自定义节点注册：`shikigamiSelect`、`yuhunSelect`、`propertySelect`、`imageNode`（src/components/flow/FlowEditor.vue:567-574）
   - 与 Store 联动：读取/写入 `graphRawData` 与 `transform`（缩放/位移）（src/ts/useStore.ts, src/ts/useLogicFlow.ts）
   - DnD 接入：由组件库触发拖拽放置
-  - 右键菜单：节点置顶/置底与删除、边删除、画布添加节点（基于 LogicFlow Menu + `setElementZIndex`）
-  - 多选/框选、对齐线、吸附网格；左/右/上/下/水平/垂直居中与横/纵等距分布（SelectionSelect + snapline + 自定义对齐分布指令）
-  - 扩展与控制：接入 MiniMap + Control 插件；吸附/对齐线/框选开关共享到 Toolbar 与 FlowEditor；新增清空画布入口
+  - 右键菜单：节点置顶/置底与删除、边删除、画布添加节点（基于 LogicFlow Menu + `setElementZIndex`）（src/components/flow/FlowEditor.vue:631-674）
+  - 多选/框选、对齐线、吸附网格；左/右/上/下/水平/垂直居中与横/纵等距分布（SelectionSelect + snapline + 自定义对齐分布指令）（src/components/flow/FlowEditor.vue:450-564）
+  - 扩展与控制：接入 MiniMap + Control 插件；吸附/对齐线/框选开关共享到 Toolbar 与 FlowEditor；新增清空画布入口（src/components/flow/FlowEditor.vue:588,682; src/components/Toolbar.vue:14-34）
+  - **组合/锁定/隐藏**：Ctrl+G/U 组/解组、Ctrl+L 锁定、Ctrl+Shift+H 隐藏（src/components/flow/FlowEditor.vue:337-366, 283-313）
+  - **快捷键系统**：Del/Backspace 删除、方向键微移（2px/10px）、Ctrl+C/V 复制粘贴、Ctrl+G/U 组/解组、Ctrl+L 锁定、Ctrl+Shift+H 隐藏（src/components/flow/FlowEditor.vue:611-629）
+  - **节点元数据管理**：meta.visible、meta.locked、meta.groupId 支持与规范化（src/components/flow/FlowEditor.vue:133-209）
 - 未完成：
   - 右键菜单层级命令：已接通置顶/置底，单步前移/后移（`bringForward`/`sendBackward`）未实现
-  - 撤销重做、组合/锁定/隐藏、快捷键（Del/Ctrl+C/V、方向键微移、Ctrl+Z/Y）
+  - **撤销重做**：Ctrl+Z/Y 历史栈与操作回放
+  - **textNode 注册**：已在 ComponentsPanel 定义但 FlowEditor.vue:76 中被注释未注册
 
-## 2. 左侧组件库（Palette） — 完成度：60%
+## 2. 左侧组件库（Palette） — 完成度：65%
 - 已完成：
-  - 分组展示：基础组件、阴阳师、其他（占位）（src/components/flow/ComponentsPanel.vue）
+  - 分组展示：基础组件（rect/ellipse/image/text）、阴阳师（shikigami/yuhun/property）（src/components/flow/ComponentsPanel.vue:5-95）
   - 拖拽创建节点：`lf.dnd.startDrag({ type, properties })`
+  - **组件定义结构化**：嵌套 componentGroups 数组，包含 id/name/type/description/data
 - 未完成：
-  - `textNode` 在画布侧未注册；`imageNode` 已可用但无缩略图
-  - 点击快速创建、组件预览缩略图、搜索与分组折叠
+  - `textNode` 在画布侧未注册（ComponentsPanel 已定义但 FlowEditor 未注册）
+  - 组件预览缩略图、搜索与分组折叠
+  - 点击快速创建（当前仅支持拖拽）
   - 外置配置（JSON）与动态加载，便于扩展
 
-## 3. 右侧属性面板（Inspector） — 完成度：80%
+## 3. 右侧属性面板（Inspector） — 完成度：85%
 - 已完成：
-  - 按节点类型切换 UI，显示基本信息（ID/类型）（src/components/flow/PropertyPanel.vue），面板按节点类型拆分子组件
-  - 打开式神/御魂/属性弹窗，并通过 `lf.setProperties` 回写到节点
-  - `imageNode` 属性编辑：URL/本地上传、fit、宽高与预览，写回 `properties` 同步渲染
-  - 样式模型：统一 `properties.style`，属性面板支持填充/描边/圆角/阴影/透明度/文字对齐/行高/字重，节点渲染消费样式
+  - 按节点类型切换 UI，显示基本信息（ID/类型）（src/components/flow/PropertyPanel.vue），面板按节点类型拆分子组件（ShikigamiPanel/YuhunPanel/PropertyRulePanel/ImagePanel/TextPanel/StylePanel）
+  - 打开式神/御魂/属性弹窗，并通过 `lf.setProperties` 回写到节点（src/components/flow/panels/ShikigamiPanel.vue, YuhunPanel.vue, PropertyRulePanel.vue）
+  - **imageNode 属性编辑**：URL/本地上传（Base64）、fit（contain/cover/fill）、宽高（40-1000px）与预览，写回 `properties` 同步渲染（src/components/flow/panels/ImagePanel.vue）
+  - **样式模型完整实现**：统一 `properties.style`（src/ts/schema.ts, src/ts/nodeStyle.ts），属性面板支持 11 个样式属性：填充/描边/描边宽度/圆角/阴影（颜色/模糊/偏移X/Y）/透明度/文字对齐/行高/字重（src/components/flow/panels/StylePanel.vue）
+  - **属性同步机制**：通过 `lf.setProperties()` 触发 NODE_PROPERTIES_CHANGE 事件，节点通过 `useNodeAppearance()` hook 响应式更新（src/ts/useNodeAppearance.ts）
 - 未完成：
-  - `textNode` 富文本编辑与同步
+  - **textNode 富文本编辑**：TextPanel.vue 当前仅为 stub，只显示内容不支持编辑
   - 字段校验/联动、常用模板一键填充
 
-## 4. 工具栏（Toolbar） — 完成度：80%
+## 4. 工具栏（Toolbar） — 完成度：85%
 - 已完成：
-  - 导入/导出（走 store）、更新日志、问题反馈（src/components/Toolbar.vue）
-  - 水印设置（文本/字号/颜色/角度/行列）并持久化到 localStorage
-  - 截图预览与导出：基于 LogicFlow Snapshot 获取 PNG，叠加自定义水印，预览/下载
+  - 导入/导出（走 store）、更新日志、问题反馈、重置工作区（src/components/Toolbar.vue:3-10）
+  - 水印设置（文本/字号/颜色/角度/行列）并持久化到 localStorage（src/components/Toolbar.vue:70-97）
+  - 截图预览与导出：基于 LogicFlow Snapshot 获取 PNG，叠加自定义水印，预览/下载（src/components/Toolbar.vue:58-67）
+  - **画布控制开关**：框选开/关、吸附开/关、对齐线开/关（src/components/Toolbar.vue:14-34）
+  - **清空画布**：handleClearCanvas 入口（src/components/Toolbar.vue:11）
 - 未完成：
-  - 导出文件命名/版本号与 `schemaVersion`，导入时的校验与迁移提示
+  - 导出文件命名优化（当前固定为 yys-editor-files.json）
+  - 导入时的 schemaVersion 校验与迁移提示（迁移逻辑已在 schema.ts 实现，但 UI 无提示）
 
 ## 5. 弹窗系统（Dialogs） — 完成度：75%
 - 已完成：
@@ -56,9 +135,17 @@
 
 ## 支撑模块
 
-### A. 状态与持久化（Pinia + localStorage） — 完成度：80%
-- 已完成：多标签（新增/删除/切换）、自动保存（防抖 + 30s 定时）、`graphRawData`/`transform` 同步、导入兼容旧格式，`schemaVersion` 与数据迁移（Root Document + 迁移器）（src/ts/useStore.ts, src/ts/schema.ts）
-- 未完成：重命名/删除等文件管理与 UI 全链路校验、失败兜底与错误提示
+### A. 状态与持久化（Pinia + localStorage） — 完成度：90%
+- 已完成：
+  - **多标签管理**：新增/删除/切换，双 ID 系统（activeFileId + activeFile name）（src/ts/useStore.ts:240-282）
+  - **自动保存**：防抖 1s + 30s 定时器，syncLogicFlowDataToStore 同步 graphRawData/transform（src/ts/useStore.ts:232-238, 313-336）
+  - **数据迁移系统**：migrateToV1() 处理多种遗留格式，schemaVersion="1.0.0"（src/ts/schema.ts:128-224）
+  - **导入导出**：兼容旧格式，自动迁移，双 ID 导出确保兼容性（src/ts/useStore.ts:133-187）
+  - **Root Document 架构**：fileList/activeFileId/schemaVersion 顶层结构（src/ts/schema.ts:1-30）
+  - **错误处理**：localStorage 配额超限时 clear 重试，JSON 解析错误捕获（src/ts/useStore.ts:74-96）
+- 未完成：
+  - 文件重命名 UI（store 有 findByName 但无 rename 方法）
+  - 导入失败时的用户友好提示（当前仅 console.warn）
 
 ### B. 数据与国际化 — 完成度：60%
 - 已完成：式神/御魂数据与图片（src/data/*.json, public/assets/*）；i18n（自动选 zh/ja，fallback zh）（src/locales/*.json, src/main.js）
@@ -103,16 +190,16 @@
   - 截图约定：FlowEditor 暴露 `getCanvasEl()`，Toolbar 基于该容器调用 html2canvas（`src/components/Toolbar.vue`）。
 
 - 推荐开发顺序（每步可独立验收）
-  1) 节点最小化打通：已注册并可用 `imageNode`（上传/URL/fit/宽高）；`textNode` 待注册 + 富文本/样式；PropertyPanel 已按类型拆分子组件（`src/components/flow/FlowEditor.vue`, `src/components/flow/PropertyPanel.vue`）。
-  2) 截图修复：改为基于 LogicFlow 容器导出 PNG，沿用水印配置（`src/components/Toolbar.vue`）。已完成
-  3) 图层命令 MVP：基于 LogicFlow 的层级/前后置 API 封装 bringToFront/sendToBack/bringForward/sendBackward + 右键菜单，如需持久化仅同步引擎提供的层级信息（`src/components/flow/FlowEditor.vue`）。已完成：置顶/置底 + 右键菜单；待补：单步前移/后移。
-  4) 多选/对齐/吸附：框选、对齐线、吸附网格；左/右/上/下/水平/垂直居中与横/纵等距分布（FlowEditor/extension）。已完成
-  5) 快捷键与微调：Del 删除、方向键微移、Ctrl+C/V 复制粘贴、Ctrl+G/U 组/解组（简单组：父 meta id + 同步移动）、锁定/隐藏（`properties.locked`/`visible`）。
-  6) 样式模型补齐：统一 `properties.style` 字段并在 PropertyPanel 全量编辑（填充/描边/圆角/阴影/透明度/文字对齐/行高/字重）。【已完成】
-  7) 扩展与控制：接入 MiniMap/Control/Snapshot；Toolbar 增加吸附/对齐开关与清空画布。【已完成：MiniMap + Control 接入；Toolbar/FlowEditor 共享开关 + 清空画布；Snapshot 已有】
-  8) 矢量节点 MVP：`vectorNode`（SVG path/rect/ellipse/polygon），属性面板支持 path/stroke/fill/strokeWidth；新增 SVG 导入弹窗。
-  9) 资源与导出增强：图片资源选择/上传弹窗（base64 或预留 `assetId`），导出 SVG/PDF（PDF 可延后）。
-  10) 历史与撤销重做：抽象 Action + HistoryService，记录增删改/移动/层级；Ctrl+Z/Y。
+  1) ✅ **节点最小化打通**：imageNode 已注册并可用（上传/URL/fit/宽高）；textNode 已在 ComponentsPanel 定义但 FlowEditor 未注册；PropertyPanel 已按类型拆分子组件（ShikigamiPanel/YuhunPanel/PropertyRulePanel/ImagePanel/TextPanel/StylePanel）
+  2) ✅ **截图修复**：已改为基于 LogicFlow Snapshot 导出 PNG，沿用水印配置（src/components/Toolbar.vue:prepareCapture）
+  3) ⚠️ **图层命令 MVP**：已完成置顶/置底 + 右键菜单（src/components/flow/FlowEditor.vue:631-674）；**待补：单步前移/后移（bringForward/sendBackward）**
+  4) ✅ **多选/对齐/吸附**：框选（SelectionSelect）、对齐线（snapline）、吸附网格；6 种对齐（左/右/上/下/水平居中/垂直居中）+ 2 种等距分布（横/纵）（src/components/flow/FlowEditor.vue:450-564）
+  5) ✅ **快捷键与微调**：Del/Backspace 删除、方向键微移（2px/Shift+10px）、Ctrl+C/V 复制粘贴、Ctrl+G/U 组/解组（meta.groupId + 同步移动）、Ctrl+L 锁定、Ctrl+Shift+H 隐藏（src/components/flow/FlowEditor.vue:611-629, 337-366, 283-313）
+  6) ✅ **样式模型补齐**：统一 properties.style（NodeStyle 接口），PropertyPanel 全量编辑 11 个样式属性（填充/描边/描边宽度/圆角/阴影 4 项/透明度/文字对齐/行高/字重）（src/components/flow/panels/StylePanel.vue, src/ts/nodeStyle.ts）
+  7) ✅ **扩展与控制**：MiniMap + Control 插件接入（src/components/flow/FlowEditor.vue:588,682）；Toolbar 增加框选/吸附/对齐线开关（src/components/Toolbar.vue:14-34）；清空画布入口（src/components/Toolbar.vue:11）
+  8) ❌ **矢量节点 MVP**：vectorNode（SVG path/rect/ellipse/polygon），属性面板支持 path/stroke/fill/strokeWidth；新增 SVG 导入弹窗
+  9) ❌ **资源与导出增强**：图片资源选择/上传弹窗（当前仅支持单个上传），导出 SVG/PDF（当前仅 PNG）
+  10) ❌ **历史与撤销重做**：抽象 Action + HistoryService，记录增删改/移动/层级；Ctrl+Z/Y 快捷键
 
 - 依赖关系
   - 图层命令（3）依赖 节点/截图（1/2），并为 对齐/组/快捷键（4/5）的前置。
@@ -126,10 +213,39 @@
   - 截图基于 DOM 选择器易漂移；由 FlowEditor 提供 `getCanvasEl()`，Toolbar 仅依赖该接口。
 
 - 验收停靠点
-  - 1/2 结束：冻结顶层导出结构 v1（Root Document + LogicFlow GraphData）与截图容器约定；filesStore 开始写入 `schemaVersion`。（当前已完成：Root Document + GraphData + schemaVersion 持久化；截图容器约定已完成：LogicFlow Snapshot + 水印）
-  - 3/4 结束：冻结 CanvasService API；层级/对齐操作均能回放。
-  - 6 结束：统一样式模型，三类节点在 UI 中可一致编辑。
-  - 8 结束：确认 SVG 导入/导出链路稳定。
+  - ✅ **1/2 结束**：Root Document + LogicFlow GraphData 结构已冻结（src/ts/schema.ts），schemaVersion="1.0.0" 持久化（src/ts/useStore.ts），截图基于 LogicFlow Snapshot + 水印（src/components/Toolbar.vue）
+  - ⚠️ **3/4 结束**：层级操作部分完成（置顶/置底✅，前移/后移❌），对齐/分布操作已完成（src/components/flow/FlowEditor.vue:485-564），但无操作回放（历史栈未实现）
+  - ✅ **6 结束**：样式模型已统一（NodeStyle 接口），imageNode/shikigamiSelect/yuhunSelect/propertySelect 四类节点均可通过 StylePanel 一致编辑 11 个样式属性
+  - ❌ **8 结束**：vectorNode 未开始，SVG 导入/导出链路未实现
+
+---
+
+## 当前状态总结（2026-01-22）
+
+### 已完成的愿景一核心功能（步骤 1-7，约 70%）
+- ✅ 节点系统：imageNode 完整可用，textNode 定义但未注册
+- ✅ 截图导出：LogicFlow Snapshot + 自定义水印
+- ✅ 图层命令：置顶/置底（待补：前移/后移）
+- ✅ 多选对齐：6 种对齐 + 2 种等距分布
+- ✅ 快捷键：8 种快捷键全部工作（Del/方向键/Ctrl+C/V/G/U/L/Shift+H）
+- ✅ 样式模型：11 个样式属性统一编辑
+- ✅ 扩展控制：MiniMap/Control/Snapshot 插件 + Toolbar 开关
+
+### 待完成的愿景一功能（步骤 3/8/9/10，约 30%）
+- ⚠️ **高优先级（阻塞）**：
+  - 单步前移/后移（bringForward/sendBackward）- 步骤 3 残留
+  - 撤销重做（Ctrl+Z/Y）- 步骤 10，依赖历史栈
+- ⚠️ **中优先级（功能完整性）**：
+  - textNode 注册与富文本编辑 - 步骤 1 残留
+- ⚠️ **低优先级（增强功能）**：
+  - vectorNode MVP - 步骤 8
+  - SVG/PDF 导出 - 步骤 9
+
+### 建议的下一步行动
+1. **立即行动**：补全 bringForward/sendBackward（解除步骤 3 阻塞）
+2. **短期目标**：注册 textNode（取消 FlowEditor.vue:76 注释）
+3. **中期目标**：实现撤销重做（Action + HistoryService）
+4. **长期目标**：vectorNode + SVG 导出（步骤 8-9）
 ### 愿景二：联动 wiki/攻略站（浏览/复刻/继续编辑）
 - 工具栏
   - 导入/导出增加元信息（title/tags/lang/version/schemaVersion）；“发布/上传”“打开攻略”“复刻编辑”入口
