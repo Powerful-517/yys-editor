@@ -3,3 +3,6 @@
 /.idea
 /dist
 /dist.zip
+/.claude
+/.serena
+/scripts/node_modules
