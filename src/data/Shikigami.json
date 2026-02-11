@@ -1,5 +1,20 @@
 [
     {
+        "avatar": "/assets/Shikigami/sp/598.png",
+        "name": "灼华桃花妖",
+        "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/597.png",
+        "name": "葛叶",
+        "rarity": "SSR"
+    },
+    {
+        "avatar": "/assets/Shikigami/ssr/596.png",
+        "name": "神无月",
+        "rarity": "SSR"
+    },
+    {
         "avatar": "/assets/Shikigami/sp/595.png",
         "name": "梦山白藏主",
         "rarity": "SP"
@@ -113,6 +128,11 @@
         "avatar": "/assets/Shikigami/sp/572.png",
         "name": "遥念烟烟罗",
         "rarity": "SP"
+    },
+    {
+        "avatar": "/assets/Shikigami/sr/571.png",
+        "name": "湍津姬",
+        "rarity": "SR"
     },
     {
         "avatar": "/assets/Shikigami/ssr/570.png",
