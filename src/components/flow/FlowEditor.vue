@@ -197,6 +197,24 @@ function normalizeAllNodes() {
   const lfInstance = lf.value;
   if (!lfInstance) return;
   lfInstance.graphModel?.nodes.forEach((model: BaseNodeModel) => normalizeNodeModel(model));
+
+  // 检查是否所有节点的 zIndex 都相同且为默认值（通常是从历史恢复的情况）
+  const allNodes = lfInstance.graphModel?.nodes || [];
+  if (allNodes.length > 1) {
+    const firstZIndex = allNodes[0]?.zIndex;
+    const allSameZIndex = allNodes.every(n => n.zIndex === firstZIndex);
+
+    // 只有当所有节点的 zIndex 都是默认值 1 时才重新分配
+    if (allSameZIndex && firstZIndex === 1) {
+      console.log('[初始化] 检测到所有节点 zIndex 都为默认值 1，开始重新分配 zIndex');
+      // 为所有节点分配递增的 zIndex，避免层级操作异常
+      allNodes.forEach((node, index) => {
+        const newZIndex = index + 1;
+        node.setZIndex(newZIndex);
+      });
+      console.log('[初始化] zIndex 重新分配完成:', allNodes.map(n => ({ id: n.id, zIndex: n.zIndex })));
+    }
+  }
 }
 
 function updateNodeMeta(model: BaseNodeModel, updater: (meta: Record<string, any>) => Record<string, any>) {
@@ -262,7 +280,16 @@ function bringToFront(nodeId?: string) {
   if (!lfInstance) return;
   const targetId = nodeId || selectedNode.value?.id;
   if (!targetId) return;
+
+  // 诊断日志：查看所有节点的 zIndex
+  const allNodes = lfInstance.graphModel.nodes;
+  console.log('[置于顶层] 目标节点ID:', targetId);
+  console.log('[置于顶层] 所有节点的 zIndex:', allNodes.map(n => ({ id: n.id, zIndex: n.zIndex })));
+
   lfInstance.setElementZIndex(targetId, 'top');
+
+  // 操作后再次查看
+  console.log('[置于顶层] 操作后所有节点的 zIndex:', allNodes.map(n => ({ id: n.id, zIndex: n.zIndex })));
 }
 
 function sendToBack(nodeId?: string) {
@@ -270,7 +297,16 @@ function sendToBack(nodeId?: string) {
   if (!lfInstance) return;
   const targetId = nodeId || selectedNode.value?.id;
   if (!targetId) return;
+
+  // 诊断日志：查看所有节点的 zIndex
+  const allNodes = lfInstance.graphModel.nodes;
+  console.log('[置于底层] 目标节点ID:', targetId);
+  console.log('[置于底层] 所有节点的 zIndex:', allNodes.map(n => ({ id: n.id, zIndex: n.zIndex })));
+
   lfInstance.setElementZIndex(targetId, 'bottom');
+
+  // 操作后再次查看
+  console.log('[置于底层] 操作后所有节点的 zIndex:', allNodes.map(n => ({ id: n.id, zIndex: n.zIndex })));
 }
 
 function bringForward(nodeId?: string) {
@@ -663,7 +699,7 @@ onMounted(() => {
     grid: { type: 'dot', size: 10 },
     allowResize: true,
     allowRotate: true,
-    overlapMode: -1,
+    overlapMode: 0,
     snapline: snaplineEnabled.value,
     keyboard: {
       enabled: true
@@ -902,8 +938,20 @@ onMounted(() => {
   lfInstance.on(EventType.NODE_DRAG, (args) => handleNodeDrag(args as any));
 
   lfInstance.on(EventType.NODE_ADD, ({ data }) => {
+    console.log('[NODE_ADD 事件触发] 节点ID:', data.id);
     const model = lfInstance.getNodeModelById(data.id);
-    if (model) normalizeNodeModel(model);
+    if (model) {
+      console.log('[NODE_ADD] 获取到节点模型，当前 zIndex:', model.zIndex);
+      normalizeNodeModel(model);
+
+      // 设置新节点的 zIndex 为 1000
+      const newZIndex = 1000;
+      console.log(`[NODE_ADD] 准备设置 zIndex: ${newZIndex}`);
+      model.setZIndex(newZIndex);
+      console.log(`[NODE_ADD] 设置后的 zIndex:`, model.zIndex);
+    } else {
+      console.log('[NODE_ADD] 未能获取到节点模型');
+    }
   });
 
   lfInstance.on(EventType.GRAPH_RENDERED, () => normalizeAllNodes());

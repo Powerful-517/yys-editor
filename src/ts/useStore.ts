@@ -321,12 +321,24 @@ export const useFilesStore = defineStore('files', () => {
                 const transform = logicFlowInstance.getTransform();
 
                 if (graphData) {
+                    // 手动添加 zIndex 信息到每个节点
+                    const enrichedGraphData = {
+                        ...graphData,
+                        nodes: (graphData.nodes || []).map((node: any) => {
+                            const model = logicFlowInstance.getNodeModelById(node.id);
+                            return {
+                                ...node,
+                                zIndex: model?.zIndex ?? node.zIndex ?? 1
+                            };
+                        })
+                    };
+
                     // 直接保存原始数据到 GraphRawData
                     const file = findById(targetId);
                     if (file) {
-                        file.graphRawData = graphData;
+                        file.graphRawData = enrichedGraphData;
                         file.transform = transform;
-                        console.log(`已同步画布数据到文件 "${file.name}"(${targetId})`);
+                        console.log(`已同步画布数据到文件 "${file.name}"(${targetId})，包含 zIndex 信息`);
                     }
                 }
             } catch (error) {

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ECharts 旭日图 - 所有层级显示百分比 + 小扇区标签引出</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.0/dist/echarts.min.js"></script>
+</head>
+<body>
+<div id="main" style="width: 1000px; height: 800px;"></div>
+
+<script>
+    var rawData = [
+        {
+            "name": "现金",
+            "value": 7.023
+        },
+        {
+            "name": "债券",
+            "value": 25.809,
+            "children": [
+                {
+                    "name": "中债",
+                    "value": 4.6346,
+                    "children": [
+                        {
+                            "name": "利率债",
+                            "value": 2.4011
+                        },
+                        {
+                            "name": "信用债",
+                            "value": 2.2335
+                        },
+                        {
+                            "name": "同业存单",
+                            "value": 0
+                        },
+                        {
+                            "name": "长债",
+                            "value": 0
+                        }
+                    ]
+                },
+                {
+                    "name": "美债",
+                    "value": 18.9602
+                },
+                {
+                    "name": "其他债券",
+                    "value": 2.2142
+                }
+            ]
+        },
+        {
+            "name": "股票",
+            "value": 54.7189,
+            "children": [
+                {
+                    "name": "A股",
+                    "value": 30.9155,
+                    "children": [
+                        {
+                            "name": "300指增",
+                            "value": 2.9555
+                        },
+                        {
+                            "name": "1000指增",
+                            "value": 2.3238
+                        },
+                        {
+                            "name": "HSTECH",
+                            "value": 2.8813
+                        },
+                        {
+                            "name": "红利",
+                            "value": 4.6535
+                        },
+                        {
+                            "name": "纺织服饰",
+                            "value": 4.3308
+                        },
+                        {
+                            "name": "传媒",
+                            "value": 1.889
+                        },
+                        {
+                            "name": "公用事业",
+                            "value": 1.6032
+                        },
+                        {
+                            "name": "通信",
+                            "value": 2.8502
+                        },
+                        {
+                            "name": "钢铁",
+                            "value": 1.0868
+                        },
+                        {
+                            "name": "银行",
+                            "value": 1.1927
+                        },
+                        {
+                            "name": "机械设备",
+                            "value": 1.7767
+                        },
+                        {
+                            "name": "有色金属",
+                            "value": 0.9596
+                        },
+                        {
+                            "name": "家用电器",
+                            "value": 2.4124
+                        }
+                    ]
+                },
+                {
+                    "name": "美股",
+                    "value": 8.0349,
+                    "children": [
+                        {
+                            "name": "SPX",
+                            "value": 5.073
+                        },
+                        {
+                            "name": "NDX",
+                            "value": 2.9619
+                        }
+                    ]
+                },
+                {
+                    "name": "欧洲股票",
+                    "value": 5.4417,
+                    "children": [
+                        {
+                            "name": "CAC40",
+                            "value": 1.7798
+                        },
+                        {
+                            "name": "DAX",
+                            "value": 1.7545
+                        },
+                        {
+                            "name": "富时100",
+                            "value": 1.9074
+                        }
+                    ]
+                },
+                {
+                    "name": "日本股票",
+                    "value": 3.6608,
+                    "children": [
+                        {
+                            "name": "日经225",
+                            "value": 3.6608
+                        }
+                    ]
+                },
+                {
+                    "name": "亚太股票",
+                    "value": 4.5463,
+                    "children": [
+                        {
+                            "name": "APAC",
+                            "value": 4.5463
+                        }
+                    ]
+                },
+                {
+                    "name": "印度股票",
+                    "value": 2.1197,
+                    "children": [
+                        {
+                            "name": "印度",
+                            "value": 2.1197
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "商品",
+            "value": 10.072,
+            "children": [
+                {
+                    "name": "黄金",
+                    "value": 10.072,
+                    "children": [
+                        {
+                            "name": "纸黄金",
+                            "value": 6.8458
+                        },
+                        {
+                            "name": "黄金基金",
+                            "value": 3.2262
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "REITS",
+            "value": 1.2986,
+            "children": [
+                {
+                    "name": "REITs",
+                    "value": 1.2986,
+                    "children": [
+                        {
+                            "name": "REITS",
+                            "value": 1.2986
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "数字货币",
+            "value": 1.0782
+        }
+    ];
+
+    // Step 1: 递归补全所有节点的 value（非叶子节点 = 子节点 value 之和）
+    function fillValue(node) {
+        if (node.children) {
+            let sum = 0;
+            for (let child of node.children) {
+                fillValue(child);
+                sum += child.value || 0;
+            }
+            node.value = sum;
+        }
+        return node;
+    }
+
+    const dataWithFilledValue = JSON.parse(JSON.stringify(rawData)).map(fillValue);
+
+    // Step 2: 计算总值（根节点总和）
+    const totalValue = dataWithFilledValue.reduce((sum, node) => sum + (node.value || 0), 0);
+
+    // Step 3: 为每个节点添加 percentage 字段
+    function addPercentage(node) {
+        node.percentage = ((node.value / totalValue) * 100).toFixed(2) + '%';
+        if (node.children) {
+            node.children.forEach(addPercentage);
+        }
+    }
+
+    dataWithFilledValue.forEach(addPercentage);
+
+    // Step 4: 配置 ECharts
+    const option = {
+        series: {
+            type: 'sunburst',
+            data: dataWithFilledValue,
+            radius: [60, '90%'],
+            itemStyle: {
+                borderRadius: 7,
+                borderWidth: 2
+            },
+            label: {
+                show: true,
+                formatter: (params) => {
+                    return `${params.name}\n${params.data.percentage}`;
+                },
+                fontSize: 11,
+                color: '#000',
+                // 根据占比决定标签位置：小扇区 outside，大扇区 inside
+                position: (params) => {
+                    const ratio = params.data.value / totalValue;
+                    return ratio < 0.03 ? 'outside' : 'inside'; // <1.5% 引出
+                },
+                align: 'center',
+                verticalAlign: 'middle'
+            },
+            labelLine: {
+                show: true,
+                length: 10,
+                length2: 10,
+                smooth: true
+            },
+            emphasis: {
+                label: {
+                    show: true,
+                    fontSize: 14,
+                    fontWeight: 'bold'
+                }
+            }
+        },
+        tooltip: {
+            trigger: 'item',
+            formatter: (params) => {
+                return `${params.name}<br/>值: ${params.value}<br/>占比: ${params.data.percentage}`;
+            }
+        }
+    };
+
+    const myChart = echarts.init(document.getElementById('main'));
+    myChart.setOption(option);
+
+    window.addEventListener('resize', () => myChart.resize());
+</script>
+</body>
+</html>
+

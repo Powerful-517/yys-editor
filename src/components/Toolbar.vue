@@ -3,6 +3,7 @@
     <div>
       <el-button icon="Upload" type="primary" @click="handleImport">{{ t('import') }}</el-button>
       <el-button icon="Download" type="primary" @click="handleExport">{{ t('export') }}</el-button>
+      <el-button icon="View" type="success" @click="handlePreviewData">数据预览</el-button>
       <el-button icon="Share" type="primary" @click="prepareCapture">{{ t('prepareCapture') }}</el-button>
       <el-button icon="Setting" type="primary" @click="state.showWatermarkDialog = true">{{ t('setWatermark') }}</el-button>
       <el-button type="info" @click="loadExample">{{ t('loadExample') }}</el-button>
@@ -97,6 +98,19 @@
       </template>
     </el-dialog>
 
+    <!-- 数据预览对话框 -->
+    <el-dialog v-model="state.showDataPreviewDialog" title="数据预览" width="70%">
+      <div style="max-height: 600px; overflow-y: auto;">
+        <pre style="background: #f5f5f5; padding: 16px; border-radius: 4px; font-size: 12px; line-height: 1.5;">{{ state.previewDataContent }}</pre>
+      </div>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="state.showDataPreviewDialog = false">关闭</el-button>
+          <el-button type="primary" @click="copyDataToClipboard">复制到剪贴板</el-button>
+        </span>
+      </template>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -124,6 +138,8 @@ const state = reactive({
   showWatermarkDialog: false, // 控制水印设置弹窗的显示状态,
   showUpdateLogDialog: false, // 控制更新日志对话框的显示状态
   showFeedbackFormDialog: false, // 控制反馈表单对话框的显示状态
+  showDataPreviewDialog: false, // 控制数据预览对话框的显示状态
+  previewDataContent: '', // 存储预览的数据内容
 });
 
 // 重新渲染 LogicFlow 画布的通用方法
@@ -214,6 +230,39 @@ const handleExport = () => {
   setTimeout(() => {
     filesStore.exportData();
   }, 2000);
+};
+
+const handlePreviewData = () => {
+  // 预览前先更新当前数据
+  filesStore.updateTab();
+
+  // 延迟一点确保更新完成后再预览
+  setTimeout(() => {
+    try {
+      const activeName = filesStore.fileList.find(f => f.id === filesStore.activeFileId)?.name || '';
+      const dataObj = {
+        schemaVersion: 1,
+        fileList: filesStore.fileList,
+        activeFileId: filesStore.activeFileId,
+        activeFile: activeName,
+      };
+      state.previewDataContent = JSON.stringify(dataObj, null, 2);
+      state.showDataPreviewDialog = true;
+    } catch (error) {
+      console.error('生成预览数据失败:', error);
+      showMessage('error', '数据预览失败');
+    }
+  }, 100);
+};
+
+const copyDataToClipboard = async () => {
+  try {
+    await navigator.clipboard.writeText(state.previewDataContent);
+    showMessage('success', '已复制到剪贴板');
+  } catch (error) {
+    console.error('复制失败:', error);
+    showMessage('error', '复制失败');
+  }
 };
 
 const handleImport = () => {
