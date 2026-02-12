@@ -1,0 +1,13 @@
+{
+  "name": "yys-editor-scripts",
+  "version": "1.0.0",
+  "description": "Scripts for YYS Editor",
+  "scripts": {
+    "scrape": "node scrape-shikigami.js",
+    "scrape-puppeteer": "node scrape-shikigami-puppeteer.js"
+  },
+  "dependencies": {
+    "jsdom": "^23.0.0",
+    "puppeteer": "^21.0.0"
+  }
+}
