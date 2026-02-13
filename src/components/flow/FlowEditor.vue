@@ -314,19 +314,7 @@ function bringForward(nodeId?: string) {
   if (!currentNode) return;
 
   const currentZIndex = currentNode.zIndex;
-  const allNodes = lfInstance.graphModel.nodes;
-
-  // 找到所有 zIndex 大于当前节点的节点
-  const nodesAbove = allNodes
-    .filter((node) => node.zIndex > currentZIndex)
-    .sort((a, b) => a.zIndex - b.zIndex);
-
-  if (nodesAbove.length > 0) {
-    // 与最近的上层节点交换 zIndex
-    const nextNode = nodesAbove[0];
-    currentNode.setZIndex(nextNode.zIndex);
-    nextNode.setZIndex(currentZIndex);
-  }
+  currentNode.setZIndex(currentZIndex + 1);
 }
 
 function sendBackward(nodeId?: string) {
@@ -339,19 +327,7 @@ function sendBackward(nodeId?: string) {
   if (!currentNode) return;
 
   const currentZIndex = currentNode.zIndex;
-  const allNodes = lfInstance.graphModel.nodes;
-
-  // 找到所有 zIndex 小于当前节点的节点
-  const nodesBelow = allNodes
-    .filter((node) => node.zIndex < currentZIndex)
-    .sort((a, b) => b.zIndex - a.zIndex);
-
-  if (nodesBelow.length > 0) {
-    // 与最近的下层节点交换 zIndex
-    const prevNode = nodesBelow[0];
-    currentNode.setZIndex(prevNode.zIndex);
-    prevNode.setZIndex(currentZIndex);
-  }
+  currentNode.setZIndex(currentZIndex - 1);
 }
 
 // ========== 删除操作 ==========
