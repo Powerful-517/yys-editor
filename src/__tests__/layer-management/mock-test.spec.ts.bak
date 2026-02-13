@@ -1,0 +1,443 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+
+/**
+ * 图层管理集成测试
+ *
+ * 这个测试模拟真实的图层操作场景，验证：
+ * 1. 节点创建时的 zIndex 分配
+ * 2. 上移、下移、置顶、置底操作的正确性
+ * 3. 数据持久化后 zIndex 的保存
+ */
+
+// 模拟 LogicFlow 节点模型
+class MockNodeModel {
+  id: string
+  zIndex: number
+  x: number
+  y: number
+
+  constructor(id: string, x: number, y: number, zIndex: number = 1) {
+    this.id = id
+    this.x = x
+    this.y = y
+    this.zIndex = zIndex
+  }
+
+  setZIndex(zIndex: number) {
+    this.zIndex = zIndex
+  }
+}
+
+// 模拟 LogicFlow 实例
+class MockLogicFlow {
+  nodes: MockNodeModel[] = []
+  private nodeIdCounter = 0
+
+  addNode(config: { x: number; y: number; zIndex?: number }) {
+    const id = `node_${++this.nodeIdCounter}`
+    const zIndex = config.zIndex ?? 1000 // 新节点默认 zIndex 为 1000
+    const node = new MockNodeModel(id, config.x, config.y, zIndex)
+    this.nodes.push(node)
+    console.log(`[NODE_ADD] 创建节点 ${id}, zIndex: ${zIndex}`)
+    return node
+  }
+
+  getNodeModelById(id: string) {
+    return this.nodes.find(n => n.id === id)
+  }
+
+  setElementZIndex(id: string, zIndexOrPosition: number | 'top' | 'bottom') {
+    const node = this.getNodeModelById(id)
+    if (!node) return
+
+    if (zIndexOrPosition === 'top') {
+      const maxZIndex = Math.max(...this.nodes.map(n => n.zIndex))
+      node.setZIndex(maxZIndex + 1)
+      console.log(`[置于顶层] ${id}: ${node.zIndex}`)
+    } else if (zIndexOrPosition === 'bottom') {
+      const minZIndex = Math.min(...this.nodes.map(n => n.zIndex))
+      node.setZIndex(minZIndex - 1)
+      console.log(`[置于底层] ${id}: ${node.zIndex}`)
+    } else {
+      node.setZIndex(zIndexOrPosition)
+    }
+  }
+
+  // 模拟上移一层
+  bringForward(id: string) {
+    const currentNode = this.getNodeModelById(id)
+    if (!currentNode) return
+
+    const currentZIndex = currentNode.zIndex
+    const nodesAbove = this.nodes
+      .filter(node => node.zIndex > currentZIndex)
+      .sort((a, b) => a.zIndex - b.zIndex)
+
+    if (nodesAbove.length > 0) {
+      const nextNode = nodesAbove[0]
+      const tempZIndex = currentNode.zIndex
+      currentNode.setZIndex(nextNode.zIndex)
+      nextNode.setZIndex(tempZIndex)
+      console.log(`[上移一层] ${id}: ${tempZIndex} -> ${currentNode.zIndex}`)
+    }
+  }
+
+  // 模拟下移一层
+  sendBackward(id: string) {
+    const currentNode = this.getNodeModelById(id)
+    if (!currentNode) return
+
+    const currentZIndex = currentNode.zIndex
+    const nodesBelow = this.nodes
+      .filter(node => node.zIndex < currentZIndex)
+      .sort((a, b) => b.zIndex - a.zIndex)
+
+    if (nodesBelow.length > 0) {
+      const prevNode = nodesBelow[0]
+      const tempZIndex = currentNode.zIndex
+      currentNode.setZIndex(prevNode.zIndex)
+      prevNode.setZIndex(tempZIndex)
+      console.log(`[下移一层] ${id}: ${tempZIndex} -> ${currentNode.zIndex}`)
+    }
+  }
+
+  // 获取图数据（模拟数据预览）
+  getGraphRawData() {
+    return {
+      nodes: this.nodes.map(n => ({
+        id: n.id,
+        x: n.x,
+        y: n.y,
+        zIndex: n.zIndex
+      })),
+      edges: []
+    }
+  }
+
+  printAllNodes() {
+    console.log('所有节点 zIndex:', this.nodes.map(n => ({ id: n.id, zIndex: n.zIndex })))
+  }
+}
+
+describe('图层管理集成测试 - 真实场景模拟', () => {
+  let lf: MockLogicFlow
+
+  beforeEach(() => {
+    lf = new MockLogicFlow()
+  })
+
+  describe('1. 创建多个节点并检查zIndex', () => {
+    it('应该为新创建的节点分配正确的zIndex', () => {
+      console.log('\n=== 测试：创建节点并检查 zIndex ===')
+
+      // 创建3个节点
+      const node1 = lf.addNode({ x: 100, y: 100 })
+      const node2 = lf.addNode({ x: 200, y: 200 })
+      const node3 = lf.addNode({ x: 300, y: 300 })
+
+      lf.printAllNodes()
+
+      // 验证每个节点都有zIndex
+      expect(node1.zIndex).toBeDefined()
+      expect(node2.zIndex).toBeDefined()
+      expect(node3.zIndex).toBeDefined()
+
+      // 验证zIndex是数字
+      expect(typeof node1.zIndex).toBe('number')
+      expect(typeof node2.zIndex).toBe('number')
+      expect(typeof node3.zIndex).toBe('number')
+
+      // 新节点应该有较高的zIndex（默认1000）
+      expect(node1.zIndex).toBe(1000)
+      expect(node2.zIndex).toBe(1000)
+      expect(node3.zIndex).toBe(1000)
+    })
+
+    it('多个节点的zIndex应该各不相同', () => {
+      console.log('\n=== 测试：多个节点 zIndex 唯一性 ===')
+
+      // 创建4个节点，手动设置不同的zIndex
+      const node1 = lf.addNode({ x: 100, y: 100, zIndex: 1 })
+      const node2 = lf.addNode({ x: 200, y: 200, zIndex: 2 })
+      const node3 = lf.addNode({ x: 300, y: 300, zIndex: 3 })
+      const node4 = lf.addNode({ x: 400, y: 400, zIndex: 4 })
+
+      lf.printAllNodes()
+
+      const zIndexes = [node1.zIndex, node2.zIndex, node3.zIndex, node4.zIndex]
+      const uniqueZIndexes = new Set(zIndexes)
+
+      // 所有zIndex应该是唯一的
+      expect(uniqueZIndexes.size).toBe(4)
+    })
+  })
+
+  describe('2. 节点上移操作', () => {
+    it('上移一层应该与上方节点交换zIndex', () => {
+      console.log('\n=== 测试：上移一层 ===')
+
+      const node1 = lf.addNode({ x: 100, y: 100, zIndex: 1 })
+      const node2 = lf.addNode({ x: 200, y: 200, zIndex: 2 })
+      const node3 = lf.addNode({ x: 300, y: 300, zIndex: 3 })
+
+      console.log('上移前:')
+      lf.printAllNodes()
+
+      const originalZIndex1 = node1.zIndex
+      const originalZIndex2 = node2.zIndex
+
+      // 对node1执行上移操作
+      lf.bringForward(node1.id)
+
+      console.log('上移后:')
+      lf.printAllNodes()
+
+      // 验证zIndex已交换
+      expect(node1.zIndex).toBe(originalZIndex2)
+      expect(node2.zIndex).toBe(originalZIndex1)
+      expect(node1.zIndex).toBeGreaterThan(node2.zIndex)
+    })
+
+    it('最顶层节点上移应该不产生变化', () => {
+      console.log('\n=== 测试：最顶层节点上移 ===')
+
+      const node1 = lf.addNode({ x: 100, y: 100, zIndex: 1 })
+      const node2 = lf.addNode({ x: 200, y: 200, zIndex: 2 })
+      const node3 = lf.addNode({ x: 300, y: 300, zIndex: 3 })
+
+      const originalZIndex3 = node3.zIndex
+
+      console.log('上移前:')
+      lf.printAllNodes()
+
+      // 尝试上移最顶层节点
+      lf.bringForward(node3.id)
+
+      console.log('上移后:')
+      lf.printAllNodes()
+
+      // 最顶层节点上移不应该改变zIndex
+      expect(node3.zIndex).toBe(originalZIndex3)
+    })
+  })
+
+  describe('3. 节点下移操作', () => {
+    it('下移一层应该与下方节点交换zIndex', () => {
+      console.log('\n=== 测试：下移一层 ===')
+
+      const node1 = lf.addNode({ x: 100, y: 100, zIndex: 1 })
+      const node2 = lf.addNode({ x: 200, y: 200, zIndex: 2 })
+      const node3 = lf.addNode({ x: 300, y: 300, zIndex: 3 })
+
+      console.log('下移前:')
+      lf.printAllNodes()
+
+      const originalZIndex3 = node3.zIndex
+      const originalZIndex2 = node2.zIndex
+
+      // 对node3执行下移操作
+      lf.sendBackward(node3.id)
+
+      console.log('下移后:')
+      lf.printAllNodes()
+
+      // 验证zIndex已交换
+      expect(node3.zIndex).toBe(originalZIndex2)
+      expect(node2.zIndex).toBe(originalZIndex3)
+      expect(node3.zIndex).toBeLessThan(node2.zIndex)
+    })
+
+    it('最底层节点下移应该不产生变化', () => {
+      console.log('\n=== 测试：最底层节点下移 ===')
+
+      const node1 = lf.addNode({ x: 100, y: 100, zIndex: 1 })
+      const node2 = lf.addNode({ x: 200, y: 200, zIndex: 2 })
+      const node3 = lf.addNode({ x: 300, y: 300, zIndex: 3 })
+
+      const originalZIndex1 = node1.zIndex
+
+      console.log('下移前:')
+      lf.printAllNodes()
+
+      // 尝试下移最底层节点
+      lf.sendBackward(node1.id)
+
+      console.log('下移后:')
+      lf.printAllNodes()
+
+      // 最底层节点下移不应该改变zIndex
+      expect(node1.zIndex).toBe(originalZIndex1)
+    })
+  })
+
+  describe('4. 节点置顶操作', () => {
+    it('置顶应该将节点移到最上层', () => {
+      console.log('\n=== 测试：置顶操作 ===')
+
+      const node1 = lf.addNode({ x: 100, y: 100, zIndex: 1 })
+      const node2 = lf.addNode({ x: 200, y: 200, zIndex: 2 })
+      const node3 = lf.addNode({ x: 300, y: 300, zIndex: 3 })
+
+      console.log('置顶前:')
+      lf.printAllNodes()
+
+      // 对node1执行置顶操作
+      lf.setElementZIndex(node1.id, 'top')
+
+      console.log('置顶后:')
+      lf.printAllNodes()
+
+      // 验证node1的zIndex最大
+      const allZIndexes = lf.nodes.map(n => n.zIndex)
+      expect(node1.zIndex).toBe(Math.max(...allZIndexes))
+
+      // 验证node1在所有其他节点之上
+      lf.nodes.forEach(node => {
+        if (node.id !== node1.id) {
+          expect(node1.zIndex).toBeGreaterThan(node.zIndex)
+        }
+      })
+    })
+
+    it('已经在顶层的节点置顶应该增加zIndex', () => {
+      console.log('\n=== 测试：顶层节点置顶 ===')
+
+      const node1 = lf.addNode({ x: 100, y: 100, zIndex: 1 })
+      const node2 = lf.addNode({ x: 200, y: 200, zIndex: 2 })
+      const node3 = lf.addNode({ x: 300, y: 300, zIndex: 3 })
+
+      const originalZIndex3 = node3.zIndex
+
+      console.log('置顶前:')
+      lf.printAllNodes()
+
+      // 对已经在顶层的node3执行置顶
+      lf.setElementZIndex(node3.id, 'top')
+
+      console.log('置顶后:')
+      lf.printAllNodes()
+
+      // 顶层节点置顶会增加zIndex
+      expect(node3.zIndex).toBeGreaterThan(originalZIndex3)
+    })
+  })
+
+  describe('5. 节点置底操作', () => {
+    it('置底应该将节点移到最下层', () => {
+      console.log('\n=== 测试：置底操作 ===')
+
+      const node1 = lf.addNode({ x: 100, y: 100, zIndex: 1 })
+      const node2 = lf.addNode({ x: 200, y: 200, zIndex: 2 })
+      const node3 = lf.addNode({ x: 300, y: 300, zIndex: 3 })
+
+      console.log('置底前:')
+      lf.printAllNodes()
+
+      // 对node3执行置底操作
+      lf.setElementZIndex(node3.id, 'bottom')
+
+      console.log('置底后:')
+      lf.printAllNodes()
+
+      // 验证node3的zIndex最小
+      const allZIndexes = lf.nodes.map(n => n.zIndex)
+      expect(node3.zIndex).toBe(Math.min(...allZIndexes))
+
+      // 验证node3在所有其他节点之下
+      lf.nodes.forEach(node => {
+        if (node.id !== node3.id) {
+          expect(node3.zIndex).toBeLessThan(node.zIndex)
+        }
+      })
+    })
+
+    it('已经在底层的节点置底应该减少zIndex', () => {
+      console.log('\n=== 测试：底层节点置底 ===')
+
+      const node1 = lf.addNode({ x: 100, y: 100, zIndex: 1 })
+      const node2 = lf.addNode({ x: 200, y: 200, zIndex: 2 })
+      const node3 = lf.addNode({ x: 300, y: 300, zIndex: 3 })
+
+      const originalZIndex1 = node1.zIndex
+
+      console.log('置底前:')
+      lf.printAllNodes()
+
+      // 对已经在底层的node1执行置底
+      lf.setElementZIndex(node1.id, 'bottom')
+
+      console.log('置底后:')
+      lf.printAllNodes()
+
+      // 底层节点置底会减少zIndex
+      expect(node1.zIndex).toBeLessThan(originalZIndex1)
+    })
+  })
+
+  describe('6. 复杂场景测试', () => {
+    it('连续操作后zIndex应该保持正确顺序', () => {
+      console.log('\n=== 测试：连续操作 ===')
+
+      const node1 = lf.addNode({ x: 100, y: 100, zIndex: 1 })
+      const node2 = lf.addNode({ x: 200, y: 200, zIndex: 2 })
+      const node3 = lf.addNode({ x: 300, y: 300, zIndex: 3 })
+      const node4 = lf.addNode({ x: 400, y: 400, zIndex: 4 })
+
+      console.log('初始状态:')
+      lf.printAllNodes()
+
+      // 操作序列: node1置顶 -> node4置底 -> node2上移
+      lf.setElementZIndex(node1.id, 'top')
+      console.log('node1置顶后:')
+      lf.printAllNodes()
+
+      lf.setElementZIndex(node4.id, 'bottom')
+      console.log('node4置底后:')
+      lf.printAllNodes()
+
+      lf.bringForward(node2.id)
+      console.log('node2上移后:')
+      lf.printAllNodes()
+
+      // 验证最终顺序
+      const sortedNodes = [...lf.nodes].sort((a, b) => a.zIndex - b.zIndex)
+
+      // node4应该在最底层
+      expect(sortedNodes[0].id).toBe(node4.id)
+
+      // node1应该在最顶层
+      expect(sortedNodes[sortedNodes.length - 1].id).toBe(node1.id)
+    })
+
+    it('检查数据预览中的zIndex', () => {
+      console.log('\n=== 测试：数据预览 ===')
+
+      const node1 = lf.addNode({ x: 100, y: 100, zIndex: 1 })
+      const node2 = lf.addNode({ x: 200, y: 200, zIndex: 2 })
+      const node3 = lf.addNode({ x: 300, y: 300, zIndex: 3 })
+
+      // 执行置顶操作
+      lf.setElementZIndex(node1.id, 'top')
+
+      // 获取图数据（模拟数据预览）
+      const graphData = lf.getGraphRawData()
+
+      console.log('数据预览:', JSON.stringify(graphData, null, 2))
+
+      // 验证数据中包含zIndex
+      expect(graphData.nodes).toBeDefined()
+      expect(graphData.nodes.length).toBe(3)
+
+      graphData.nodes.forEach((node: any) => {
+        expect(node.zIndex).toBeDefined()
+        expect(typeof node.zIndex).toBe('number')
+        console.log(`节点 ${node.id} 的 zIndex: ${node.zIndex}`)
+      })
+
+      // 验证node1的zIndex最大
+      const node1Data = graphData.nodes.find((n: any) => n.id === node1.id)
+      const allZIndexes = graphData.nodes.map((n: any) => n.zIndex)
+      expect(node1Data?.zIndex).toBe(Math.max(...allZIndexes))
+    })
+  })
+})

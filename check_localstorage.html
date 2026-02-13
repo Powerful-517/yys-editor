@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check LocalStorage</title>
+</head>
+<body>
+    <h1>LocalStorage Data</h1>
+    <pre id="output"></pre>
+    <script>
+        const data = localStorage.getItem('filesStore');
+        if (data) {
+            const parsed = JSON.parse(data);
+            document.getElementById('output').textContent = JSON.stringify(parsed, null, 2);
+        } else {
+            document.getElementById('output').textContent = 'No data found';
+        }
+    </script>
+</body>
+</html>

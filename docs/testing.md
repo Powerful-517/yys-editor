@@ -20,10 +20,32 @@ npm run test:coverage
 
 ## 测试文件结构
 
-测试文件位于 `src/__tests__/` 目录：
+### 目录规范
+
+所有单元测试文件统一放在 `src/__tests__/` 目录下：
+
+```
+src/
+├── __tests__/
+│   ├── schema.test.ts              # 数据结构和类型验证测试
+│   ├── useStore.test.ts            # Store 状态管理和数据操作测试
+│   ├── layer-management.spec.ts   # 图层管理功能测试
+│   └── ...                         # 其他功能模块测试
+├── components/
+├── ts/
+└── ...
+```
+
+### 命名规则
+
+- **单元测试**: `<功能模块名>.test.ts` 或 `<功能模块名>.spec.ts`
+- **集成测试**: `<功能模块名>.integration.test.ts`
+
+### 现有测试文件
 
 - `schema.test.ts` - 数据结构和类型验证测试
 - `useStore.test.ts` - Store 状态管理和数据操作测试
+- `layer-management.spec.ts` - 图层管理功能测试（上移、下移、置顶、置底）
 
 ## 测试示例
 

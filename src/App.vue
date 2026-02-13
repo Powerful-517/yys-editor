@@ -23,7 +23,18 @@ const contentHeight = computed(() => `${windowHeight.value - toolbarHeight}px`);
 
 const normalizeGraphData = (data: any) => {
   if (data && Array.isArray((data as any).nodes) && Array.isArray((data as any).edges)) {
-    return data;
+    // 清理节点数据，移除可能导致 Label 插件出错的空 _label 数组
+    const cleanedData = {
+      ...data,
+      nodes: data.nodes.map((node: any) => {
+        const cleanedNode = { ...node };
+        if (cleanedNode.properties && Array.isArray(cleanedNode.properties._label) && cleanedNode.properties._label.length === 0) {
+          delete cleanedNode.properties._label;
+        }
+        return cleanedNode;
+      })
+    };
+    return cleanedData;
   }
   return { nodes: [], edges: [] };
 };
@@ -63,7 +74,21 @@ watch(
 
       if (logicFlowInstance && currentTab?.graphRawData) {
         try {
-          logicFlowInstance.render(normalizeGraphData(currentTab.graphRawData));
+          const graphData = normalizeGraphData(currentTab.graphRawData);
+          logicFlowInstance.render(graphData);
+
+          // 渲染后立即恢复 zIndex
+          if (graphData.nodes) {
+            graphData.nodes.forEach((nodeData: any) => {
+              if (nodeData.zIndex !== undefined) {
+                const model = logicFlowInstance.getNodeModelById(nodeData.id);
+                if (model) {
+                  model.setZIndex(nodeData.zIndex);
+                }
+              }
+            });
+          }
+
           logicFlowInstance.zoom(
             currentTab.transform?.SCALE_X ?? 1,
             [currentTab.transform?.TRANSLATE_X ?? 0, currentTab.transform?.TRANSLATE_Y ?? 0]
@@ -86,7 +111,22 @@ watch(
 
     if (logicFlowInstance && currentTab?.graphRawData) {
       try {
-        logicFlowInstance.render(normalizeGraphData(currentTab.graphRawData));
+        const graphData = normalizeGraphData(currentTab.graphRawData);
+        logicFlowInstance.render(graphData);
+
+        // 渲染后立即恢复 zIndex
+        if (graphData.nodes) {
+          graphData.nodes.forEach((nodeData: any) => {
+            if (nodeData.zIndex !== undefined) {
+              const model = logicFlowInstance.getNodeModelById(nodeData.id);
+              if (model) {
+                console.log(`[导入数据] 恢复节点 ${nodeData.id} 的 zIndex: ${nodeData.zIndex}`);
+                model.setZIndex(nodeData.zIndex);
+              }
+            }
+          });
+        }
+
         logicFlowInstance.zoom(
           currentTab.transform?.SCALE_X ?? 1,
           [currentTab.transform?.TRANSLATE_X ?? 0, currentTab.transform?.TRANSLATE_Y ?? 0]

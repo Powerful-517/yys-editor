@@ -326,9 +326,10 @@ export const useFilesStore = defineStore('files', () => {
                         ...graphData,
                         nodes: (graphData.nodes || []).map((node: any) => {
                             const model = logicFlowInstance.getNodeModelById(node.id);
+                            const zIndex = model?.zIndex ?? node.zIndex ?? 1;
                             return {
                                 ...node,
-                                zIndex: model?.zIndex ?? node.zIndex ?? 1
+                                zIndex: zIndex
                             };
                         })
                     };
@@ -338,7 +339,6 @@ export const useFilesStore = defineStore('files', () => {
                     if (file) {
                         file.graphRawData = enrichedGraphData;
                         file.transform = transform;
-                        console.log(`已同步画布数据到文件 "${file.name}"(${targetId})，包含 zIndex 信息`);
                     }
                 }
             } catch (error) {

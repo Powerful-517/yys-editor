@@ -198,23 +198,11 @@ function normalizeAllNodes() {
   if (!lfInstance) return;
   lfInstance.graphModel?.nodes.forEach((model: BaseNodeModel) => normalizeNodeModel(model));
 
-  // 检查是否所有节点的 zIndex 都相同且为默认值（通常是从历史恢复的情况）
+  // 清除新节点标记
   const allNodes = lfInstance.graphModel?.nodes || [];
-  if (allNodes.length > 1) {
-    const firstZIndex = allNodes[0]?.zIndex;
-    const allSameZIndex = allNodes.every(n => n.zIndex === firstZIndex);
-
-    // 只有当所有节点的 zIndex 都是默认值 1 时才重新分配
-    if (allSameZIndex && firstZIndex === 1) {
-      console.log('[初始化] 检测到所有节点 zIndex 都为默认值 1，开始重新分配 zIndex');
-      // 为所有节点分配递增的 zIndex，避免层级操作异常
-      allNodes.forEach((node, index) => {
-        const newZIndex = index + 1;
-        node.setZIndex(newZIndex);
-      });
-      console.log('[初始化] zIndex 重新分配完成:', allNodes.map(n => ({ id: n.id, zIndex: n.zIndex })));
-    }
-  }
+  allNodes.forEach(node => {
+    delete (node as any)._isNewNode;
+  });
 }
 
 function updateNodeMeta(model: BaseNodeModel, updater: (meta: Record<string, any>) => Record<string, any>) {
@@ -298,12 +286,19 @@ function sendToBack(nodeId?: string) {
   const targetId = nodeId || selectedNode.value?.id;
   if (!targetId) return;
 
-  // 诊断日志：查看所有节点的 zIndex
+  const currentNode = lfInstance.getNodeModelById(targetId);
+  if (!currentNode) return;
+
   const allNodes = lfInstance.graphModel.nodes;
   console.log('[置于底层] 目标节点ID:', targetId);
   console.log('[置于底层] 所有节点的 zIndex:', allNodes.map(n => ({ id: n.id, zIndex: n.zIndex })));
 
-  lfInstance.setElementZIndex(targetId, 'bottom');
+  // 修复：找到所有节点中最小的 zIndex，然后设置为比它更小
+  const allZIndexes = allNodes.map(n => n.zIndex).filter(z => z !== undefined);
+  const minZIndex = allZIndexes.length > 0 ? Math.min(...allZIndexes) : 1;
+  const newZIndex = minZIndex - 1;
+
+  currentNode.setZIndex(newZIndex);
 
   // 操作后再次查看
   console.log('[置于底层] 操作后所有节点的 zIndex:', allNodes.map(n => ({ id: n.id, zIndex: n.zIndex })));
@@ -699,7 +694,7 @@ onMounted(() => {
     grid: { type: 'dot', size: 10 },
     allowResize: true,
     allowRotate: true,
-    overlapMode: 0,
+    overlapMode: -1,
     snapline: snaplineEnabled.value,
     keyboard: {
       enabled: true
@@ -916,45 +911,33 @@ onMounted(() => {
 
   registerNodes(lfInstance);
   setLogicFlowInstance(lfInstance);
-  lfInstance.render({
-    nodes: [],
-    edges: []
-  });
-  lfInstance.extension.miniMap.show();
-  normalizeAllNodes();
-  lfInstance.updateEditConfig({
-    multipleSelectKey: 'shift',
-    snapGrid: snapGridEnabled.value
-  });
-  applySelectionSelect(selectionEnabled.value);
-  updateSelectedCount(lfInstance.graphModel);
 
-  // 监听节点点击事件，更新 selectedNode
-  lfInstance.on(EventType.NODE_CLICK, ({ data }) => {
-    selectedNode.value = data;
-    updateSelectedCount();
-  });
-
-  lfInstance.on(EventType.NODE_DRAG, (args) => handleNodeDrag(args as any));
-
+  // 监听所有可能的节点添加事件
   lfInstance.on(EventType.NODE_ADD, ({ data }) => {
-    console.log('[NODE_ADD 事件触发] 节点ID:', data.id);
     const model = lfInstance.getNodeModelById(data.id);
     if (model) {
-      console.log('[NODE_ADD] 获取到节点模型，当前 zIndex:', model.zIndex);
       normalizeNodeModel(model);
-
       // 设置新节点的 zIndex 为 1000
-      const newZIndex = 1000;
-      console.log(`[NODE_ADD] 准备设置 zIndex: ${newZIndex}`);
-      model.setZIndex(newZIndex);
-      console.log(`[NODE_ADD] 设置后的 zIndex:`, model.zIndex);
-    } else {
-      console.log('[NODE_ADD] 未能获取到节点模型');
+      model.setZIndex(1000);
+      // 标记这个节点是新创建的，避免被 normalizeAllNodes 重置
+      (model as any)._isNewNode = true;
     }
   });
 
-  lfInstance.on(EventType.GRAPH_RENDERED, () => normalizeAllNodes());
+  // 监听 DND 添加节点事件
+  lfInstance.on('node:dnd-add', ({ data }) => {
+    const model = lfInstance.getNodeModelById(data.id);
+    if (model) {
+      // 设置新节点的 zIndex 为 1000
+      model.setZIndex(1000);
+      // 标记这个节点是新创建的
+      (model as any)._isNewNode = true;
+    }
+  });
+
+  lfInstance.on(EventType.GRAPH_RENDERED, () => {
+    normalizeAllNodes();
+  });
 
   // 监听空白点击事件，取消选中
   lfInstance.on(EventType.BLANK_CLICK, () => {

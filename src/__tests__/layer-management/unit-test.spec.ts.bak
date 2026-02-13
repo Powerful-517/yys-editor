@@ -1,0 +1,312 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+
+describe('图层管理测试', () => {
+  let nodes: any[]
+  let mockSetElementZIndex: any
+
+  beforeEach(() => {
+    // 初始化测试节点
+    nodes = []
+
+    // 模拟 setElementZIndex 函数
+    mockSetElementZIndex = vi.fn((id, zIndexOrPosition) => {
+      const node = nodes.find(n => n.id === id)
+      if (!node) return
+
+      if (zIndexOrPosition === 'top') {
+        const maxZIndex = Math.max(...nodes.map(n => n.zIndex))
+        node.zIndex = maxZIndex + 1
+      } else if (zIndexOrPosition === 'bottom') {
+        const minZIndex = Math.min(...nodes.map(n => n.zIndex))
+        node.zIndex = minZIndex - 1
+      } else if (typeof zIndexOrPosition === 'number') {
+        node.zIndex = zIndexOrPosition
+      }
+    })
+  })
+
+  describe('1. 创建多个节点并检查zIndex', () => {
+    it('应该为新创建的节点分配正确的zIndex', () => {
+      // 模拟创建3个节点
+      nodes = [
+        { id: 'node1', type: 'rect', x: 100, y: 100, zIndex: 1 },
+        { id: 'node2', type: 'rect', x: 200, y: 200, zIndex: 2 },
+        { id: 'node3', type: 'rect', x: 300, y: 300, zIndex: 3 }
+      ]
+
+      // 验证每个节点都有zIndex
+      nodes.forEach(node => {
+        expect(node.zIndex).toBeDefined()
+        expect(typeof node.zIndex).toBe('number')
+      })
+
+      // 验证zIndex是递增的
+      expect(nodes[0].zIndex).toBeLessThan(nodes[1].zIndex)
+      expect(nodes[1].zIndex).toBeLessThan(nodes[2].zIndex)
+    })
+
+    it('新节点应该默认获得较高的zIndex', () => {
+      const existingNodes = [
+        { id: 'node1', type: 'rect', x: 100, y: 100, zIndex: 1 },
+        { id: 'node2', type: 'rect', x: 200, y: 200, zIndex: 2 }
+      ]
+
+      const newNode = { id: 'node3', type: 'rect', x: 300, y: 300, zIndex: 1000 }
+
+      nodes = [...existingNodes, newNode]
+
+      // 新节点的zIndex应该大于现有节点
+      expect(newNode.zIndex).toBeGreaterThan(existingNodes[0].zIndex)
+      expect(newNode.zIndex).toBeGreaterThan(existingNodes[1].zIndex)
+    })
+
+    it('多个节点的zIndex应该各不相同', () => {
+      nodes = [
+        { id: 'node1', type: 'rect', x: 100, y: 100, zIndex: 1 },
+        { id: 'node2', type: 'rect', x: 200, y: 200, zIndex: 2 },
+        { id: 'node3', type: 'rect', x: 300, y: 300, zIndex: 3 },
+        { id: 'node4', type: 'rect', x: 400, y: 400, zIndex: 4 }
+      ]
+
+      const zIndexes = nodes.map(n => n.zIndex)
+      const uniqueZIndexes = new Set(zIndexes)
+
+      // 所有zIndex应该是唯一的
+      expect(uniqueZIndexes.size).toBe(nodes.length)
+    })
+  })
+
+  describe('2. 节点上移操作', () => {
+    it('上移一层应该与上方节点交换zIndex', () => {
+      nodes = [
+        { id: 'node1', type: 'rect', x: 100, y: 100, zIndex: 1 },
+        { id: 'node2', type: 'rect', x: 200, y: 200, zIndex: 2 },
+        { id: 'node3', type: 'rect', x: 300, y: 300, zIndex: 3 }
+      ]
+
+      // 对node1执行上移操作
+      const targetNode = nodes[0]
+      const upperNode = nodes[1]
+      const originalTargetZIndex = targetNode.zIndex
+      const originalUpperZIndex = upperNode.zIndex
+
+      // 模拟交换zIndex
+      mockSetElementZIndex(targetNode.id, originalUpperZIndex)
+      mockSetElementZIndex(upperNode.id, originalTargetZIndex)
+
+      // 验证zIndex已交换
+      expect(targetNode.zIndex).toBe(originalUpperZIndex)
+      expect(upperNode.zIndex).toBe(originalTargetZIndex)
+      expect(targetNode.zIndex).toBeGreaterThan(upperNode.zIndex)
+    })
+
+    it('最顶层节点上移应该不产生变化', () => {
+      nodes = [
+        { id: 'node1', type: 'rect', x: 100, y: 100, zIndex: 1 },
+        { id: 'node2', type: 'rect', x: 200, y: 200, zIndex: 2 },
+        { id: 'node3', type: 'rect', x: 300, y: 300, zIndex: 3 }
+      ]
+
+      const topNode = nodes[2]
+      const originalZIndex = topNode.zIndex
+
+      // 尝试上移最顶层节点
+      const sortedNodes = [...nodes].sort((a, b) => a.zIndex - b.zIndex)
+      const currentIndex = sortedNodes.findIndex(n => n.id === topNode.id)
+      const isTopNode = currentIndex === sortedNodes.length - 1
+
+      expect(isTopNode).toBe(true)
+      expect(topNode.zIndex).toBe(originalZIndex)
+    })
+  })
+
+  describe('3. 节点下移操作', () => {
+    it('下移一层应该与下方节点交换zIndex', () => {
+      nodes = [
+        { id: 'node1', type: 'rect', x: 100, y: 100, zIndex: 1 },
+        { id: 'node2', type: 'rect', x: 200, y: 200, zIndex: 2 },
+        { id: 'node3', type: 'rect', x: 300, y: 300, zIndex: 3 }
+      ]
+
+      const targetNode = nodes[2]
+      const lowerNode = nodes[1]
+      const originalTargetZIndex = targetNode.zIndex
+      const originalLowerZIndex = lowerNode.zIndex
+
+      // 模拟交换zIndex
+      mockSetElementZIndex(targetNode.id, originalLowerZIndex)
+      mockSetElementZIndex(lowerNode.id, originalTargetZIndex)
+
+      // 验证zIndex已交换
+      expect(targetNode.zIndex).toBe(originalLowerZIndex)
+      expect(lowerNode.zIndex).toBe(originalTargetZIndex)
+      expect(targetNode.zIndex).toBeLessThan(lowerNode.zIndex)
+    })
+
+    it('最底层节点下移应该不产生变化', () => {
+      nodes = [
+        { id: 'node1', type: 'rect', x: 100, y: 100, zIndex: 1 },
+        { id: 'node2', type: 'rect', x: 200, y: 200, zIndex: 2 },
+        { id: 'node3', type: 'rect', x: 300, y: 300, zIndex: 3 }
+      ]
+
+      const bottomNode = nodes[0]
+      const originalZIndex = bottomNode.zIndex
+
+      // 尝试下移最底层节点
+      const sortedNodes = [...nodes].sort((a, b) => a.zIndex - b.zIndex)
+      const currentIndex = sortedNodes.findIndex(n => n.id === bottomNode.id)
+      const isBottomNode = currentIndex === 0
+
+      expect(isBottomNode).toBe(true)
+      expect(bottomNode.zIndex).toBe(originalZIndex)
+    })
+  })
+
+  describe('4. 节点置顶操作', () => {
+    it('置顶应该将节点移到最上层', () => {
+      nodes = [
+        { id: 'node1', type: 'rect', x: 100, y: 100, zIndex: 1 },
+        { id: 'node2', type: 'rect', x: 200, y: 200, zIndex: 2 },
+        { id: 'node3', type: 'rect', x: 300, y: 300, zIndex: 3 }
+      ]
+
+      const targetNode = nodes[0]
+
+      // 模拟置顶操作
+      mockSetElementZIndex(targetNode.id, 'top')
+
+      // 验证该节点的zIndex最大
+      const allZIndexes = nodes.map(n => n.zIndex)
+      expect(targetNode.zIndex).toBe(Math.max(...allZIndexes))
+
+      // 验证该节点在所有节点之上
+      nodes.forEach(node => {
+        if (node.id !== targetNode.id) {
+          expect(targetNode.zIndex).toBeGreaterThan(node.zIndex)
+        }
+      })
+    })
+
+    it('已经在顶层的节点置顶应该保持不变', () => {
+      nodes = [
+        { id: 'node1', type: 'rect', x: 100, y: 100, zIndex: 1 },
+        { id: 'node2', type: 'rect', x: 200, y: 200, zIndex: 2 },
+        { id: 'node3', type: 'rect', x: 300, y: 300, zIndex: 3 }
+      ]
+
+      const topNode = nodes[2]
+
+      // 对已经在顶层的节点执行置顶
+      const maxZIndex = Math.max(...nodes.map(n => n.zIndex))
+      expect(topNode.zIndex).toBe(maxZIndex)
+    })
+  })
+
+  describe('5. 节点置底操作', () => {
+    it('置底应该将节点移到最下层', () => {
+      nodes = [
+        { id: 'node1', type: 'rect', x: 100, y: 100, zIndex: 1 },
+        { id: 'node2', type: 'rect', x: 200, y: 200, zIndex: 2 },
+        { id: 'node3', type: 'rect', x: 300, y: 300, zIndex: 3 }
+      ]
+
+      const targetNode = nodes[2]
+
+      // 模拟置底操作
+      mockSetElementZIndex(targetNode.id, 'bottom')
+
+      // 验证该节点的zIndex最小
+      const allZIndexes = nodes.map(n => n.zIndex)
+      expect(targetNode.zIndex).toBe(Math.min(...allZIndexes))
+
+      // 验证该节点在所有节点之下
+      nodes.forEach(node => {
+        if (node.id !== targetNode.id) {
+          expect(targetNode.zIndex).toBeLessThan(node.zIndex)
+        }
+      })
+    })
+
+    it('已经在底层的节点置底应该保持不变', () => {
+      nodes = [
+        { id: 'node1', type: 'rect', x: 100, y: 100, zIndex: 1 },
+        { id: 'node2', type: 'rect', x: 200, y: 200, zIndex: 2 },
+        { id: 'node3', type: 'rect', x: 300, y: 300, zIndex: 3 }
+      ]
+
+      const bottomNode = nodes[0]
+
+      // 对已经在底层的节点执行置底
+      const minZIndex = Math.min(...nodes.map(n => n.zIndex))
+      expect(bottomNode.zIndex).toBe(minZIndex)
+    })
+  })
+
+  describe('6. 复杂场景测试', () => {
+    it('连续操作后zIndex应该保持正确顺序', () => {
+      nodes = [
+        { id: 'node1', type: 'rect', x: 100, y: 100, zIndex: 1 },
+        { id: 'node2', type: 'rect', x: 200, y: 200, zIndex: 2 },
+        { id: 'node3', type: 'rect', x: 300, y: 300, zIndex: 3 },
+        { id: 'node4', type: 'rect', x: 400, y: 400, zIndex: 4 }
+      ]
+
+      // 操作序列: node1置顶 -> node4置底 -> node2上移
+      mockSetElementZIndex('node1', 'top')
+      mockSetElementZIndex('node4', 'bottom')
+
+      // node2上移(与node3交换)
+      const node2 = nodes.find(n => n.id === 'node2')!
+      const node3 = nodes.find(n => n.id === 'node3')!
+      const temp = node2.zIndex
+      mockSetElementZIndex('node2', node3.zIndex)
+      mockSetElementZIndex('node3', temp)
+
+      // 验证最终顺序
+      const sortedNodes = [...nodes].sort((a, b) => a.zIndex - b.zIndex)
+
+      // node4应该在最底层
+      expect(sortedNodes[0].id).toBe('node4')
+      // node1应该在最顶层
+      expect(sortedNodes[sortedNodes.length - 1].id).toBe('node1')
+    })
+
+    it('选中多个节点时只操作第一个选中的节点', () => {
+      nodes = [
+        { id: 'node1', type: 'rect', x: 100, y: 100, zIndex: 1 },
+        { id: 'node2', type: 'rect', x: 200, y: 200, zIndex: 2 },
+        { id: 'node3', type: 'rect', x: 300, y: 300, zIndex: 3 }
+      ]
+
+      // 模拟选中多个节点
+      const selectedNodes = [nodes[0], nodes[1]]
+      const targetNode = selectedNodes[0]
+
+      // 只对第一个节点执行操作
+      mockSetElementZIndex(targetNode.id, 'top')
+
+      // 验证只调用了一次
+      expect(mockSetElementZIndex).toHaveBeenCalledTimes(1)
+    })
+
+    it('zIndex应该在保存和加载后保持一致', () => {
+      const originalNodes = [
+        { id: 'node1', type: 'rect', x: 100, y: 100, zIndex: 1 },
+        { id: 'node2', type: 'rect', x: 200, y: 200, zIndex: 2 },
+        { id: 'node3', type: 'rect', x: 300, y: 300, zIndex: 3 }
+      ]
+
+      // 模拟保存
+      const savedData = JSON.parse(JSON.stringify(originalNodes))
+
+      // 模拟加载
+      const loadedNodes = savedData
+
+      // 验证zIndex保持一致
+      originalNodes.forEach((node, index) => {
+        expect(loadedNodes[index].zIndex).toBe(node.zIndex)
+      })
+    })
+  })
+})

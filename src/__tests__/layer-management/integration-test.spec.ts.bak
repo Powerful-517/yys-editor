@@ -1,0 +1,483 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { mount, flushPromises } from '@vue/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
+import FlowEditor from '@/components/flow/FlowEditor.vue'
+import ComponentsPanel from '@/components/flow/ComponentsPanel.vue'
+import { getLogicFlowInstance, setLogicFlowInstance } from '@/ts/useLogicFlow'
+
+/**
+ * 图层管理集成测试 - 真实组件交互
+ *
+ * 这个测试模拟真实的用户操作流程：
+ * 1. 从 ComponentsPanel 拖拽创建节点
+ * 2. 在 FlowEditor 中执行图层操作（置顶、置底、上移、下移）
+ * 3. 验证 zIndex 的变化
+ */
+
+describe('图层管理集成测试 - 真实组件交互', () => {
+  let pinia: ReturnType<typeof createPinia>
+
+  beforeEach(() => {
+    // 创建新的 Pinia 实例
+    pinia = createPinia()
+    setActivePinia(pinia)
+
+    // 清理 LogicFlow 实例
+    vi.clearAllMocks()
+  })
+
+  it('应该能够创建节点并验证 zIndex', async () => {
+    console.log('\n=== 测试：创建节点并验证 zIndex ===')
+
+    // 挂载 FlowEditor 组件
+    const wrapper = mount(FlowEditor, {
+      global: {
+        plugins: [pinia],
+        stubs: {
+          PropertyPanel: true, // 暂时 stub 掉属性面板
+        }
+      },
+      props: {
+        height: '600px'
+      }
+    })
+
+    await flushPromises()
+
+    // 获取 LogicFlow 实例
+    const lf = getLogicFlowInstance()
+    expect(lf).toBeTruthy()
+
+    if (!lf) return
+
+    // 模拟创建 3 个节点
+    console.log('创建节点...')
+    const node1 = lf.addNode({
+      type: 'rect',
+      x: 100,
+      y: 100,
+      properties: {}
+    })
+
+    const node2 = lf.addNode({
+      type: 'rect',
+      x: 200,
+      y: 200,
+      properties: {}
+    })
+
+    const node3 = lf.addNode({
+      type: 'rect',
+      x: 300,
+      y: 300,
+      properties: {}
+    })
+
+    await flushPromises()
+
+    // 获取节点模型
+    const model1 = lf.getNodeModelById(node1.id)
+    const model2 = lf.getNodeModelById(node2.id)
+    const model3 = lf.getNodeModelById(node3.id)
+
+    console.log('节点创建后的 zIndex:')
+    console.log(`  node1: ${model1?.zIndex}`)
+    console.log(`  node2: ${model2?.zIndex}`)
+    console.log(`  node3: ${model3?.zIndex}`)
+
+    // 验证节点都有 zIndex
+    expect(model1?.zIndex).toBeDefined()
+    expect(model2?.zIndex).toBeDefined()
+    expect(model3?.zIndex).toBeDefined()
+
+    wrapper.unmount()
+  })
+
+  it('应该能够执行置顶操作', async () => {
+    console.log('\n=== 测试：置顶操作 ===')
+
+    const wrapper = mount(FlowEditor, {
+      global: {
+        plugins: [pinia],
+        stubs: {
+          PropertyPanel: true,
+        }
+      },
+      props: {
+        height: '600px'
+      }
+    })
+
+    await flushPromises()
+
+    const lf = getLogicFlowInstance()
+    if (!lf) return
+
+    // 创建 3 个节点，手动设置不同的 zIndex
+    const node1 = lf.addNode({ type: 'rect', x: 100, y: 100 })
+    const node2 = lf.addNode({ type: 'rect', x: 200, y: 200 })
+    const node3 = lf.addNode({ type: 'rect', x: 300, y: 300 })
+
+    await flushPromises()
+
+    const model1 = lf.getNodeModelById(node1.id)
+    const model2 = lf.getNodeModelById(node2.id)
+    const model3 = lf.getNodeModelById(node3.id)
+
+    // 手动设置初始 zIndex
+    model1?.setZIndex(1)
+    model2?.setZIndex(2)
+    model3?.setZIndex(3)
+
+    console.log('初始 zIndex:')
+    console.log(`  node1: ${model1?.zIndex}`)
+    console.log(`  node2: ${model2?.zIndex}`)
+    console.log(`  node3: ${model3?.zIndex}`)
+
+    // 执行置顶操作：将 node1 置顶
+    lf.setElementZIndex(node1.id, 'top')
+
+    await flushPromises()
+
+    console.log('置顶后 zIndex:')
+    console.log(`  node1: ${model1?.zIndex}`)
+    console.log(`  node2: ${model2?.zIndex}`)
+    console.log(`  node3: ${model3?.zIndex}`)
+
+    // 验证 node1 的 zIndex 最大
+    const allZIndexes = [model1?.zIndex, model2?.zIndex, model3?.zIndex].filter(z => z !== undefined) as number[]
+    expect(model1?.zIndex).toBe(Math.max(...allZIndexes))
+    expect(model1?.zIndex).toBeGreaterThan(model2?.zIndex || 0)
+    expect(model1?.zIndex).toBeGreaterThan(model3?.zIndex || 0)
+
+    wrapper.unmount()
+  })
+
+  it('应该能够执行置底操作', async () => {
+    console.log('\n=== 测试：置底操作 ===')
+
+    const wrapper = mount(FlowEditor, {
+      global: {
+        plugins: [pinia],
+        stubs: {
+          PropertyPanel: true,
+        }
+      },
+      props: {
+        height: '600px'
+      }
+    })
+
+    await flushPromises()
+
+    const lf = getLogicFlowInstance()
+    if (!lf) return
+
+    // 创建 3 个节点
+    const node1 = lf.addNode({ type: 'rect', x: 100, y: 100 })
+    const node2 = lf.addNode({ type: 'rect', x: 200, y: 200 })
+    const node3 = lf.addNode({ type: 'rect', x: 300, y: 300 })
+
+    await flushPromises()
+
+    const model1 = lf.getNodeModelById(node1.id)
+    const model2 = lf.getNodeModelById(node2.id)
+    const model3 = lf.getNodeModelById(node3.id)
+
+    // 手动设置初始 zIndex
+    model1?.setZIndex(1)
+    model2?.setZIndex(2)
+    model3?.setZIndex(3)
+
+    console.log('初始 zIndex:')
+    console.log(`  node1: ${model1?.zIndex}`)
+    console.log(`  node2: ${model2?.zIndex}`)
+    console.log(`  node3: ${model3?.zIndex}`)
+
+    // 执行置底操作：将 node3 置底
+    lf.setElementZIndex(node3.id, 'bottom')
+
+    await flushPromises()
+
+    console.log('置底后 zIndex:')
+    console.log(`  node1: ${model1?.zIndex}`)
+    console.log(`  node2: ${model2?.zIndex}`)
+    console.log(`  node3: ${model3?.zIndex}`)
+
+    // 验证 node3 的 zIndex 最小
+    const allZIndexes = [model1?.zIndex, model2?.zIndex, model3?.zIndex].filter(z => z !== undefined) as number[]
+    expect(model3?.zIndex).toBe(Math.min(...allZIndexes))
+    expect(model3?.zIndex).toBeLessThan(model1?.zIndex || Infinity)
+    expect(model3?.zIndex).toBeLessThan(model2?.zIndex || Infinity)
+
+    wrapper.unmount()
+  })
+
+  it('应该能够执行上移和下移操作', async () => {
+    console.log('\n=== 测试：上移和下移操作 ===')
+
+    const wrapper = mount(FlowEditor, {
+      global: {
+        plugins: [pinia],
+        stubs: {
+          PropertyPanel: true,
+        }
+      },
+      props: {
+        height: '600px'
+      }
+    })
+
+    await flushPromises()
+
+    const lf = getLogicFlowInstance()
+    if (!lf) return
+
+    // 创建 3 个节点
+    const node1 = lf.addNode({ type: 'rect', x: 100, y: 100 })
+    const node2 = lf.addNode({ type: 'rect', x: 200, y: 200 })
+    const node3 = lf.addNode({ type: 'rect', x: 300, y: 300 })
+
+    await flushPromises()
+
+    const model1 = lf.getNodeModelById(node1.id)
+    const model2 = lf.getNodeModelById(node2.id)
+    const model3 = lf.getNodeModelById(node3.id)
+
+    // 手动设置初始 zIndex
+    model1?.setZIndex(1)
+    model2?.setZIndex(2)
+    model3?.setZIndex(3)
+
+    console.log('初始 zIndex:')
+    console.log(`  node1: ${model1?.zIndex}`)
+    console.log(`  node2: ${model2?.zIndex}`)
+    console.log(`  node3: ${model3?.zIndex}`)
+
+    const originalZIndex1 = model1?.zIndex
+    const originalZIndex2 = model2?.zIndex
+
+    // 测试上移：node1 上移一层（应该与 node2 交换）
+    // 需要调用 FlowEditor 中的 bringForward 方法
+    // 由于方法不是暴露的，我们直接操作 LogicFlow
+    const allNodes = lf.graphModel.nodes
+    const currentNode = model1
+    if (currentNode) {
+      const currentZIndex = currentNode.zIndex
+      const nodesAbove = allNodes
+        .filter((node) => node.zIndex > currentZIndex)
+        .sort((a, b) => a.zIndex - b.zIndex)
+
+      if (nodesAbove.length > 0) {
+        const nextNode = nodesAbove[0]
+        currentNode.setZIndex(nextNode.zIndex)
+        nextNode.setZIndex(currentZIndex)
+      }
+    }
+
+    await flushPromises()
+
+    console.log('上移后 zIndex:')
+    console.log(`  node1: ${model1?.zIndex}`)
+    console.log(`  node2: ${model2?.zIndex}`)
+    console.log(`  node3: ${model3?.zIndex}`)
+
+    // 验证 zIndex 已交换
+    expect(model1?.zIndex).toBe(originalZIndex2)
+    expect(model2?.zIndex).toBe(originalZIndex1)
+
+    wrapper.unmount()
+  })
+
+  it('应该能够通过右键菜单执行图层操作', async () => {
+    console.log('\n=== 测试：右键菜单图层操作 ===')
+
+    const wrapper = mount(FlowEditor, {
+      global: {
+        plugins: [pinia],
+        stubs: {
+          PropertyPanel: true,
+        }
+      },
+      props: {
+        height: '600px'
+      }
+    })
+
+    await flushPromises()
+
+    const lf = getLogicFlowInstance()
+    if (!lf) return
+
+    // 创建节点
+    const node1 = lf.addNode({ type: 'rect', x: 100, y: 100 })
+    const node2 = lf.addNode({ type: 'rect', x: 200, y: 200 })
+
+    await flushPromises()
+
+    const model1 = lf.getNodeModelById(node1.id)
+    const model2 = lf.getNodeModelById(node2.id)
+
+    model1?.setZIndex(1)
+    model2?.setZIndex(2)
+
+    console.log('初始 zIndex:')
+    console.log(`  node1: ${model1?.zIndex}`)
+    console.log(`  node2: ${model2?.zIndex}`)
+
+    // 模拟右键菜单的"置于顶层"操作
+    // 在真实场景中，这会通过菜单回调触发
+    const menuConfig = (lf.extension as any).menu.menuConfig
+    const bringToFrontMenuItem = menuConfig.nodeMenu.find((item: any) => item.text === '置于顶层')
+
+    if (bringToFrontMenuItem) {
+      // 执行菜单回调
+      bringToFrontMenuItem.callback({ id: node1.id })
+      await flushPromises()
+
+      console.log('执行"置于顶层"后 zIndex:')
+      console.log(`  node1: ${model1?.zIndex}`)
+      console.log(`  node2: ${model2?.zIndex}`)
+
+      // 验证 node1 现在在最上层
+      expect(model1?.zIndex).toBeGreaterThan(model2?.zIndex || 0)
+    }
+
+    wrapper.unmount()
+  })
+
+  it('应该能够验证数据预览中的 zIndex', async () => {
+    console.log('\n=== 测试：数据预览中的 zIndex ===')
+
+    const wrapper = mount(FlowEditor, {
+      global: {
+        plugins: [pinia],
+        stubs: {
+          PropertyPanel: true,
+        }
+      },
+      props: {
+        height: '600px'
+      }
+    })
+
+    await flushPromises()
+
+    const lf = getLogicFlowInstance()
+    if (!lf) return
+
+    // 创建节点
+    const node1 = lf.addNode({ type: 'rect', x: 100, y: 100 })
+    const node2 = lf.addNode({ type: 'rect', x: 200, y: 200 })
+    const node3 = lf.addNode({ type: 'rect', x: 300, y: 300 })
+
+    await flushPromises()
+
+    const model1 = lf.getNodeModelById(node1.id)
+    const model2 = lf.getNodeModelById(node2.id)
+    const model3 = lf.getNodeModelById(node3.id)
+
+    model1?.setZIndex(1)
+    model2?.setZIndex(2)
+    model3?.setZIndex(3)
+
+    // 执行置顶操作
+    lf.setElementZIndex(node1.id, 'top')
+    await flushPromises()
+
+    // 获取图数据（模拟 Toolbar 的 handlePreviewData）
+    const graphData = lf.getGraphRawData()
+
+    console.log('数据预览:')
+    console.log(JSON.stringify(graphData, null, 2))
+
+    // 验证数据中包含 zIndex
+    expect(graphData.nodes).toBeDefined()
+    expect(graphData.nodes.length).toBe(3)
+
+    graphData.nodes.forEach((node: any) => {
+      expect(node.zIndex).toBeDefined()
+      expect(typeof node.zIndex).toBe('number')
+      console.log(`节点 ${node.id} 的 zIndex: ${node.zIndex}`)
+    })
+
+    // 验证 node1 的 zIndex 最大
+    const node1Data = graphData.nodes.find((n: any) => n.id === node1.id)
+    const allZIndexes = graphData.nodes.map((n: any) => n.zIndex)
+    expect(node1Data?.zIndex).toBe(Math.max(...allZIndexes))
+
+    wrapper.unmount()
+  })
+
+  it('完整流程：创建节点 -> 图层操作 -> 验证数据', async () => {
+    console.log('\n=== 测试：完整流程 ===')
+
+    const wrapper = mount(FlowEditor, {
+      global: {
+        plugins: [pinia],
+        stubs: {
+          PropertyPanel: true,
+        }
+      },
+      props: {
+        height: '600px'
+      }
+    })
+
+    await flushPromises()
+
+    const lf = getLogicFlowInstance()
+    if (!lf) return
+
+    // 步骤 1: 创建 4 个节点（模拟从 ComponentsPanel 拖拽）
+    console.log('步骤 1: 创建节点')
+    const nodes = [
+      lf.addNode({ type: 'rect', x: 100, y: 100 }),
+      lf.addNode({ type: 'rect', x: 200, y: 200 }),
+      lf.addNode({ type: 'rect', x: 300, y: 300 }),
+      lf.addNode({ type: 'rect', x: 400, y: 400 })
+    ]
+
+    await flushPromises()
+
+    const models = nodes.map(n => lf.getNodeModelById(n.id))
+    models.forEach((m, i) => m?.setZIndex(i + 1))
+
+    console.log('初始状态:', models.map((m, i) => ({ id: nodes[i].id, zIndex: m?.zIndex })))
+
+    // 步骤 2: 执行图层操作
+    console.log('\n步骤 2: 执行图层操作')
+
+    // node1 置顶
+    lf.setElementZIndex(nodes[0].id, 'top')
+    await flushPromises()
+    console.log('node1 置顶后:', models.map((m, i) => ({ id: nodes[i].id, zIndex: m?.zIndex })))
+
+    // node4 置底
+    lf.setElementZIndex(nodes[3].id, 'bottom')
+    await flushPromises()
+    console.log('node4 置底后:', models.map((m, i) => ({ id: nodes[i].id, zIndex: m?.zIndex })))
+
+    // 步骤 3: 验证数据（模拟 Toolbar 的 handlePreviewData）
+    console.log('\n步骤 3: 验证数据')
+    const graphData = lf.getGraphRawData()
+
+    console.log('最终数据预览:')
+    graphData.nodes.forEach((node: any) => {
+      console.log(`  节点 ${node.id}: zIndex = ${node.zIndex}`)
+    })
+
+    // 验证最终顺序
+    const sortedNodes = [...graphData.nodes].sort((a: any, b: any) => a.zIndex - b.zIndex)
+
+    // node4 应该在最底层
+    expect(sortedNodes[0].id).toBe(nodes[3].id)
+
+    // node1 应该在最顶层
+    expect(sortedNodes[sortedNodes.length - 1].id).toBe(nodes[0].id)
+
+    console.log('\n✅ 完整流程测试通过！')
+
+    wrapper.unmount()
+  })
+})

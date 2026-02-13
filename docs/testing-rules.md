@@ -73,10 +73,34 @@ npm run test:coverage
 
 ## 测试编写规范
 
-### 1. 测试文件命名
-- 测试文件放在 `src/__tests__/` 目录
-- 命名格式: `<源文件名>.test.ts`
-- 例如: `schema.ts` → `schema.test.ts`
+### 1. 测试文件位置和命名
+
+#### 测试文件位置
+所有单元测试文件统一放在 `src/__tests__/` 目录下。
+
+#### 命名规则
+- **单元测试**: `<功能模块名>.test.ts` 或 `<功能模块名>.spec.ts`
+- **集成测试**: `<功能模块名>.integration.test.ts`
+
+#### 目录结构示例
+```
+src/
+├── __tests__/
+│   ├── schema.test.ts           # 数据结构测试
+│   ├── useStore.test.ts         # Store 状态管理测试
+│   ├── layer-management.spec.ts # 图层管理功能测试
+│   ├── utils.test.ts            # 工具函数测试
+│   └── ...
+├── components/
+├── ts/
+└── ...
+```
+
+#### 命名示例
+- `schema.ts` → `schema.test.ts`
+- `useStore.ts` → `useStore.test.ts`
+- 图层管理功能 → `layer-management.spec.ts`
+- 工具函数集合 → `utils.test.ts`
 
 ### 2. 测试用例结构
 ```typescript

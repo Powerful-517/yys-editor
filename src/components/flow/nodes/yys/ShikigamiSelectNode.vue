@@ -1,9 +1,34 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, inject, onMounted, onBeforeUnmount } from 'vue';
 import { toTextStyle } from '@/ts/nodeStyle';
 import { useNodeAppearance } from '@/ts/useNodeAppearance';
 
 const currentShikigami = ref({ name: '未选择式神', avatar: '', rarity: '' });
+const getNode = inject('getNode') as (() => any) | undefined;
+const zIndex = ref(1);
+let intervalId: number | null = null;
+
+// 使用轮询方式定期更新 zIndex
+onMounted(() => {
+  const node = getNode?.();
+  if (node) {
+    zIndex.value = node.zIndex ?? 1;
+
+    // 每 100ms 检查一次 zIndex 是否变化
+    intervalId = window.setInterval(() => {
+      const currentZIndex = node.zIndex ?? 1;
+      if (zIndex.value !== currentZIndex) {
+        zIndex.value = currentZIndex;
+      }
+    }, 100);
+  }
+});
+
+onBeforeUnmount(() => {
+  if (intervalId !== null) {
+    clearInterval(intervalId);
+  }
+});
 
 const { containerStyle, textStyle } = useNodeAppearance({
   onPropsChange(props) {
@@ -18,6 +43,7 @@ const mergedContainerStyle = computed(() => ({ ...containerStyle.value, boxSizin
 
 <template>
   <div class="node-content" :style="mergedContainerStyle">
+    <div class="zindex-badge">{{ zIndex }}</div>
     <img
       v-if="currentShikigami.avatar"
       :src="currentShikigami.avatar"
@@ -36,6 +62,20 @@ const mergedContainerStyle = computed(() => ({ ...containerStyle.value, boxSizin
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  position: relative;
+}
+.zindex-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(64, 158, 255, 0.9);
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 10px;
+  z-index: 10;
+  pointer-events: none;
 }
 .shikigami-image {
   width: 85%;
