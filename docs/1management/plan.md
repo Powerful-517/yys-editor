@@ -2,14 +2,14 @@
 
 ## 📊 项目完成度总览
 
-**总体完成度：85%** | **愿景一完成度：75%** (步骤1-7/10已完成，步骤3完全完成)
+**总体完成度：86%** | **愿景一完成度：78%** (步骤1-7/10已完成)
 
 ### 核心模块完成度
 
 | 模块 | 完成度 | 状态 | 关键缺失 |
 |------|--------|------|----------|
-| 🎨 画布（LogicFlow） | 90% | ✅ 优秀 | 撤销重做 |
-| 📦 左侧组件库 | 65% | ⚠️ 可用 | textNode未注册、缩略图 |
+| 🎨 画布（LogicFlow） | 92% | ✅ 优秀 | 撤销重做 |
+| 📦 左侧组件库 | 70% | ✅ 可用 | 缩略图、搜索 |
 | ⚙️ 右侧属性面板 | 85% | ✅ 良好 | textNode富文本编辑 |
 | 🔧 工具栏 | 85% | ✅ 良好 | 导出命名优化 |
 | 💬 弹窗系统 | 75% | ✅ 可用 | i18n完善、性能优化 |
@@ -22,7 +22,7 @@
 
 | 步骤 | 任务 | 状态 | 说明 |
 |------|------|------|------|
-| 1 | 节点最小化打通 | ✅ 完成 | imageNode可用，textNode待注册 |
+| 1 | 节点最小化打通 | ✅ 完成 | imageNode/textNode 均已注册可用 |
 | 2 | 截图修复 | ✅ 完成 | LogicFlow Snapshot + 水印 |
 | 3 | 图层命令MVP | ✅ 完成 | 置顶/置底/前移/后移全部完成 |
 | 4 | 多选/对齐/吸附 | ✅ 完成 | 6种对齐 + 2种分布 |
@@ -36,24 +36,19 @@
 ## 🎯 下一步行动计划
 
 ### 🔴 高优先级（立即行动）
-1. **注册textNode** - 取消注释并验证基本功能
-   - 位置：[FlowEditor.vue:76](../src/components/flow/FlowEditor.vue#L76)
-   - 影响：完成步骤1，启用文本节点
-   - 预期：基本渲染工作，富文本编辑可延后
-
-### 🟡 中优先级（短期目标）
-3. **实现撤销重做系统** - 步骤10
+1. **实现撤销重做系统** - 步骤10
    - 设计：Action接口 + HistoryService
    - 范围：记录增删改/移动/层级操作
    - 快捷键：Ctrl+Z/Y
 
-4. **textNode富文本编辑** - 完善TextPanel
+### 🟡 中优先级（短期目标）
+2. **textNode富文本编辑** - 完善TextPanel
    - 位置：[TextPanel.vue](../src/components/flow/panels/TextPanel.vue)
    - 需求：集成富文本编辑器（TipTap/Quill）
    - 功能：内容编辑、字体、颜色、格式化
 
 ### 🟢 低优先级（长期规划）
-5. **矢量节点MVP** - 步骤8
+3. **矢量节点MVP** - 步骤8
    - 定义vectorNode类型
    - 支持SVG path/rect/ellipse/polygon
    - 属性面板编辑path/stroke/fill
@@ -66,10 +61,11 @@
 
 ## 📋 详细模块状态
 
-## 1. 画布（LogicFlow） — 完成度：90%
+## 1. 画布（LogicFlow） — 完成度：92%
 - 已完成：
   - 初始化与销毁：LogicFlow 实例、网格/缩放/旋转、节点选中/空白取消（src/components/flow/FlowEditor.vue）
-  - 自定义节点注册：`shikigamiSelect`、`yuhunSelect`、`propertySelect`、`imageNode`（src/components/flow/FlowEditor.vue:567-574）
+  - 自定义节点注册：`shikigamiSelect`、`yuhunSelect`、`propertySelect`、`imageNode`、`textNode`（src/components/flow/FlowEditor.vue:567-574）
+  - **textNode 完整实现**：采用模型-视图分离架构，TextNodeModel 配置文本样式和编辑行为，TextNode.vue 提供渲染容器，LogicFlow 自动处理文本编辑（src/components/flow/nodes/common/TextNode.vue, TextNodeModel.ts）
   - 与 Store 联动：读取/写入 `graphRawData` 与 `transform`（缩放/位移）（src/ts/useStore.ts, src/ts/useLogicFlow.ts）
   - DnD 接入：由组件库触发拖拽放置
   - **右键菜单完整功能**：图层控制（置顶/上移/下移/置底）、编辑操作（复制/粘贴）、组合操作（组合/解组）、状态控制（锁定/隐藏）、删除操作，所有快捷键功能均可通过右键触发（src/components/flow/FlowEditor.vue:714-821）
@@ -80,15 +76,14 @@
   - **节点元数据管理**：meta.visible、meta.locked、meta.groupId 支持与规范化（src/components/flow/FlowEditor.vue:133-209）
 - 未完成：
   - **撤销重做**：Ctrl+Z/Y 历史栈与操作回放
-  - **textNode 注册**：已在 ComponentsPanel 定义但 FlowEditor.vue:76 中被注释未注册
 
-## 2. 左侧组件库（Palette） — 完成度：65%
+## 2. 左侧组件库（Palette） — 完成度：70%
 - 已完成：
   - 分组展示：基础组件（rect/ellipse/image/text）、阴阳师（shikigami/yuhun/property）（src/components/flow/ComponentsPanel.vue:5-95）
   - 拖拽创建节点：`lf.dnd.startDrag({ type, properties })`
   - **组件定义结构化**：嵌套 componentGroups 数组，包含 id/name/type/description/data
+  - **textNode 已注册**：在 FlowEditor 和 ComponentsPanel 均已启用，支持拖拽创建
 - 未完成：
-  - `textNode` 在画布侧未注册（ComponentsPanel 已定义但 FlowEditor 未注册）
   - 组件预览缩略图、搜索与分组折叠
   - 点击快速创建（当前仅支持拖拽）
   - 外置配置（JSON）与动态加载，便于扩展
@@ -184,7 +179,7 @@
   - 截图约定：FlowEditor 暴露 `getCanvasEl()`，Toolbar 基于该容器调用 html2canvas（`src/components/Toolbar.vue`）。
 
 - 推荐开发顺序（每步可独立验收）
-  1) ✅ **节点最小化打通**：imageNode 已注册并可用（上传/URL/fit/宽高）；textNode 已在 ComponentsPanel 定义但 FlowEditor 未注册；PropertyPanel 已按类型拆分子组件（ShikigamiPanel/YuhunPanel/PropertyRulePanel/ImagePanel/TextPanel/StylePanel）
+  1) ✅ **节点最小化打通**：imageNode 已注册并可用（上传/URL/fit/宽高）；textNode 已完整实现（TextNode.vue + TextNodeModel.ts，采用模型-视图分离架构）；PropertyPanel 已按类型拆分子组件（ShikigamiPanel/YuhunPanel/PropertyRulePanel/ImagePanel/TextPanel/StylePanel）
   2) ✅ **截图修复**：已改为基于 LogicFlow Snapshot 导出 PNG，沿用水印配置（src/components/Toolbar.vue:prepareCapture）
   3) ✅ **图层命令 MVP**：已完成置顶/置底/前移/后移 + 右键菜单（src/components/flow/FlowEditor.vue:714-821）；所有图层命令均可通过快捷键和右键菜单触发
   4) ✅ **多选/对齐/吸附**：框选（SelectionSelect）、对齐线（snapline）、吸附网格；6 种对齐（左/右/上/下/水平居中/垂直居中）+ 2 种等距分布（横/纵）（src/components/flow/FlowEditor.vue:450-564）
@@ -216,29 +211,28 @@
 
 ## 当前状态总结（2026-01-22）
 
-### 已完成的愿景一核心功能（步骤 1-7，约 70%）
-- ✅ 节点系统：imageNode 完整可用，textNode 定义但未注册
+### 已完成的愿景一核心功能（步骤 1-7，约 78%）
+- ✅ 节点系统：imageNode 完整可用，textNode 已注册并采用 LogicFlow 原生能力
 - ✅ 截图导出：LogicFlow Snapshot + 自定义水印
-- ✅ 图层命令：置顶/置底（待补：前移/后移）
+- ✅ 图层命令：置顶/置底/前移/后移全部完成
 - ✅ 多选对齐：6 种对齐 + 2 种等距分布
 - ✅ 快捷键：8 种快捷键全部工作（Del/方向键/Ctrl+C/V/G/U/L/Shift+H）
 - ✅ 样式模型：11 个样式属性统一编辑
 - ✅ 扩展控制：MiniMap/Control/Snapshot 插件 + Toolbar 开关
 
-### 待完成的愿景一功能（步骤 8/9/10，约 25%）
+### 待完成的愿景一功能（步骤 8/9/10，约 22%）
 - ⚠️ **高优先级（阻塞）**：
   - 撤销重做（Ctrl+Z/Y）- 步骤 10，依赖历史栈
 - ⚠️ **中优先级（功能完整性）**：
-  - textNode 注册与富文本编辑 - 步骤 1 残留
+  - textNode 富文本编辑 - TextPanel 增强
 - ⚠️ **低优先级（增强功能）**：
   - vectorNode MVP - 步骤 8
   - SVG/PDF 导出 - 步骤 9
 
 ### 建议的下一步行动
-1. **立即行动**：注册 textNode（取消 FlowEditor.vue:76 注释）
-2. **短期目标**：实现撤销重做（Action + HistoryService）
-3. **中期目标**：textNode 富文本编辑
-4. **长期目标**：vectorNode + SVG 导出（步骤 8-9）
+1. **立即行动**：实现撤销重做（Action + HistoryService）
+2. **短期目标**：textNode 富文本编辑
+3. **长期目标**：vectorNode + SVG 导出（步骤 8-9）
 ### 愿景二：联动 wiki/攻略站（浏览/复刻/继续编辑）
 - 工具栏
   - 导入/导出增加元信息（title/tags/lang/version/schemaVersion）；“发布/上传”“打开攻略”“复刻编辑”入口

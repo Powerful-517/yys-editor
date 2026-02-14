@@ -26,8 +26,8 @@
 技术栈：Vue 3 + Vite + LogicFlow + Pinia + Element Plus
 
 当前优先级（从 plan.md）：
-- 🔴 高优先级：注册 textNode
-- 🟡 中优先级：实现撤销重做系统
+- 🔴 高优先级：实现撤销重做系统
+- 🟡 中优先级：textNode 富文本编辑
 - 🟢 低优先级：矢量节点 MVP、导出增强
 
 请开始第一步：读取 plan.md 并确认下一步任务。
