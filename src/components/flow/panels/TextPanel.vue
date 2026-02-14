@@ -8,7 +8,15 @@ const props = defineProps<{
   <div class="property-section">
     <div class="section-header">文本节点</div>
     <div class="property-item">
-      <div class="property-value">文本编辑器待实现，当前节点内容：{{ props.node?.properties?.text?.content || '未设置' }}</div>
+      <label class="property-label">内容</label>
+      <div class="property-value">
+        {{ props.node?.properties?.text || '未设置' }}
+      </div>
+    </div>
+    <div class="property-item">
+      <div class="property-note">
+        💡 提示：双击画布中的节点即可编辑文字
+      </div>
     </div>
   </div>
 </template>

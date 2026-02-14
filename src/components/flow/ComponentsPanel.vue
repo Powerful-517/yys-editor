@@ -45,9 +45,9 @@ const componentGroups = [
         id: 'text',
         name: '文字编辑框',
         type: 'textNode',
-        description: '可编辑富文本的节点',
+        description: '可编辑文本的节点',
         data: {
-          html: '<div>双击右侧可编辑文字</div>',
+          text: '双击编辑文字',
           width: 200,
           height: 120
         }

@@ -74,7 +74,8 @@ import YuhunSelectNode from './nodes/yys/YuhunSelectNode.vue';
 import PropertySelectNode from './nodes/yys/PropertySelectNode.vue';
 import ImageNode from './nodes/common/ImageNode.vue';
 import AssetSelectorNode from './nodes/common/AssetSelectorNode.vue';
-// import TextNode from './nodes/common/TextNode.vue';
+import TextNode from './nodes/common/TextNode.vue';
+import TextNodeModel from './nodes/common/TextNodeModel';
 import PropertyPanel from './PropertyPanel.vue';
 import { useGlobalMessage } from '@/ts/useGlobalMessage';
 import { setLogicFlowInstance, destroyLogicFlowInstance } from '@/ts/useLogicFlow';
@@ -312,7 +313,7 @@ function bringForward(nodeId?: string) {
   if (!targetId) return;
 
   const currentNode = lfInstance.getNodeModelById(targetId);
-  if (!currentNode) return;
+  if (!currentNode) return;t
 
   const currentZIndex = currentNode.zIndex;
   currentNode.setZIndex(currentZIndex + 1);
@@ -662,7 +663,7 @@ function registerNodes(lfInstance: LogicFlow) {
 
   register({ type: 'imageNode', component: ImageNode }, lfInstance);
   register({ type: 'assetSelector', component: AssetSelectorNode }, lfInstance);
-  // register({ type: 'textNode', component: TextNode }, lfInstance);
+  register({ type: 'textNode', component: TextNode, model: TextNodeModel }, lfInstance);
 }
 
 // 初始化 LogicFlow
@@ -676,6 +677,22 @@ onMounted(() => {
     snapline: snaplineEnabled.value,
     keyboard: {
       enabled: true
+    },
+    style: {
+      text: {
+        color: '#333333',
+        fontSize: 14,
+        background: {
+          fill: '#ffffff',
+          stroke: '#dcdfe6',
+          strokeWidth: 1,
+          radius: 4
+        }
+      },
+      nodeText: {
+        color: '#333333',
+        fontSize: 14
+      }
     },
     plugins: [Menu, Label, Snapshot, SelectionSelect, MiniMap, Control],
     pluginsOptions: {
