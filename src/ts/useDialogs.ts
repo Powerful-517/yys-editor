@@ -1,9 +1,11 @@
 import { reactive } from 'vue'
+import type { SelectorConfig } from '@/types/selector'
 
 const dialogs = reactive({
   shikigami: { show: false, data: null, node: null, callback: null },
   yuhun: { show: false, data: null, node: null, callback: null },
-  property: { show: false, data: null, node: null, callback: null }
+  property: { show: false, data: null, node: null, callback: null },
+  generic: { show: false, config: null, callback: null }
 })
 
 function openDialog(type: string, data = null, node = null, callback = null) {
@@ -20,10 +22,24 @@ function closeDialog(type: string) {
   dialogs[type].callback = null
 }
 
+function openGenericSelector(config: SelectorConfig, callback: (item: any) => void) {
+  dialogs.generic.show = true
+  dialogs.generic.config = config
+  dialogs.generic.callback = callback
+}
+
+function closeGenericSelector() {
+  dialogs.generic.show = false
+  dialogs.generic.config = null
+  dialogs.generic.callback = null
+}
+
 export function useDialogs() {
   return {
     dialogs,
     openDialog,
-    closeDialog
+    closeDialog,
+    openGenericSelector,
+    closeGenericSelector
   }
 } 

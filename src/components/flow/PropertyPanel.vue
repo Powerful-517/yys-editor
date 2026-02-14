@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import ShikigamiPanel from './panels/ShikigamiPanel.vue';
 import YuhunPanel from './panels/YuhunPanel.vue';
 import PropertyRulePanel from './panels/PropertyRulePanel.vue';
 import ImagePanel from './panels/ImagePanel.vue';
 import TextPanel from './panels/TextPanel.vue';
 import StylePanel from './panels/StylePanel.vue';
+import AssetSelectorPanel from './panels/AssetSelectorPanel.vue';
+import { ASSET_LIBRARIES } from '@/types/nodeTypes';
+import { getLogicFlowInstance } from '@/ts/useLogicFlow';
 
 const props = defineProps({
   height: {
@@ -26,15 +29,36 @@ const nodeType = computed(() => {
   return selectedNode.value.type || 'default';
 });
 
+const activeTab = ref('game');
+
 const panelMap: Record<string, any> = {
   shikigamiSelect: ShikigamiPanel,
   yuhunSelect: YuhunPanel,
   propertySelect: PropertyRulePanel,
   imageNode: ImagePanel,
-  textNode: TextPanel
+  textNode: TextPanel,
+  assetSelector: AssetSelectorPanel
 };
 
 const panelComponent = computed(() => panelMap[nodeType.value] || null);
+
+// 判断是否支持节点类型切换（仅资产选择器节点支持）
+const supportsTypeSwitch = computed(() => nodeType.value === 'assetSelector');
+
+// 当前资产库类型
+const currentAssetLibrary = computed({
+  get: () => selectedNode.value?.properties?.assetLibrary || 'shikigami',
+  set: (value) => {
+    const lf = getLogicFlowInstance();
+    if (!lf || !selectedNode.value) return;
+
+    lf.setProperties(selectedNode.value.id, {
+      ...selectedNode.value.properties,
+      assetLibrary: value,
+      selectedAsset: null // 切换类型时清空已选资产
+    });
+  }
+});
 </script>
 
 <template>
@@ -48,27 +72,53 @@ const panelComponent = computed(() => panelMap[nodeType.value] || null);
     </div>
 
     <div v-else class="property-content">
-      <div class="property-section">
-        <div class="section-header">基本信息</div>
-        <div class="property-item">
-          <div class="property-label">节点ID</div>
-          <div class="property-value">{{ selectedNode.id }}</div>
-        </div>
-        <div class="property-item">
-          <div class="property-label">节点类型</div>
-          <div class="property-value">{{ nodeType }}</div>
-        </div>
-      </div>
+      <!-- Tab 切换 -->
+      <el-tabs v-model="activeTab" class="property-tabs">
+        <!-- 游戏属性 Tab -->
+        <el-tab-pane label="游戏属性" name="game">
+          <div class="property-section">
+            <div class="section-header">基本信息</div>
+            <div class="property-item">
+              <div class="property-label">节点ID</div>
+              <div class="property-value">{{ selectedNode.id }}</div>
+            </div>
+            <div class="property-item">
+              <div class="property-label">节点类型</div>
+              <div class="property-value">{{ nodeType }}</div>
+            </div>
+          </div>
 
-      <StylePanel :node="selectedNode" />
+          <!-- 节点类型切换（仅资产选择器支持） -->
+          <div v-if="supportsTypeSwitch" class="property-section">
+            <div class="section-header">节点类型</div>
+            <div class="property-item">
+              <div class="property-label">资产类型</div>
+              <el-select v-model="currentAssetLibrary" placeholder="选择资产类型" style="width: 100%">
+                <el-option
+                  v-for="lib in ASSET_LIBRARIES"
+                  :key="lib.id"
+                  :label="lib.label"
+                  :value="lib.id"
+                />
+              </el-select>
+            </div>
+          </div>
 
-      <component v-if="panelComponent" :is="panelComponent" :node="selectedNode" />
-      <div v-else class="property-section">
-        <div class="section-header">暂无特定属性</div>
-        <div class="property-item">
-          <div class="property-value">当前节点类型无需额外配置。</div>
-        </div>
-      </div>
+          <!-- 特定节点属性面板 -->
+          <component v-if="panelComponent" :is="panelComponent" :node="selectedNode" />
+          <div v-else class="property-section">
+            <div class="section-header">暂无特定属性</div>
+            <div class="property-item">
+              <div class="property-value">当前节点类型无需额外配置。</div>
+            </div>
+          </div>
+        </el-tab-pane>
+
+        <!-- 图像属性 Tab -->
+        <el-tab-pane label="图像属性" name="style">
+          <StylePanel :node="selectedNode" />
+        </el-tab-pane>
+      </el-tabs>
     </div>
   </div>
 </template>
@@ -108,6 +158,21 @@ const panelComponent = computed(() => panelMap[nodeType.value] || null);
 
 .property-content {
   padding: 10px;
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.property-tabs {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.property-tabs :deep(.el-tabs__content) {
+  flex: 1;
+  overflow-y: auto;
 }
 
 .property-section {

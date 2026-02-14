@@ -12,8 +12,11 @@ import YuhunSelect from './components/flow/nodes/yys/YuhunSelect.vue';
 import PropertySelect from './components/flow/nodes/yys/PropertySelect.vue';
 import DialogManager from './components/DialogManager.vue';
 import {getLogicFlowInstance} from "@/ts/useLogicFlow";
+import { migrateGraphData, needsMigration } from '@/utils/nodeMigration';
+import { useGlobalMessage } from '@/ts/useGlobalMessage';
 
 const filesStore = useFilesStore();
+const { showMessage } = useGlobalMessage();
 
 const width = ref('100%');
 const height = ref('100vh');
@@ -23,10 +26,19 @@ const contentHeight = computed(() => `${windowHeight.value - toolbarHeight}px`);
 
 const normalizeGraphData = (data: any) => {
   if (data && Array.isArray((data as any).nodes) && Array.isArray((data as any).edges)) {
+    // 应用数据迁移
+    const { graphData: migratedData, migratedCount, migrations } = migrateGraphData(data);
+
+    // 如果有迁移，显示提示信息
+    if (migratedCount > 0) {
+      console.log(`[数据迁移] 迁移了 ${migratedCount} 个节点:`, migrations);
+      showMessage('info', `已自动升级 ${migratedCount} 个节点到新版本`);
+    }
+
     // 清理节点数据，移除可能导致 Label 插件出错的空 _label 数组
     const cleanedData = {
-      ...data,
-      nodes: data.nodes.map((node: any) => {
+      ...migratedData,
+      nodes: migratedData.nodes.map((node: any) => {
         const cleanedNode = { ...node };
         if (cleanedNode.properties && Array.isArray(cleanedNode.properties._label) && cleanedNode.properties._label.length === 0) {
           delete cleanedNode.properties._label;

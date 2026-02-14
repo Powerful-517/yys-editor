@@ -3,9 +3,10 @@ import { useDialogs } from '../ts/useDialogs'
 import ShikigamiSelect from './flow/nodes/yys/ShikigamiSelect.vue'
 import YuhunSelect from './flow/nodes/yys/YuhunSelect.vue'
 import PropertySelect from './flow/nodes/yys/PropertySelect.vue'
+import GenericImageSelector from './common/GenericImageSelector.vue'
 import { useFilesStore } from '../ts/useStore'
 
-const { dialogs, closeDialog } = useDialogs();
+const { dialogs, closeDialog, closeGenericSelector } = useDialogs();
 const filesStore = useFilesStore();
 </script>
 
@@ -38,6 +39,18 @@ const filesStore = useFilesStore();
     @updateProperty="data => {
       dialogs.property.callback?.(data);
       closeDialog('property');
+    }"
+  />
+  <GenericImageSelector
+    v-if="dialogs.generic.show && dialogs.generic.config"
+    v-model="dialogs.generic.show"
+    :config="dialogs.generic.config"
+    @select="data => {
+      dialogs.generic.callback?.(data);
+      closeGenericSelector();
+    }"
+    @update:modelValue="value => {
+      if (!value) closeGenericSelector();
     }"
   />
 </template> 

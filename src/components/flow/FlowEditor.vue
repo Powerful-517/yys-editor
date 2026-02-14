@@ -73,6 +73,7 @@ import ShikigamiSelectNode from './nodes/yys/ShikigamiSelectNode.vue';
 import YuhunSelectNode from './nodes/yys/YuhunSelectNode.vue';
 import PropertySelectNode from './nodes/yys/PropertySelectNode.vue';
 import ImageNode from './nodes/common/ImageNode.vue';
+import AssetSelectorNode from './nodes/common/AssetSelectorNode.vue';
 // import TextNode from './nodes/common/TextNode.vue';
 import PropertyPanel from './PropertyPanel.vue';
 import { useGlobalMessage } from '@/ts/useGlobalMessage';
@@ -660,6 +661,7 @@ function registerNodes(lfInstance: LogicFlow) {
   register({ type: 'propertySelect', component: PropertySelectNode }, lfInstance);
 
   register({ type: 'imageNode', component: ImageNode }, lfInstance);
+  register({ type: 'assetSelector', component: AssetSelectorNode }, lfInstance);
   // register({ type: 'textNode', component: TextNode }, lfInstance);
 }
 
@@ -913,6 +915,11 @@ onMounted(() => {
 
   lfInstance.on(EventType.GRAPH_RENDERED, () => {
     normalizeAllNodes();
+  });
+
+  // 监听节点点击事件，更新选中节点
+  lfInstance.on(EventType.NODE_CLICK, ({ data }) => {
+    selectedNode.value = data;
   });
 
   // 监听空白点击事件，取消选中

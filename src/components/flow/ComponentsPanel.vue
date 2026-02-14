@@ -59,6 +59,16 @@ const componentGroups = [
     title: '阴阳师',
     components: [
       {
+        id: 'asset-selector',
+        name: '资产选择器',
+        type: 'assetSelector',
+        description: '通用资产选择器（式神/御魂等）',
+        data: {
+          assetLibrary: 'shikigami',
+          selectedAsset: null
+        }
+      },
+      {
         id: 'shikigami-select',
         name: '式神选择器',
         type: 'shikigamiSelect',
