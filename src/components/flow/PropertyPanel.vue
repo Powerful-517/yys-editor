@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import ShikigamiPanel from './panels/ShikigamiPanel.vue';
-import YuhunPanel from './panels/YuhunPanel.vue';
 import PropertyRulePanel from './panels/PropertyRulePanel.vue';
 import ImagePanel from './panels/ImagePanel.vue';
 import TextPanel from './panels/TextPanel.vue';
@@ -32,8 +30,6 @@ const nodeType = computed(() => {
 const activeTab = ref('game');
 
 const panelMap: Record<string, any> = {
-  shikigamiSelect: ShikigamiPanel,
-  yuhunSelect: YuhunPanel,
   propertySelect: PropertyRulePanel,
   imageNode: ImagePanel,
   textNode: TextPanel,

@@ -71,19 +71,21 @@ const componentGroups = [
       {
         id: 'shikigami-select',
         name: '式神选择器',
-        type: 'shikigamiSelect',
+        type: 'assetSelector',
         description: '用于选择式神的组件',
         data: {
-          shikigami: { name: '未选择式神', avatar: '', rarity: '' }
+          assetLibrary: 'shikigami',
+          selectedAsset: null
         }
       },
       {
         id: 'yuhun-select',
         name: '御魂选择器',
-        type: 'yuhunSelect',
+        type: 'assetSelector',
         description: '用于选择御魂的组件',
         data: {
-          yuhun: { name: '未选择御魂', avatar: '', type: '' }
+          assetLibrary: 'yuhun',
+          selectedAsset: null
         }
       },
       {
@@ -112,6 +114,26 @@ const componentGroups = [
             survivalRate: 50,
             damageType: "balanced"
           }
+        }
+      },
+      {
+        id: 'onmyoji-select',
+        name: '阴阳师选择器',
+        type: 'assetSelector',
+        description: '用于选择阴阳师的组件',
+        data: {
+          assetLibrary: 'onmyoji',
+          selectedAsset: null
+        }
+      },
+      {
+        id: 'onmyoji-skill-select',
+        name: '阴阳师技能选择器',
+        type: 'assetSelector',
+        description: '用于选择阴阳师技能的组件',
+        data: {
+          assetLibrary: 'onmyojiSkill',
+          selectedAsset: null
         }
       }
     ]

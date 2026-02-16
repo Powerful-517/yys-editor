@@ -2,8 +2,6 @@ import { reactive } from 'vue'
 import type { SelectorConfig } from '@/types/selector'
 
 const dialogs = reactive({
-  shikigami: { show: false, data: null, node: null, callback: null },
-  yuhun: { show: false, data: null, node: null, callback: null },
   property: { show: false, data: null, node: null, callback: null },
   generic: { show: false, config: null, callback: null }
 })

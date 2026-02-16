@@ -69,8 +69,6 @@ import '@logicflow/extension/es/index.css';
 import { translateEdgeData, translateNodeData } from '@logicflow/core/es/keyboard/shortcut';
 
 import { register } from '@logicflow/vue-node-registry';
-import ShikigamiSelectNode from './nodes/yys/ShikigamiSelectNode.vue';
-import YuhunSelectNode from './nodes/yys/YuhunSelectNode.vue';
 import PropertySelectNode from './nodes/yys/PropertySelectNode.vue';
 import ImageNode from './nodes/common/ImageNode.vue';
 import AssetSelectorNode from './nodes/common/AssetSelectorNode.vue';
@@ -666,8 +664,6 @@ function distributeSelected(type: DistributeType) {
 
 // 注册自定义节点
 function registerNodes(lfInstance: LogicFlow) {
-  register({ type: 'shikigamiSelect', component: ShikigamiSelectNode }, lfInstance);
-  register({ type: 'yuhunSelect', component: YuhunSelectNode }, lfInstance);
   register({ type: 'propertySelect', component: PropertySelectNode }, lfInstance);
 
   register({ type: 'imageNode', component: ImageNode }, lfInstance);
