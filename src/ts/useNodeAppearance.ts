@@ -12,9 +12,13 @@ export function useNodeAppearance(options?: { onPropsChange?: PropsChangeHandler
 
   const syncFromProps = (props?: any, node?: any) => {
     const target = props ?? node?.properties ?? {};
+    // 优先使用 node 的实际尺寸，因为用户缩放时 node.width/height 会先更新
+    const currentWidth = node?.width ?? target.width;
+    const currentHeight = node?.height ?? target.height;
+
     style.value = normalizeNodeStyle(target.style, {
-      width: target.width ?? node?.width,
-      height: target.height ?? node?.height
+      width: currentWidth,
+      height: currentHeight
     });
     options?.onPropsChange?.(target, node);
   };
