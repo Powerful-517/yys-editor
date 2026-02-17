@@ -2,7 +2,7 @@
 
 ## 📊 项目完成度总览
 
-**总体完成度：95%** | **愿景一完成度：100%** (步骤1-10全部完成)
+**总体完成度：98%** | **愿景一完成度：100%** (步骤1-10全部完成)
 
 ### 核心模块完成度
 
@@ -29,22 +29,22 @@
 | 5 | 快捷键与微调 | ✅ 完成 | 8种快捷键全部工作 |
 | 6 | 样式模型补齐 | ✅ 完成 | 11个样式属性统一 |
 | 7 | 扩展与控制 | ✅ 完成 | MiniMap/Control + 开关 |
-| 8 | 矢量节点MVP | ❌ 未开始 | vectorNode + SVG导入 |
+| 8 | 矢量节点MVP | ✅ 完成 | vectorNode + SVG Pattern 平铺 |
 | 9 | 资源与导出增强 | ❌ 未开始 | 资源弹窗 + SVG/PDF导出 |
 | 10 | 历史与撤销重做 | ✅ 完成 | LogicFlow 框架原生支持 Ctrl+Z/Y |
 
 ## 🎯 下一步行动计划
 
-### 🔴 高优先级（立即行动）
-1. **矢量节点 MVP** - 步骤 8
-   - 定义 vectorNode 类型
-   - 支持 SVG path/rect/ellipse/polygon
-   - 属性面板编辑 path/stroke/fill
-
 ### 🟡 中优先级（短期目标）
-2. **导出增强** - 步骤 9
+1. **导出增强** - 步骤 9
    - 图片资源选择/上传弹窗
    - 导出 SVG/PDF 格式
+
+### 🟢 低优先级（后续优化）
+2. **矢量节点增强**
+   - 预设图案库（虚线、点线等常用边框）
+   - SVG 文件导入功能
+   - 高级平铺模式（偏移平铺、旋转平铺）
 
 ---
 
@@ -53,8 +53,9 @@
 ## 1. 画布（LogicFlow） — 完成度：100%
 - 已完成：
   - 初始化与销毁：LogicFlow 实例、网格/缩放/旋转、节点选中/空白取消（src/components/flow/FlowEditor.vue）
-  - 自定义节点注册：`shikigamiSelect`、`yuhunSelect`、`propertySelect`、`imageNode`、`textNode`（src/components/flow/FlowEditor.vue:567-574）
+  - 自定义节点注册：`shikigamiSelect`、`yuhunSelect`、`propertySelect`、`imageNode`、`textNode`、`vectorNode`（src/components/flow/FlowEditor.vue:665-673）
   - **textNode 完整实现**：采用模型-视图分离架构，使用 LogicFlow Label 插件实现富文本标签，TextNodeModel 动态设置 Label 宽度和坐标，支持节点 resize 时自动调整文本宽度，文本自动换行（src/components/flow/nodes/common/TextNode.vue, TextNodeModel.ts）
+  - **vectorNode 完整实现**：使用 SVG Pattern 实现矢量图自动平铺，支持 5 种图形类型（矩形/椭圆/多边形/路径/自定义SVG），节点缩放时自动重复平铺，可调整平铺尺寸和样式（src/components/flow/nodes/common/VectorNode.vue, VectorNodeModel.ts）
   - 与 Store 联动：读取/写入 `graphRawData` 与 `transform`（缩放/位移）（src/ts/useStore.ts, src/ts/useLogicFlow.ts）
   - DnD 接入：由组件库触发拖拽放置
   - **右键菜单完整功能**：图层控制（置顶/上移/下移/置底）、编辑操作（复制/粘贴）、组合操作（组合/解组）、状态控制（锁定/隐藏）、删除操作，所有快捷键功能均可通过右键触发（src/components/flow/FlowEditor.vue:714-821）
@@ -68,12 +69,13 @@
 - 未完成：
   - 无
 
-## 2. 左侧组件库（Palette） — 完成度：70%
+## 2. 左侧组件库（Palette） — 完成度：75%
 - 已完成：
-  - 分组展示：基础组件（rect/ellipse/image/text）、阴阳师（shikigami/yuhun/property）（src/components/flow/ComponentsPanel.vue:5-95）
+  - 分组展示：基础组件（rect/ellipse/image/text/vector）、阴阳师（shikigami/yuhun/property）（src/components/flow/ComponentsPanel.vue:5-95）
   - 拖拽创建节点：`lf.dnd.startDrag({ type, properties })`
   - **组件定义结构化**：嵌套 componentGroups 数组，包含 id/name/type/description/data
   - **textNode 已注册**：在 FlowEditor 和 ComponentsPanel 均已启用，支持拖拽创建
+  - **vectorNode 已注册**：支持拖拽创建矢量图块，默认配置矩形平铺
 - 未完成：
   - 组件预览缩略图、搜索与分组折叠
   - 点击快速创建（当前仅支持拖拽）
@@ -81,10 +83,11 @@
 
 ## 3. 右侧属性面板（Inspector） — 完成度：100%
 - 已完成：
-  - 按节点类型切换 UI，显示基本信息（ID/类型）（src/components/flow/PropertyPanel.vue），面板按节点类型拆分子组件（ShikigamiPanel/YuhunPanel/PropertyRulePanel/ImagePanel/TextPanel/StylePanel）
+  - 按节点类型切换 UI，显示基本信息（ID/类型）（src/components/flow/PropertyPanel.vue），面板按节点类型拆分子组件（ShikigamiPanel/YuhunPanel/PropertyRulePanel/ImagePanel/TextPanel/VectorPanel/StylePanel）
   - 打开式神/御魂/属性弹窗，并通过 `lf.setProperties` 回写到节点（src/components/flow/panels/ShikigamiPanel.vue, YuhunPanel.vue, PropertyRulePanel.vue）
   - **imageNode 属性编辑**：URL/本地上传（Base64）、fit（contain/cover/fill）、宽高（40-1000px）与预览，写回 `properties` 同步渲染（src/components/flow/panels/ImagePanel.vue）
   - **textNode 富文本编辑**：基于 LogicFlow Label 插件原生支持，文本自动换行，支持样式属性编辑（字体/颜色/对齐/行高/字重）
+  - **vectorNode 属性编辑**：图形类型选择（矩形/椭圆/多边形/路径/自定义SVG）、平铺尺寸调整（10-500px）、填充和描边颜色、描边宽度、Path 数据输入、SVG 内容输入（src/components/flow/panels/VectorPanel.vue）
   - **样式模型完整实现**：统一 `properties.style`（src/ts/schema.ts, src/ts/nodeStyle.ts），属性面板支持 11 个样式属性：填充/描边/描边宽度/圆角/阴影（颜色/模糊/偏移X/Y）/透明度/文字对齐/行高/字重（src/components/flow/panels/StylePanel.vue）
   - **属性同步机制**：通过 `lf.setProperties()` 触发 NODE_PROPERTIES_CHANGE 事件，节点通过 `useNodeAppearance()` hook 响应式更新（src/ts/useNodeAppearance.ts）
 - 未完成：
@@ -177,7 +180,7 @@
   5) ✅ **快捷键与微调**：Del/Backspace 删除、方向键微移（2px/Shift+10px）、Ctrl+C/V 复制粘贴、Ctrl+G/U 组/解组（meta.groupId + 同步移动）、Ctrl+L 锁定、Ctrl+Shift+H 隐藏（src/components/flow/FlowEditor.vue:611-629, 337-366, 283-313）
   6) ✅ **样式模型补齐**：统一 properties.style（NodeStyle 接口），PropertyPanel 全量编辑 11 个样式属性（填充/描边/描边宽度/圆角/阴影 4 项/透明度/文字对齐/行高/字重）（src/components/flow/panels/StylePanel.vue, src/ts/nodeStyle.ts）
   7) ✅ **扩展与控制**：MiniMap + Control 插件接入（src/components/flow/FlowEditor.vue:588,682）；Toolbar 增加框选/吸附/对齐线开关（src/components/Toolbar.vue:14-34）；清空画布入口（src/components/Toolbar.vue:11）
-  8) ❌ **矢量节点 MVP**：vectorNode（SVG path/rect/ellipse/polygon），属性面板支持 path/stroke/fill/strokeWidth；新增 SVG 导入弹窗
+  8) ✅ **矢量节点 MVP**：vectorNode（SVG Pattern 平铺），支持 5 种图形类型（矩形/椭圆/多边形/路径/自定义SVG），属性面板支持平铺尺寸/颜色/描边配置，节点缩放时自动重复平铺（src/components/flow/nodes/common/VectorNode.vue, VectorNodeModel.ts, src/components/flow/panels/VectorPanel.vue）
   9) ❌ **资源与导出增强**：图片资源选择/上传弹窗（当前仅支持单个上传），导出 SVG/PDF（当前仅 PNG）
   10) ✅ **历史与撤销重做**：LogicFlow 框架原生 History 插件，Ctrl+Z/Y 快捷键，自动记录所有操作
 
@@ -197,14 +200,14 @@
   - ✅ **3/4 结束**：层级操作全部完成（置顶/置底/前移/后移），对齐/分布操作已完成（src/components/flow/FlowEditor.vue:485-564），右键菜单集成所有快捷键功能
   - ✅ **6 结束**：样式模型已统一（NodeStyle 接口），imageNode/shikigamiSelect/yuhunSelect/propertySelect 四类节点均可通过 StylePanel 一致编辑 11 个样式属性
   - ✅ **10 结束**：撤销重做系统完成，LogicFlow 框架原生支持，Ctrl+Z/Y 快捷键可用
-  - ❌ **8 结束**：vectorNode 未开始，SVG 导入/导出链路未实现
+  - ✅ **8 结束**：vectorNode 已完成，支持 SVG Pattern 平铺，5 种图形类型，属性面板完整
 
 ---
 
 ## 当前状态总结（2026-02-17）
 
 ### 已完成的愿景一核心功能（步骤 1-10，100%）
-- ✅ 节点系统：imageNode 完整可用，textNode 已注册并采用 LogicFlow 原生能力
+- ✅ 节点系统：imageNode 完整可用，textNode 已注册并采用 LogicFlow 原生能力，vectorNode 完整实现 SVG Pattern 平铺
 - ✅ 截图导出：LogicFlow Snapshot + 自定义水印
 - ✅ 图层命令：置顶/置底/前移/后移全部完成
 - ✅ 多选对齐：6 种对齐 + 2 种等距分布
@@ -213,16 +216,18 @@
 - ✅ 扩展控制：MiniMap/Control/Snapshot 插件 + Toolbar 开关
 - ✅ 撤销重做：Ctrl+Z/Y 快捷键，LogicFlow 框架原生支持
 - ✅ 富文本编辑：textNode 基于 LogicFlow Label 插件原生支持
+- ✅ 矢量平铺：vectorNode 支持 5 种图形类型，自动平铺重复
 
 ### 愿景一后续增强功能
-- ⚠️ **高优先级（功能完整性）**：
-  - vectorNode MVP - 步骤 8
 - ⚠️ **中优先级（增强功能）**：
   - SVG/PDF 导出 - 步骤 9
+- ⚠️ **低优先级（可选优化）**：
+  - 矢量节点预设图案库
+  - SVG 文件导入功能
 
 ### 建议的下一步行动
-1. **立即行动**：vectorNode MVP（定义类型、SVG 支持、属性面板）
-2. **短期目标**：SVG/PDF 导出增强
+1. **短期目标**：SVG/PDF 导出增强
+2. **长期目标**：愿景二（联动 wiki/攻略站）
 ### 愿景二：联动 wiki/攻略站（浏览/复刻/继续编辑）
 - 工具栏
   - 导入/导出增加元信息（title/tags/lang/version/schemaVersion）；“发布/上传”“打开攻略”“复刻编辑”入口
