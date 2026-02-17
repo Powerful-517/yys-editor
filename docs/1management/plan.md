@@ -56,11 +56,11 @@
 
 ## 📋 详细模块状态
 
-## 1. 画布（LogicFlow） — 完成度：92%
+## 1. 画布（LogicFlow） — 完成度：100%
 - 已完成：
   - 初始化与销毁：LogicFlow 实例、网格/缩放/旋转、节点选中/空白取消（src/components/flow/FlowEditor.vue）
   - 自定义节点注册：`shikigamiSelect`、`yuhunSelect`、`propertySelect`、`imageNode`、`textNode`（src/components/flow/FlowEditor.vue:567-574）
-  - **textNode 完整实现**：采用模型-视图分离架构，TextNodeModel 配置文本样式和编辑行为，TextNode.vue 提供渲染容器，LogicFlow 自动处理文本编辑（src/components/flow/nodes/common/TextNode.vue, TextNodeModel.ts）
+  - **textNode 完整实现**：采用模型-视图分离架构，使用 LogicFlow Label 插件实现富文本标签，TextNodeModel 动态设置 Label 宽度和坐标，支持节点 resize 时自动调整文本宽度，文本自动换行（src/components/flow/nodes/common/TextNode.vue, TextNodeModel.ts）
   - 与 Store 联动：读取/写入 `graphRawData` 与 `transform`（缩放/位移）（src/ts/useStore.ts, src/ts/useLogicFlow.ts）
   - DnD 接入：由组件库触发拖拽放置
   - **右键菜单完整功能**：图层控制（置顶/上移/下移/置底）、编辑操作（复制/粘贴）、组合操作（组合/解组）、状态控制（锁定/隐藏）、删除操作，所有快捷键功能均可通过右键触发（src/components/flow/FlowEditor.vue:714-821）
@@ -70,6 +70,7 @@
   - **快捷键系统**：Del/Backspace 删除、方向键微移（2px/10px）、Ctrl+C/V 复制粘贴、Ctrl+G/U 组/解组、Ctrl+L 锁定、Ctrl+Shift+H 隐藏（src/components/flow/FlowEditor.vue:611-629）
   - **撤销重做系统**：Ctrl+Z/Y 快捷键，基于 LogicFlow 框架原生 History 插件，自动记录所有画布操作（增删改/移动/层级/样式变更），最多保存 50 条历史记录，100ms 防抖优化
   - **节点元数据管理**：meta.visible、meta.locked、meta.groupId 支持与规范化（src/components/flow/FlowEditor.vue:133-209）
+  - **Label 插件集成**：限制每个节点一个 Label（isMultiple: false），支持文本自动换行，Label 宽度跟随节点宽度动态调整（src/components/flow/FlowEditor.vue:704-709）
 - 未完成：
   - 无
 
