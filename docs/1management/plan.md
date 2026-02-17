@@ -2,7 +2,7 @@
 
 ## 📊 项目完成度总览
 
-**总体完成度：90%** | **愿景一完成度：100%** (步骤1-10全部完成)
+**总体完成度：95%** | **愿景一完成度：100%** (步骤1-10全部完成)
 
 ### 核心模块完成度
 
@@ -10,7 +10,7 @@
 |------|--------|------|----------|
 | 🎨 画布（LogicFlow） | 100% | ✅ 完美 | 无 |
 | 📦 左侧组件库 | 70% | ✅ 可用 | 缩略图、搜索 |
-| ⚙️ 右侧属性面板 | 85% | ✅ 良好 | textNode富文本编辑 |
+| ⚙️ 右侧属性面板 | 100% | ✅ 完美 | 无 |
 | 🔧 工具栏 | 85% | ✅ 良好 | 导出命名优化 |
 | 💬 弹窗系统 | 75% | ✅ 可用 | i18n完善、性能优化 |
 | 💾 状态与持久化 | 90% | ✅ 优秀 | 重命名UI |
@@ -36,19 +36,13 @@
 ## 🎯 下一步行动计划
 
 ### 🔴 高优先级（立即行动）
-1. **textNode 富文本编辑** - 完善 TextPanel
-   - 位置：src/components/flow/panels/TextPanel.vue
-   - 需求：集成富文本编辑器（TipTap/Quill）
-   - 功能：内容编辑、字体、颜色、格式化
-
-### 🟡 中优先级（短期目标）
-2. **矢量节点 MVP** - 步骤 8
+1. **矢量节点 MVP** - 步骤 8
    - 定义 vectorNode 类型
    - 支持 SVG path/rect/ellipse/polygon
    - 属性面板编辑 path/stroke/fill
 
-### 🟢 低优先级（长期规划）
-3. **导出增强** - 步骤 9
+### 🟡 中优先级（短期目标）
+2. **导出增强** - 步骤 9
    - 图片资源选择/上传弹窗
    - 导出 SVG/PDF 格式
 
@@ -85,15 +79,15 @@
   - 点击快速创建（当前仅支持拖拽）
   - 外置配置（JSON）与动态加载，便于扩展
 
-## 3. 右侧属性面板（Inspector） — 完成度：85%
+## 3. 右侧属性面板（Inspector） — 完成度：100%
 - 已完成：
   - 按节点类型切换 UI，显示基本信息（ID/类型）（src/components/flow/PropertyPanel.vue），面板按节点类型拆分子组件（ShikigamiPanel/YuhunPanel/PropertyRulePanel/ImagePanel/TextPanel/StylePanel）
   - 打开式神/御魂/属性弹窗，并通过 `lf.setProperties` 回写到节点（src/components/flow/panels/ShikigamiPanel.vue, YuhunPanel.vue, PropertyRulePanel.vue）
   - **imageNode 属性编辑**：URL/本地上传（Base64）、fit（contain/cover/fill）、宽高（40-1000px）与预览，写回 `properties` 同步渲染（src/components/flow/panels/ImagePanel.vue）
+  - **textNode 富文本编辑**：基于 LogicFlow Label 插件原生支持，文本自动换行，支持样式属性编辑（字体/颜色/对齐/行高/字重）
   - **样式模型完整实现**：统一 `properties.style`（src/ts/schema.ts, src/ts/nodeStyle.ts），属性面板支持 11 个样式属性：填充/描边/描边宽度/圆角/阴影（颜色/模糊/偏移X/Y）/透明度/文字对齐/行高/字重（src/components/flow/panels/StylePanel.vue）
   - **属性同步机制**：通过 `lf.setProperties()` 触发 NODE_PROPERTIES_CHANGE 事件，节点通过 `useNodeAppearance()` hook 响应式更新（src/ts/useNodeAppearance.ts）
 - 未完成：
-  - **textNode 富文本编辑**：TextPanel.vue 当前仅为 stub，只显示内容不支持编辑
   - 字段校验/联动、常用模板一键填充
 
 ## 4. 工具栏（Toolbar） — 完成度：85%
@@ -218,18 +212,17 @@
 - ✅ 样式模型：11 个样式属性统一编辑
 - ✅ 扩展控制：MiniMap/Control/Snapshot 插件 + Toolbar 开关
 - ✅ 撤销重做：Ctrl+Z/Y 快捷键，LogicFlow 框架原生支持
+- ✅ 富文本编辑：textNode 基于 LogicFlow Label 插件原生支持
 
 ### 愿景一后续增强功能
 - ⚠️ **高优先级（功能完整性）**：
-  - textNode 富文本编辑 - TextPanel 增强
-- ⚠️ **低优先级（增强功能）**：
   - vectorNode MVP - 步骤 8
+- ⚠️ **中优先级（增强功能）**：
   - SVG/PDF 导出 - 步骤 9
 
 ### 建议的下一步行动
-1. **立即行动**：textNode 富文本编辑（集成 TipTap/Quill）
-2. **短期目标**：vectorNode MVP
-3. **长期目标**：SVG/PDF 导出增强
+1. **立即行动**：vectorNode MVP（定义类型、SVG 支持、属性面板）
+2. **短期目标**：SVG/PDF 导出增强
 ### 愿景二：联动 wiki/攻略站（浏览/复刻/继续编辑）
 - 工具栏
   - 导入/导出增加元信息（title/tags/lang/version/schemaVersion）；“发布/上传”“打开攻略”“复刻编辑”入口
