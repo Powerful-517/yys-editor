@@ -702,9 +702,8 @@ onMounted(() => {
     plugins: [Menu, Label, Snapshot, SelectionSelect, MiniMap, Control],
     pluginsOptions: {
       label: {
-        isMultiple: true,
-        maxCount: 3,
-        labelWidth: 80,
+        isMultiple: false, // 每个节点只允许一个 label
+        // 不设置全局 labelWidth，让每个节点自己控制
         // textOverflowMode -> 'ellipsis' | 'wrap' | 'clip' | 'nowrap' | 'default'
         textOverflowMode: 'wrap',
       },

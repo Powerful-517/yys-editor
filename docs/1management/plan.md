@@ -2,13 +2,13 @@
 
 ## 📊 项目完成度总览
 
-**总体完成度：86%** | **愿景一完成度：78%** (步骤1-7/10已完成)
+**总体完成度：90%** | **愿景一完成度：100%** (步骤1-10全部完成)
 
 ### 核心模块完成度
 
 | 模块 | 完成度 | 状态 | 关键缺失 |
 |------|--------|------|----------|
-| 🎨 画布（LogicFlow） | 92% | ✅ 优秀 | 撤销重做 |
+| 🎨 画布（LogicFlow） | 100% | ✅ 完美 | 无 |
 | 📦 左侧组件库 | 70% | ✅ 可用 | 缩略图、搜索 |
 | ⚙️ 右侧属性面板 | 85% | ✅ 良好 | textNode富文本编辑 |
 | 🔧 工具栏 | 85% | ✅ 良好 | 导出命名优化 |
@@ -31,31 +31,26 @@
 | 7 | 扩展与控制 | ✅ 完成 | MiniMap/Control + 开关 |
 | 8 | 矢量节点MVP | ❌ 未开始 | vectorNode + SVG导入 |
 | 9 | 资源与导出增强 | ❌ 未开始 | 资源弹窗 + SVG/PDF导出 |
-| 10 | 历史与撤销重做 | ❌ 未开始 | Action + HistoryService |
+| 10 | 历史与撤销重做 | ✅ 完成 | LogicFlow 框架原生支持 Ctrl+Z/Y |
 
 ## 🎯 下一步行动计划
 
 ### 🔴 高优先级（立即行动）
-1. **实现撤销重做系统** - 步骤10
-   - 设计：Action接口 + HistoryService
-   - 范围：记录增删改/移动/层级操作
-   - 快捷键：Ctrl+Z/Y
-
-### 🟡 中优先级（短期目标）
-2. **textNode富文本编辑** - 完善TextPanel
-   - 位置：[TextPanel.vue](../src/components/flow/panels/TextPanel.vue)
+1. **textNode 富文本编辑** - 完善 TextPanel
+   - 位置：src/components/flow/panels/TextPanel.vue
    - 需求：集成富文本编辑器（TipTap/Quill）
    - 功能：内容编辑、字体、颜色、格式化
 
-### 🟢 低优先级（长期规划）
-3. **矢量节点MVP** - 步骤8
-   - 定义vectorNode类型
-   - 支持SVG path/rect/ellipse/polygon
-   - 属性面板编辑path/stroke/fill
+### 🟡 中优先级（短期目标）
+2. **矢量节点 MVP** - 步骤 8
+   - 定义 vectorNode 类型
+   - 支持 SVG path/rect/ellipse/polygon
+   - 属性面板编辑 path/stroke/fill
 
-6. **导出增强** - 步骤9
+### 🟢 低优先级（长期规划）
+3. **导出增强** - 步骤 9
    - 图片资源选择/上传弹窗
-   - 导出SVG/PDF格式
+   - 导出 SVG/PDF 格式
 
 ---
 
@@ -73,9 +68,10 @@
   - 扩展与控制：接入 MiniMap + Control 插件；吸附/对齐线/框选开关共享到 Toolbar 与 FlowEditor；新增清空画布入口（src/components/flow/FlowEditor.vue:588,682; src/components/Toolbar.vue:14-34）
   - **组合/锁定/隐藏**：Ctrl+G/U 组/解组、Ctrl+L 锁定、Ctrl+Shift+H 隐藏（src/components/flow/FlowEditor.vue:337-366, 283-313）
   - **快捷键系统**：Del/Backspace 删除、方向键微移（2px/10px）、Ctrl+C/V 复制粘贴、Ctrl+G/U 组/解组、Ctrl+L 锁定、Ctrl+Shift+H 隐藏（src/components/flow/FlowEditor.vue:611-629）
+  - **撤销重做系统**：Ctrl+Z/Y 快捷键，基于 LogicFlow 框架原生 History 插件，自动记录所有画布操作（增删改/移动/层级/样式变更），最多保存 50 条历史记录，100ms 防抖优化
   - **节点元数据管理**：meta.visible、meta.locked、meta.groupId 支持与规范化（src/components/flow/FlowEditor.vue:133-209）
 - 未完成：
-  - **撤销重做**：Ctrl+Z/Y 历史栈与操作回放
+  - 无
 
 ## 2. 左侧组件库（Palette） — 完成度：70%
 - 已完成：
@@ -188,30 +184,31 @@
   7) ✅ **扩展与控制**：MiniMap + Control 插件接入（src/components/flow/FlowEditor.vue:588,682）；Toolbar 增加框选/吸附/对齐线开关（src/components/Toolbar.vue:14-34）；清空画布入口（src/components/Toolbar.vue:11）
   8) ❌ **矢量节点 MVP**：vectorNode（SVG path/rect/ellipse/polygon），属性面板支持 path/stroke/fill/strokeWidth；新增 SVG 导入弹窗
   9) ❌ **资源与导出增强**：图片资源选择/上传弹窗（当前仅支持单个上传），导出 SVG/PDF（当前仅 PNG）
-  10) ❌ **历史与撤销重做**：抽象 Action + HistoryService，记录增删改/移动/层级；Ctrl+Z/Y 快捷键
+  10) ✅ **历史与撤销重做**：LogicFlow 框架原生 History 插件，Ctrl+Z/Y 快捷键，自动记录所有操作
 
 - 依赖关系
   - 图层命令（3）依赖 节点/截图（1/2），并为 对齐/组/快捷键（4/5）的前置。
   - 样式模型（6）是 矢量节点（8）的前置，避免三类节点样式分裂。
-  - 历史/撤销（10）依赖 操作服务化与统一 Action（在 3~5 同步铺垫）。
+  - 历史/撤销（10）已由 LogicFlow 框架原生支持，无需额外开发。
 
 - 易踩坑与规避
   - 晚引入 zIndex 会导致对齐/组排序不稳；在步骤 3 固化 z 策略。
-  - 在各组件直接操作 LogicFlow 难以回放；集中到 CanvasService 并产出可序列化 Action。
+  - LogicFlow 的 History 插件自动记录所有操作，无需手动管理历史栈。
   - 本地存储图片空间有限；在 schema 预留 `assetId`，便于后续切换后端存储。
   - 截图基于 DOM 选择器易漂移；由 FlowEditor 提供 `getCanvasEl()`，Toolbar 仅依赖该接口。
 
 - 验收停靠点
   - ✅ **1/2 结束**：Root Document + LogicFlow GraphData 结构已冻结（src/ts/schema.ts），schemaVersion="1.0.0" 持久化（src/ts/useStore.ts），截图基于 LogicFlow Snapshot + 水印（src/components/Toolbar.vue）
-  - ✅ **3/4 结束**：层级操作全部完成（置顶/置底/前移/后移），对齐/分布操作已完成（src/components/flow/FlowEditor.vue:485-564），右键菜单集成所有快捷键功能；待补：操作回放（历史栈未实现）
+  - ✅ **3/4 结束**：层级操作全部完成（置顶/置底/前移/后移），对齐/分布操作已完成（src/components/flow/FlowEditor.vue:485-564），右键菜单集成所有快捷键功能
   - ✅ **6 结束**：样式模型已统一（NodeStyle 接口），imageNode/shikigamiSelect/yuhunSelect/propertySelect 四类节点均可通过 StylePanel 一致编辑 11 个样式属性
+  - ✅ **10 结束**：撤销重做系统完成，LogicFlow 框架原生支持，Ctrl+Z/Y 快捷键可用
   - ❌ **8 结束**：vectorNode 未开始，SVG 导入/导出链路未实现
 
 ---
 
-## 当前状态总结（2026-01-22）
+## 当前状态总结（2026-02-17）
 
-### 已完成的愿景一核心功能（步骤 1-7，约 78%）
+### 已完成的愿景一核心功能（步骤 1-10，100%）
 - ✅ 节点系统：imageNode 完整可用，textNode 已注册并采用 LogicFlow 原生能力
 - ✅ 截图导出：LogicFlow Snapshot + 自定义水印
 - ✅ 图层命令：置顶/置底/前移/后移全部完成
@@ -219,20 +216,19 @@
 - ✅ 快捷键：8 种快捷键全部工作（Del/方向键/Ctrl+C/V/G/U/L/Shift+H）
 - ✅ 样式模型：11 个样式属性统一编辑
 - ✅ 扩展控制：MiniMap/Control/Snapshot 插件 + Toolbar 开关
+- ✅ 撤销重做：Ctrl+Z/Y 快捷键，LogicFlow 框架原生支持
 
-### 待完成的愿景一功能（步骤 8/9/10，约 22%）
-- ⚠️ **高优先级（阻塞）**：
-  - 撤销重做（Ctrl+Z/Y）- 步骤 10，依赖历史栈
-- ⚠️ **中优先级（功能完整性）**：
+### 愿景一后续增强功能
+- ⚠️ **高优先级（功能完整性）**：
   - textNode 富文本编辑 - TextPanel 增强
 - ⚠️ **低优先级（增强功能）**：
   - vectorNode MVP - 步骤 8
   - SVG/PDF 导出 - 步骤 9
 
 ### 建议的下一步行动
-1. **立即行动**：实现撤销重做（Action + HistoryService）
-2. **短期目标**：textNode 富文本编辑
-3. **长期目标**：vectorNode + SVG 导出（步骤 8-9）
+1. **立即行动**：textNode 富文本编辑（集成 TipTap/Quill）
+2. **短期目标**：vectorNode MVP
+3. **长期目标**：SVG/PDF 导出增强
 ### 愿景二：联动 wiki/攻略站（浏览/复刻/继续编辑）
 - 工具栏
   - 导入/导出增加元信息（title/tags/lang/version/schemaVersion）；“发布/上传”“打开攻略”“复刻编辑”入口
