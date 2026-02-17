@@ -74,6 +74,8 @@ import ImageNode from './nodes/common/ImageNode.vue';
 import AssetSelectorNode from './nodes/common/AssetSelectorNode.vue';
 import TextNode from './nodes/common/TextNode.vue';
 import TextNodeModel from './nodes/common/TextNodeModel';
+import VectorNode from './nodes/common/VectorNode.vue';
+import VectorNodeModel from './nodes/common/VectorNodeModel';
 import PropertyPanel from './PropertyPanel.vue';
 import { useGlobalMessage } from '@/ts/useGlobalMessage';
 import { setLogicFlowInstance, destroyLogicFlowInstance } from '@/ts/useLogicFlow';
@@ -669,6 +671,7 @@ function registerNodes(lfInstance: LogicFlow) {
   register({ type: 'imageNode', component: ImageNode }, lfInstance);
   register({ type: 'assetSelector', component: AssetSelectorNode }, lfInstance);
   register({ type: 'textNode', component: TextNode, model: TextNodeModel }, lfInstance);
+  register({ type: 'vectorNode', component: VectorNode, model: VectorNodeModel }, lfInstance);
 }
 
 // 初始化 LogicFlow

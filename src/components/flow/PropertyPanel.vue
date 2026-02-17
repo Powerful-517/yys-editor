@@ -5,6 +5,7 @@ import ImagePanel from './panels/ImagePanel.vue';
 import TextPanel from './panels/TextPanel.vue';
 import StylePanel from './panels/StylePanel.vue';
 import AssetSelectorPanel from './panels/AssetSelectorPanel.vue';
+import VectorPanel from './panels/VectorPanel.vue';
 import { ASSET_LIBRARIES } from '@/types/nodeTypes';
 import { getLogicFlowInstance } from '@/ts/useLogicFlow';
 
@@ -33,7 +34,8 @@ const panelMap: Record<string, any> = {
   propertySelect: PropertyRulePanel,
   imageNode: ImagePanel,
   textNode: TextPanel,
-  assetSelector: AssetSelectorPanel
+  assetSelector: AssetSelectorPanel,
+  vectorNode: VectorPanel
 };
 
 const panelComponent = computed(() => panelMap[nodeType.value] || null);

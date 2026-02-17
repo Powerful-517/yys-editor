@@ -58,7 +58,17 @@ export interface NodeProperties {
   meta?: NodeMeta;
   image?: { url: string; fit?: 'fill'|'contain'|'cover' };
   text?: { content: string; rich?: boolean };
-  vector?: { kind: 'path'|'rect'|'ellipse'|'polygon'; path?: string; points?: Array<[number, number]> };
+  vector?: {
+    kind: 'path' | 'rect' | 'ellipse' | 'polygon' | 'svg';
+    svgContent?: string;
+    path?: string;
+    points?: Array<[number, number]>;
+    tileWidth: number;
+    tileHeight: number;
+    fill?: string;
+    stroke?: string;
+    strokeWidth?: number;
+  };
   shikigami?: { name: string; avatar: string; rarity: string };
   yuhun?: { name: string; type: string; avatar: string; shortName?: string };
   property?: Record<string, any>;

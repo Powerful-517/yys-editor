@@ -51,6 +51,24 @@ const componentGroups = [
           width: 200,
           height: 120
         }
+      },
+      {
+        id: 'vector',
+        name: '矢量图块',
+        type: 'vectorNode',
+        description: '可平铺的矢量图形，用于边框装饰',
+        data: {
+          vector: {
+            kind: 'rect',
+            tileWidth: 50,
+            tileHeight: 50,
+            fill: '#409EFF',
+            stroke: '#303133',
+            strokeWidth: 1
+          },
+          width: 200,
+          height: 200
+        }
       }
     ]
   },
