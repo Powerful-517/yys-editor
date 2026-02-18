@@ -30,21 +30,25 @@
 | 6 | 样式模型补齐 | ✅ 完成 | 11个样式属性统一 |
 | 7 | 扩展与控制 | ✅ 完成 | MiniMap/Control + 开关 |
 | 8 | 矢量节点MVP | ✅ 完成 | vectorNode + SVG Pattern 平铺 |
-| 9 | 资源与导出增强 | ❌ 未开始 | 资源弹窗 + SVG/PDF导出 |
+| 9 | 资源与导出增强 | ⚠️ 取消 | 实现必要性不大 |
 | 10 | 历史与撤销重做 | ✅ 完成 | LogicFlow 框架原生支持 Ctrl+Z/Y |
 
 ## 🎯 下一步行动计划
 
-### 🟡 中优先级（短期目标）
-1. **导出增强** - 步骤 9
-   - 图片资源选择/上传弹窗
-   - 导出 SVG/PDF 格式
-
 ### 🟢 低优先级（后续优化）
-2. **矢量节点增强**
+1. **矢量节点增强**
    - 预设图案库（虚线、点线等常用边框）
    - SVG 文件导入功能
    - 高级平铺模式（偏移平铺、旋转平铺）
+
+2. **导出增强**（可选，实现必要性不大）
+   - 图片资源选择/上传弹窗
+   - 导出 SVG/PDF 格式
+
+### 🔵 长期目标
+3. **愿景二：联动 wiki/攻略站**
+   - 浏览/复刻/继续编辑功能
+   - 远程模板库与本地模板并存
 
 ---
 
@@ -181,7 +185,7 @@
   6) ✅ **样式模型补齐**：统一 properties.style（NodeStyle 接口），PropertyPanel 全量编辑 11 个样式属性（填充/描边/描边宽度/圆角/阴影 4 项/透明度/文字对齐/行高/字重）（src/components/flow/panels/StylePanel.vue, src/ts/nodeStyle.ts）
   7) ✅ **扩展与控制**：MiniMap + Control 插件接入（src/components/flow/FlowEditor.vue:588,682）；Toolbar 增加框选/吸附/对齐线开关（src/components/Toolbar.vue:14-34）；清空画布入口（src/components/Toolbar.vue:11）
   8) ✅ **矢量节点 MVP**：vectorNode（SVG Pattern 平铺），支持 5 种图形类型（矩形/椭圆/多边形/路径/自定义SVG），属性面板支持平铺尺寸/颜色/描边配置，节点缩放时自动重复平铺（src/components/flow/nodes/common/VectorNode.vue, VectorNodeModel.ts, src/components/flow/panels/VectorPanel.vue）
-  9) ❌ **资源与导出增强**：图片资源选择/上传弹窗（当前仅支持单个上传），导出 SVG/PDF（当前仅 PNG）
+  9) ⚠️ **资源与导出增强**（已取消）：图片资源选择/上传弹窗（当前仅支持单个上传），导出 SVG/PDF（当前仅 PNG），实现必要性不大
   10) ✅ **历史与撤销重做**：LogicFlow 框架原生 History 插件，Ctrl+Z/Y 快捷键，自动记录所有操作
 
 - 依赖关系
@@ -219,15 +223,13 @@
 - ✅ 矢量平铺：vectorNode 支持 5 种图形类型，自动平铺重复
 
 ### 愿景一后续增强功能
-- ⚠️ **中优先级（增强功能）**：
-  - SVG/PDF 导出 - 步骤 9
 - ⚠️ **低优先级（可选优化）**：
   - 矢量节点预设图案库
   - SVG 文件导入功能
+  - 导出增强（SVG/PDF 导出，实现必要性不大）
 
 ### 建议的下一步行动
-1. **短期目标**：SVG/PDF 导出增强
-2. **长期目标**：愿景二（联动 wiki/攻略站）
+1. **长期目标**：愿景二（联动 wiki/攻略站）
 ### 愿景二：联动 wiki/攻略站（浏览/复刻/继续编辑）
 - 工具栏
   - 导入/导出增加元信息（title/tags/lang/version/schemaVersion）；“发布/上传”“打开攻略”“复刻编辑”入口
