@@ -30,20 +30,11 @@ export default defineConfig({
     },
     rollupOptions: {
       // 外部化依赖（不打包进库）
-      // 注意：classnames 不设为 external，让它打包进来，避免 ESM/CommonJS 互操作问题
+      // 只保留最核心的依赖为 external，其他全部打包进来避免模块系统兼容问题
       external: [
         'vue',
         'element-plus',
-        'pinia',
-        '@logicflow/core',
-        '@logicflow/extension',
-        '@logicflow/vue-node-registry',
-        '@element-plus/icons-vue',
-        '@vueup/vue-quill',
-        'vue3-draggable-resizable',
-        'vuedraggable',
-        'html2canvas',
-        'vue-i18n'
+        'pinia'
       ],
       output: {
         // 全局变量名
