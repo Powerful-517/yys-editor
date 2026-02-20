@@ -30,6 +30,7 @@ export default defineConfig({
     },
     rollupOptions: {
       // 外部化依赖（不打包进库）
+      // 注意：classnames 不设为 external，让它打包进来，避免 ESM/CommonJS 互操作问题
       external: [
         'vue',
         'element-plus',
@@ -42,8 +43,7 @@ export default defineConfig({
         'vue3-draggable-resizable',
         'vuedraggable',
         'html2canvas',
-        'vue-i18n',
-        'classnames'
+        'vue-i18n'
       ],
       output: {
         // 全局变量名
