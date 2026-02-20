@@ -1,6 +1,6 @@
 {
   "name": "yys-editor",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "阴阳师流程图编辑器 - 可嵌入式组件",
   "author": "yys-editor team",
   "license": "MIT",
@@ -17,7 +17,12 @@
     "./style.css": "./dist/yys-editor.css"
   },
   "files": [
-    "dist"
+    "dist/yys-editor.css",
+    "dist/yys-editor.es.js",
+    "dist/yys-editor.es.js.map",
+    "dist/yys-editor.umd.js",
+    "dist/yys-editor.umd.js.map",
+    "dist/YysEditorEmbed.d.ts"
   ],
   "scripts": {
     "dev": "vite",

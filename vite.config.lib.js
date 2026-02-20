@@ -42,7 +42,8 @@ export default defineConfig({
         'vue3-draggable-resizable',
         'vuedraggable',
         'html2canvas',
-        'vue-i18n'
+        'vue-i18n',
+        'classnames'
       ],
       output: {
         // 全局变量名
