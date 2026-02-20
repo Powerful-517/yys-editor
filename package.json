@@ -1,11 +1,28 @@
 {
-  "name": "vue-project",
-  "version": "0.0.0",
-  "private": true,
+  "name": "yys-editor",
+  "version": "1.0.0",
+  "description": "阴阳师流程图编辑器 - 可嵌入式组件",
+  "author": "yys-editor team",
+  "license": "MIT",
   "type": "module",
+  "main": "./dist/yys-editor.umd.js",
+  "module": "./dist/yys-editor.es.js",
+  "types": "./dist/YysEditorEmbed.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/yys-editor.es.js",
+      "require": "./dist/yys-editor.umd.js",
+      "types": "./dist/YysEditorEmbed.d.ts"
+    },
+    "./style.css": "./dist/yys-editor.css"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:lib": "vite build --config vite.config.lib.js",
     "preview": "vite preview",
     "test": "vitest --run",
     "test:watch": "vitest",
@@ -14,6 +31,14 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
     "format": "prettier --write src/",
     "precommit": "npm test && npm run lint"
+  },
+  "peerDependencies": {
+    "vue": "^3.3.0",
+    "element-plus": "^2.9.0",
+    "pinia": "^3.0.0",
+    "@logicflow/core": "^2.0.0",
+    "@logicflow/extension": "^2.0.0",
+    "@logicflow/vue-node-registry": "^1.0.0"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
