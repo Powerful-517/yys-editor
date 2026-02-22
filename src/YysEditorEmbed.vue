@@ -154,26 +154,6 @@ const contentHeight = computed(() => {
 const initPreviewMode = () => {
   if (!previewContainerRef.value) return
 
-  // 注册自定义节点
-  register({
-    type: 'imageNode',
-    component: ImageNode
-  })
-  register({
-    type: 'assetSelector',
-    component: AssetSelectorNode
-  })
-  register({
-    type: 'textNode',
-    component: TextNode,
-    model: TextNodeModel
-  })
-  register({
-    type: 'vectorNode',
-    component: VectorNode,
-    model: VectorNodeModel
-  })
-
   // 创建 LogicFlow 实例（只读模式）
   previewLf.value = new LogicFlow({
     container: previewContainerRef.value,
@@ -191,6 +171,26 @@ const initPreviewMode = () => {
     adjustNodePosition: false,
     plugins: [Snapshot, MiniMap, Control]
   })
+
+  // 注册自定义节点（必须在 LogicFlow 实例创建后）
+  register({
+    type: 'imageNode',
+    component: ImageNode
+  }, previewLf.value)
+  register({
+    type: 'assetSelector',
+    component: AssetSelectorNode
+  }, previewLf.value)
+  register({
+    type: 'textNode',
+    component: TextNode,
+    model: TextNodeModel
+  }, previewLf.value)
+  register({
+    type: 'vectorNode',
+    component: VectorNode,
+    model: VectorNodeModel
+  }, previewLf.value)
 
   // 渲染数据
   if (props.data) {
