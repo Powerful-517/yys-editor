@@ -86,6 +86,8 @@ const filteredItems = (group: GroupConfig) => {
   if (group.name !== 'ALL') {
     if (group.filter) {
       items = items.filter(group.filter)
+    } else if (!props.config.groupField) {
+      items = []
     } else {
       items = items.filter(item =>
         item[props.config.groupField]?.toLowerCase() === group.name.toLowerCase()
