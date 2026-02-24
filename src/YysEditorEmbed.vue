@@ -10,6 +10,7 @@
       <Toolbar
         v-if="showToolbar"
         :is-embed="true"
+        :pinia-instance="localPinia"
         @save="handleSave"
         @cancel="handleCancel"
       />
@@ -37,8 +38,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onBeforeUnmount, provide } from 'vue'
-import { createPinia } from 'pinia'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import { createPinia, setActivePinia } from 'pinia'
 import LogicFlow from '@logicflow/core'
 import '@logicflow/core/lib/style/index.css'
 import '@logicflow/extension/lib/style/index.css'
@@ -126,7 +127,7 @@ const emit = defineEmits<{
 
 // 创建局部 Pinia 实例（状态隔离）
 const localPinia = createPinia()
-provide('pinia', localPinia)
+setActivePinia(localPinia)
 
 // Refs
 const flowEditorRef = ref<InstanceType<typeof FlowEditor>>()

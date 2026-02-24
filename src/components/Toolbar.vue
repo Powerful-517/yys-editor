@@ -123,8 +123,16 @@ import { ElMessageBox } from "element-plus";
 import { useGlobalMessage } from "@/ts/useGlobalMessage";
 import { getLogicFlowInstance } from "@/ts/useLogicFlow";
 import { useCanvasSettings } from '@/ts/useCanvasSettings';
+import type { Pinia } from 'pinia';
 
-const filesStore = useFilesStore();
+const props = withDefaults(defineProps<{
+  isEmbed?: boolean;
+  piniaInstance?: Pinia;
+}>(), {
+  isEmbed: false
+});
+
+const filesStore = props.piniaInstance ? useFilesStore(props.piniaInstance) : useFilesStore();
 const { showMessage } = useGlobalMessage();
 const { selectionEnabled, snapGridEnabled, snaplineEnabled } = useCanvasSettings();
 
