@@ -1039,9 +1039,13 @@ onBeforeUnmount(() => {
 .editor-layout {
   display: flex;
   height: 100%;
+  width: 100%;
+  min-width: 0;
+  flex: 1;
 }
 .flow-container {
   flex: 1;
+  min-width: 0;
   position: relative;
   overflow: hidden;
 }

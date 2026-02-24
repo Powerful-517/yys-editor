@@ -126,6 +126,7 @@ const currentAssetLibrary = computed({
   background-color: #f5f7fa;
   border-left: 1px solid #e4e7ed;
   width: 280px;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   overflow-y: auto;

@@ -22,6 +22,7 @@
 
         <!-- 中间画布 + 右侧属性面板 -->
         <FlowEditor
+          class="flow-editor-pane"
           ref="flowEditorRef"
           height="100%"
         />
@@ -345,6 +346,12 @@ onBeforeUnmount(() => {
   flex: 1;
   min-height: 0;
   overflow: hidden;
+}
+
+.flow-editor-pane {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
 }
 
 .preview-mode {
