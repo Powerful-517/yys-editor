@@ -47,7 +47,10 @@ const componentGroups = [
         type: 'textNode',
         description: '可编辑文本的节点',
         data: {
-          text: '双击编辑文字',
+          text: {
+            content: '<p>请输入文本</p>',
+            rich: true
+          },
           width: 200,
           height: 120
         }
