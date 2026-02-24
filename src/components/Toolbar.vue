@@ -1,14 +1,14 @@
 <template>
   <div class="toolbar" :class="{ 'toolbar--embed': props.isEmbed }">
-    <div>
+    <div class="toolbar-actions">
       <el-button icon="Upload" type="primary" @click="handleImport">{{ t('import') }}</el-button>
       <el-button icon="Download" type="primary" @click="handleExport">{{ t('export') }}</el-button>
       <el-button icon="View" type="success" @click="handlePreviewData">数据预览</el-button>
       <el-button icon="Share" type="primary" @click="prepareCapture">{{ t('prepareCapture') }}</el-button>
       <el-button icon="Setting" type="primary" @click="state.showWatermarkDialog = true">{{ t('setWatermark') }}</el-button>
-      <el-button type="info" @click="loadExample">{{ t('loadExample') }}</el-button>
-      <el-button type="info" @click="showUpdateLog">{{ t('updateLog') }}</el-button>
-      <el-button type="warning" @click="showFeedbackForm">{{ t('feedback') }}</el-button>
+      <el-button v-if="!props.isEmbed" type="info" @click="loadExample">{{ t('loadExample') }}</el-button>
+      <el-button v-if="!props.isEmbed" type="info" @click="showUpdateLog">{{ t('updateLog') }}</el-button>
+      <el-button v-if="!props.isEmbed" type="warning" @click="showFeedbackForm">{{ t('feedback') }}</el-button>
       <el-button type="danger" @click="handleResetWorkspace">重置工作区</el-button>
       <el-button type="warning" plain @click="handleClearCanvas">清空画布</el-button>
     </div>
@@ -37,7 +37,7 @@
     </div>
 
     <!-- 更新日志对话框 -->
-    <el-dialog v-model="state.showUpdateLogDialog" title="更新日志" width="60%">
+    <el-dialog v-if="!props.isEmbed" v-model="state.showUpdateLogDialog" title="更新日志" width="60%">
       <ul>
         <li v-for="(log, index) in updateLogs" :key="index">
           <strong>版本 {{ log.version }} - {{ log.date }}</strong>
@@ -49,7 +49,7 @@
     </el-dialog>
 
     <!-- 问题反馈对话框 -->
-    <el-dialog v-model="state.showFeedbackFormDialog" title="更新日志" width="60%">
+    <el-dialog v-if="!props.isEmbed" v-model="state.showFeedbackFormDialog" title="更新日志" width="60%">
       <span style="font-size: 24px;">备注阴阳师</span>
       <br/>
       <img src="/assets/Other/Contact.png"
@@ -222,6 +222,10 @@ const showUpdateLog = () => {
 };
 
 onMounted(() => {
+  if (props.isEmbed) {
+    return;
+  }
+
   const lastVersion = localStorage.getItem('appVersion');
 
   if (lastVersion !== CURRENT_APP_VERSION) {
@@ -479,11 +483,27 @@ const handleClose = (done) => {
   top: 0;
   left: 0;
   right: 0;
-  height: 48px;
+  min-height: 48px;
   background: #f8f8f8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   align-items: center;
   padding: 0 8px;
   z-index: 100;
+  box-sizing: border-box;
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
 }
 
 .toolbar--embed {
@@ -491,13 +511,21 @@ const handleClose = (done) => {
   top: auto;
   left: auto;
   right: auto;
+  height: auto;
+  padding: 6px 8px;
+  border-bottom: 1px solid #e4e7ed;
 }
 
 .toolbar-controls {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 6px;
+  margin-top: 0;
+  flex-shrink: 0;
+}
+
+.toolbar--embed .toolbar-actions {
+  flex-wrap: nowrap;
 }
 
 .title {
