@@ -26,6 +26,8 @@
           height="100%"
         />
       </div>
+
+      <DialogManager />
     </template>
 
     <!-- 预览模式：只有画布（只读） -->
@@ -48,6 +50,7 @@ import '@logicflow/extension/lib/style/index.css'
 import FlowEditor from './components/flow/FlowEditor.vue'
 import Toolbar from './components/Toolbar.vue'
 import ComponentsPanel from './components/flow/ComponentsPanel.vue'
+import DialogManager from './components/DialogManager.vue'
 import { useFilesStore } from '@/ts/useStore'
 import { setLogicFlowInstance, destroyLogicFlowInstance, getLogicFlowInstance } from '@/ts/useLogicFlow'
 import {
