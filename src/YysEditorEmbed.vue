@@ -41,7 +41,6 @@ import { ref, computed, watch, onMounted, onBeforeUnmount, provide } from 'vue'
 import { createPinia } from 'pinia'
 import LogicFlow from '@logicflow/core'
 import '@logicflow/core/lib/style/index.css'
-import { Snapshot, MiniMap, Control } from '@logicflow/extension'
 import '@logicflow/extension/lib/style/index.css'
 
 import FlowEditor from './components/flow/FlowEditor.vue'
@@ -49,13 +48,13 @@ import Toolbar from './components/Toolbar.vue'
 import ComponentsPanel from './components/flow/ComponentsPanel.vue'
 import { useFilesStore } from '@/ts/useStore'
 import { setLogicFlowInstance, destroyLogicFlowInstance, getLogicFlowInstance } from '@/ts/useLogicFlow'
-import { register } from '@logicflow/vue-node-registry'
-import ImageNode from './components/flow/nodes/common/ImageNode.vue'
-import AssetSelectorNode from './components/flow/nodes/common/AssetSelectorNode.vue'
-import TextNode from './components/flow/nodes/common/TextNode.vue'
-import TextNodeModel from './components/flow/nodes/common/TextNodeModel'
-import VectorNode from './components/flow/nodes/common/VectorNode.vue'
-import VectorNodeModel from './components/flow/nodes/common/VectorNodeModel'
+import {
+  registerFlowNodes,
+  resolveFlowPlugins,
+  type FlowCapabilityLevel,
+  type FlowNodeRegistration,
+  type FlowPlugin
+} from './flowRuntime'
 
 // 类型定义
 export interface GraphData {
@@ -92,12 +91,15 @@ export interface EditorConfig {
 const props = withDefaults(defineProps<{
   data?: GraphData
   mode?: 'preview' | 'edit'
+  capability?: FlowCapabilityLevel
   width?: string | number
   height?: string | number
   showToolbar?: boolean
   showPropertyPanel?: boolean
   showComponentPanel?: boolean
   config?: EditorConfig
+  plugins?: FlowPlugin[]
+  nodeRegistrations?: FlowNodeRegistration[]
 }>(), {
   mode: 'edit',
   width: '100%',
@@ -132,6 +134,13 @@ const previewContainerRef = ref<HTMLElement | null>(null)
 const previewLf = ref<LogicFlow | null>(null)
 
 // Computed
+const effectiveCapability = computed<FlowCapabilityLevel>(() => {
+  if (props.capability) {
+    return props.capability
+  }
+  return props.mode === 'preview' ? 'render-only' : 'interactive'
+})
+
 const containerStyle = computed(() => ({
   width: typeof props.width === 'number' ? `${props.width}px` : props.width,
   height: typeof props.height === 'number' ? `${props.height}px` : props.height
@@ -150,9 +159,19 @@ const contentHeight = computed(() => {
   return containerHeight.value
 })
 
+const destroyPreviewMode = () => {
+  if (previewLf.value) {
+    previewLf.value.destroy()
+    previewLf.value = null
+  }
+}
+
 // 初始化预览模式的 LogicFlow
 const initPreviewMode = () => {
   if (!previewContainerRef.value) return
+
+  destroyPreviewMode()
+  const isRenderOnly = effectiveCapability.value === 'render-only'
 
   // 创建 LogicFlow 实例（只读模式）
   previewLf.value = new LogicFlow({
@@ -161,36 +180,19 @@ const initPreviewMode = () => {
     height: previewContainerRef.value.offsetHeight,
     grid: false,
     keyboard: {
-      enabled: false
+      enabled: !isRenderOnly
     },
-    // 禁用所有交互
-    isSilentMode: true,
-    stopScrollGraph: true,
-    stopZoomGraph: true,
-    stopMoveGraph: true,
-    adjustNodePosition: false,
-    plugins: [Snapshot, MiniMap, Control]
+    // render-only 模式禁用所有交互能力
+    isSilentMode: isRenderOnly,
+    stopScrollGraph: isRenderOnly,
+    stopZoomGraph: isRenderOnly,
+    stopMoveGraph: isRenderOnly,
+    adjustNodePosition: !isRenderOnly,
+    plugins: resolveFlowPlugins(effectiveCapability.value, props.plugins)
   })
 
-  // 注册自定义节点（必须在 LogicFlow 实例创建后）
-  register({
-    type: 'imageNode',
-    component: ImageNode
-  }, previewLf.value)
-  register({
-    type: 'assetSelector',
-    component: AssetSelectorNode
-  }, previewLf.value)
-  register({
-    type: 'textNode',
-    component: TextNode,
-    model: TextNodeModel
-  }, previewLf.value)
-  register({
-    type: 'vectorNode',
-    component: VectorNode,
-    model: VectorNodeModel
-  }, previewLf.value)
+  // 注册节点（支持外部注入）
+  registerFlowNodes(previewLf.value, props.nodeRegistrations)
 
   // 渲染数据
   if (props.data) {
@@ -257,8 +259,22 @@ watch(() => props.mode, (newMode) => {
     setTimeout(() => {
       initPreviewMode()
     }, 100)
+  } else {
+    destroyPreviewMode()
   }
 })
+
+watch(
+  [() => props.capability, () => props.plugins, () => props.nodeRegistrations],
+  () => {
+    if (props.mode === 'preview') {
+      setTimeout(() => {
+        initPreviewMode()
+      }, 0)
+    }
+  },
+  { deep: true }
+)
 
 // 初始化
 onMounted(() => {
@@ -277,10 +293,7 @@ onMounted(() => {
 
 // 清理
 onBeforeUnmount(() => {
-  if (previewLf.value) {
-    previewLf.value.destroy()
-    previewLf.value = null
-  }
+  destroyPreviewMode()
   destroyLogicFlowInstance()
 })
 </script>

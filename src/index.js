@@ -10,3 +10,4 @@ export default YysEditorEmbed
 
 // 类型导出
 export * from './YysEditorEmbed.vue'
+export * from './flowRuntime'
