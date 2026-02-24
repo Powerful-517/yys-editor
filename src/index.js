@@ -1,4 +1,6 @@
 // 库入口文件
+import 'element-plus/dist/index.css'
+import 'vue3-draggable-resizable/dist/Vue3DraggableResizable.css'
 import YysEditorEmbed from './YysEditorEmbed.vue'
 
 // 导出组件

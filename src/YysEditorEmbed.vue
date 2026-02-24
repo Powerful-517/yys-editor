@@ -38,7 +38,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick, getCurrentInstance } from 'vue'
+import ElementPlus from 'element-plus'
 import { createPinia, setActivePinia } from 'pinia'
 import LogicFlow from '@logicflow/core'
 import '@logicflow/core/lib/style/index.css'
@@ -128,6 +129,24 @@ const emit = defineEmits<{
 // 创建局部 Pinia 实例（状态隔离）
 const localPinia = createPinia()
 setActivePinia(localPinia)
+
+const ensureElementPlusInstalled = () => {
+  const instance = getCurrentInstance()
+  const app = instance?.appContext?.app as any
+  if (!app) return
+
+  const installedPlugins = app._context?.plugins
+  if (installedPlugins?.has?.(ElementPlus)) {
+    return
+  }
+
+  try {
+    app.use(ElementPlus)
+  } catch {
+    // 忽略重复安装或宿主限制导致的异常
+  }
+}
+ensureElementPlusInstalled()
 
 // Refs
 const flowEditorRef = ref<InstanceType<typeof FlowEditor>>()
