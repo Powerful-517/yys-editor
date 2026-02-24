@@ -127,12 +127,12 @@ import propertyData from "../../../../data/property.json";
 import {ref, watch, computed} from 'vue'
 import ShikigamiSelect from "@/components/flow/nodes/yys/ShikigamiSelect.vue";
 import YuhunSelect from "@/components/flow/nodes/yys/YuhunSelect.vue";
-import {useI18n} from 'vue-i18n'
+import { useSafeI18n } from '@/ts/useSafeI18n';
 // import YuhunSelect from "./YuhunSelect.vue";
 
 
 // 获取当前的 i18n 实例
-const {t} = useI18n()
+const { t } = useSafeI18n()
 
 const props = defineProps({
   currentShikigami: {

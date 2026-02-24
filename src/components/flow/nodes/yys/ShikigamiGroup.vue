@@ -112,7 +112,7 @@ import {ref, reactive, toRefs, nextTick} from 'vue';
 import ShikigamiSelect from './ShikigamiSelect.vue';
 import ShikigamiProperty from './ShikigamiProperty.vue';
 import html2canvas from 'html2canvas';
-import {useI18n} from 'vue-i18n'
+import { useSafeI18n } from '@/ts/useSafeI18n';
 import { Quill, QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.bubble.css'
 import '@vueup/vue-quill/dist/vue-quill.snow.css' // 引入样式文件
@@ -147,7 +147,7 @@ const dialogTableVisible = ref(false)
 const {showMessage} = useGlobalMessage();
 
 // 获取当前的 i18n 实例
-const {t} = useI18n()
+const { t } = useSafeI18n()
 
 // 定义 QuillEditor 的 ref
 const shortDescriptionEditor = ref<InstanceType<typeof QuillEditor>>()

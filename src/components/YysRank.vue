@@ -84,11 +84,11 @@ import shikigami from "../data/Shikigami.json"
 import ShikigamiSelect from "@/components/flow/nodes/yys/ShikigamiSelect.vue";
 import ShikigamiProperty from "@/components/flow/nodes/yys/ShikigamiProperty.vue";
 import _ from "lodash";
-import {useI18n} from "vue-i18n";
+import { useSafeI18n } from '@/ts/useSafeI18n';
 import draggable from 'vuedraggable';
 
 
-const {t} = useI18n()
+const { t } = useSafeI18n()
 
 const props = defineProps<{
   groups: any[];

@@ -116,7 +116,7 @@ import draggable from 'vuedraggable';
 import ShikigamiSelect from './flow/nodes/yys/ShikigamiSelect.vue';
 import ShikigamiProperty from './flow/nodes/yys/ShikigamiProperty.vue';
 import html2canvas from 'html2canvas';
-import {useI18n} from 'vue-i18n'
+import { useSafeI18n } from '@/ts/useSafeI18n';
 import { Quill, QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.bubble.css'
 import '@vueup/vue-quill/dist/vue-quill.snow.css' // 引入样式文件
@@ -146,7 +146,7 @@ const clipboard = ref('');
 const { showMessage } = useGlobalMessage();
 
 // 获取当前的 i18n 实例
-const {t} = useI18n()
+const { t } = useSafeI18n()
 
 const copy = (str) => {
   clipboard.value = str

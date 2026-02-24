@@ -238,12 +238,12 @@
 
 <script setup>
 import { ref, watch, computed } from 'vue';
-import { useI18n } from 'vue-i18n';
 import { CirclePlus } from '@element-plus/icons-vue';
+import { useSafeI18n } from '@/ts/useSafeI18n';
 // import YuhunSelect from "@/components/flow/nodes/yys/YuhunSelect.vue";
 
 // 获取当前的 i18n 实例
-const { t } = useI18n();
+const { t } = useSafeI18n();
 
 const props = defineProps({
   currentProperty: {

@@ -116,13 +116,13 @@
 
 <script setup lang="ts">
 import { reactive, onMounted } from 'vue';
-import { useI18n } from 'vue-i18n';
 import updateLogs from "../data/updateLog.json"
 import { useFilesStore } from "@/ts/useStore";
 import { ElMessageBox } from "element-plus";
 import { useGlobalMessage } from "@/ts/useGlobalMessage";
 import { getLogicFlowInstance } from "@/ts/useLogicFlow";
 import { useCanvasSettings } from '@/ts/useCanvasSettings';
+import { useSafeI18n } from '@/ts/useSafeI18n';
 import type { Pinia } from 'pinia';
 
 const props = withDefaults(defineProps<{
@@ -136,8 +136,15 @@ const filesStore = props.piniaInstance ? useFilesStore(props.piniaInstance) : us
 const { showMessage } = useGlobalMessage();
 const { selectionEnabled, snapGridEnabled, snaplineEnabled } = useCanvasSettings();
 
-// 获取当前的 i18n 实例
-const {t} = useI18n();
+const { t } = useSafeI18n({
+  import: '导入',
+  export: '导出',
+  prepareCapture: '准备截图',
+  setWatermark: '设置水印',
+  loadExample: '加载样例',
+  updateLog: '更新日志',
+  feedback: '问题反馈'
+});
 
 // 定义响应式数据
 const state = reactive({
