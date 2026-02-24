@@ -16,14 +16,14 @@
       />
 
       <!-- 主内容区 -->
-      <div class="editor-content" :style="{ height: contentHeight }">
+      <div class="editor-content">
         <!-- 左侧组件库 -->
         <ComponentsPanel v-if="showComponentPanel" />
 
         <!-- 中间画布 + 右侧属性面板 -->
         <FlowEditor
           ref="flowEditorRef"
-          :height="contentHeight"
+          height="100%"
         />
       </div>
     </template>
@@ -38,7 +38,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { createPinia, setActivePinia } from 'pinia'
 import LogicFlow from '@logicflow/core'
 import '@logicflow/core/lib/style/index.css'
@@ -151,14 +151,11 @@ const containerHeight = computed(() => {
   return typeof props.height === 'number' ? `${props.height}px` : props.height
 })
 
-const contentHeight = computed(() => {
-  if (props.showToolbar) {
-    const toolbarHeight = 48
-    const totalHeight = typeof props.height === 'number' ? props.height : 600
-    return `${totalHeight - toolbarHeight}px`
-  }
-  return containerHeight.value
-})
+const triggerEditorResize = () => {
+  nextTick(() => {
+    (flowEditorRef.value as any)?.resizeCanvas?.()
+  })
+}
 
 const destroyPreviewMode = () => {
   if (previewLf.value) {
@@ -243,7 +240,8 @@ const setGraphData = (data: GraphData) => {
 
 defineExpose({
   getGraphData,
-  setGraphData
+  setGraphData,
+  resizeCanvas: triggerEditorResize
 })
 
 // 监听 data 变化
@@ -262,6 +260,7 @@ watch(() => props.mode, (newMode) => {
     }, 100)
   } else {
     destroyPreviewMode()
+    triggerEditorResize()
   }
 })
 
@@ -277,17 +276,28 @@ watch(
   { deep: true }
 )
 
+watch(
+  [() => props.width, () => props.height, () => props.showToolbar, () => props.showComponentPanel],
+  () => {
+    if (props.mode === 'edit') {
+      triggerEditorResize()
+    }
+  }
+)
+
 // 初始化
 onMounted(() => {
   if (props.mode === 'preview') {
     initPreviewMode()
   } else if (props.mode === 'edit') {
+    triggerEditorResize()
     // 编辑模式由 FlowEditor 组件初始化
     // 等待 FlowEditor 初始化完成后加载数据
     setTimeout(() => {
       if (props.data) {
         setGraphData(props.data)
       }
+      triggerEditorResize()
     }, 500)
   }
 })
@@ -311,6 +321,7 @@ onBeforeUnmount(() => {
 .editor-content {
   display: flex;
   flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 

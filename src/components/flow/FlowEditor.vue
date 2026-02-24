@@ -58,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
+import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import LogicFlow, { EventType } from '@logicflow/core';
 import type { Position, NodeData, EdgeData, BaseNodeModel, GraphModel, GraphData } from '@logicflow/core';
 import '@logicflow/core/lib/style/index.css';
@@ -115,6 +115,23 @@ const { showMessage } = useGlobalMessage();
 const selectedNode = ref<any>(null);
 const copyBuffer = ref<GraphData | null>(null);
 let nextPasteDistance = COPY_TRANSLATION;
+
+const resizeCanvas = () => {
+  const lfInstance = lf.value as any;
+  const container = containerRef.value;
+  if (!lfInstance || !container || typeof lfInstance.resize !== 'function') {
+    return;
+  }
+  const width = container.clientWidth;
+  const height = container.clientHeight;
+  if (width > 0 && height > 0) {
+    lfInstance.resize(width, height);
+  }
+};
+
+const handleWindowResize = () => {
+  resizeCanvas();
+};
 
 function isInputLike(event?: KeyboardEvent) {
   const target = event?.target as HTMLElement | null;
@@ -969,6 +986,11 @@ onMounted(() => {
 
   lfInstance.on('selection:selected', () => updateSelectedCount());
   lfInstance.on('selection:drop', () => updateSelectedCount());
+
+  nextTick(() => {
+    resizeCanvas();
+  });
+  window.addEventListener('resize', handleWindowResize);
 });
 
 watch(selectionEnabled, (enabled) => {
@@ -987,8 +1009,22 @@ watch(snaplineEnabled, (enabled) => {
   }
 });
 
+watch(
+  () => props.height,
+  () => {
+    nextTick(() => {
+      resizeCanvas();
+    });
+  }
+);
+
+defineExpose({
+  resizeCanvas
+});
+
 // 销毁 LogicFlow
 onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleWindowResize);
   lf.value?.destroy();
   lf.value = null;
   destroyLogicFlowInstance();

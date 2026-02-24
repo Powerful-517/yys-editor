@@ -1,5 +1,5 @@
 <template>
-  <div class="toolbar">
+  <div class="toolbar" :class="{ 'toolbar--embed': props.isEmbed }">
     <div>
       <el-button icon="Upload" type="primary" @click="handleImport">{{ t('import') }}</el-button>
       <el-button icon="Download" type="primary" @click="handleExport">{{ t('export') }}</el-button>
@@ -484,6 +484,13 @@ const handleClose = (done) => {
   align-items: center;
   padding: 0 8px;
   z-index: 100;
+}
+
+.toolbar--embed {
+  position: relative;
+  top: auto;
+  left: auto;
+  right: auto;
 }
 
 .toolbar-controls {
