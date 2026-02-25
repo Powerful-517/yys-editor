@@ -1,8 +1,5 @@
 <template>
-  <el-dialog
-    v-model="show"
-    :title="config.title"
-  >
+  <el-dialog v-model="show" :title="config.title">
     <span v-if="config.currentItem">
       当前选择：{{ config.currentItem[config.itemRender.labelField] }}
     </span>
@@ -36,13 +33,14 @@
               style="display: flex; flex-direction: column; justify-content: center"
             >
               <el-button
+                class="selector-button"
                 :style="`width: ${imageSize}px; height: ${imageSize}px;`"
                 @click="handleSelect(item)"
               >
-                <img
-                  :src="item[config.itemRender.imageField]"
-                  :style="`width: ${imageSize - 1}px; height: ${imageSize - 1}px;`"
-                >
+                <span
+                  class="selector-image-frame"
+                  :style="`width: ${imageSize - 1}px; height: ${imageSize - 1}px; background-image: url('${item[config.itemRender.imageField]}');`"
+                />
               </el-button>
               <span style="text-align: center; display: block;">
                 {{ item[config.itemRender.labelField] }}
@@ -114,3 +112,19 @@ const handleSelect = (item: any) => {
   activeTab.value = 'ALL'
 }
 </script>
+
+<style scoped>
+.selector-button {
+  padding: 0;
+}
+
+.selector-image-frame {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+</style>
