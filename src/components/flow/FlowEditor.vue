@@ -1,7 +1,7 @@
 <template>
   <div class="editor-layout" :style="{ height }">
     <!-- 中间流程图区域 -->
-    <div class="flow-container" :class="{ 'snapline-disabled': !snaplineEnabled }">
+    <div ref="flowHostRef" class="flow-container" :class="{ 'snapline-disabled': !snaplineEnabled }">
       <div class="flow-controls">
         <div class="control-row toggles">
           <label class="control-toggle">
@@ -89,10 +89,14 @@ const MOVE_STEP = 2;
 const MOVE_STEP_LARGE = 10;
 const COPY_TRANSLATION = 40;
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   height?: string;
-}>();
+  enableLabel?: boolean;
+}>(), {
+  enableLabel: true
+});
 
+const flowHostRef = ref<HTMLElement | null>(null);
 const containerRef = ref<HTMLElement | null>(null);
 const lf = ref<LogicFlow | null>(null);
 const selectedCount = ref(0);
@@ -115,17 +119,25 @@ const { showMessage } = useGlobalMessage();
 const selectedNode = ref<any>(null);
 const copyBuffer = ref<GraphData | null>(null);
 let nextPasteDistance = COPY_TRANSLATION;
+let containerResizeObserver: ResizeObserver | null = null;
+
+const resolveResizeHost = () => {
+  const container = containerRef.value;
+  if (!container) return null;
+  return flowHostRef.value ?? (container.parentElement as HTMLElement | null) ?? container;
+};
 
 const resizeCanvas = () => {
   const lfInstance = lf.value as any;
-  const container = containerRef.value;
-  if (!lfInstance || !container || typeof lfInstance.resize !== 'function') {
+  const resizeHost = resolveResizeHost();
+  if (!lfInstance || !resizeHost || typeof lfInstance.resize !== 'function') {
     return;
   }
-  const width = container.clientWidth;
-  const height = container.clientHeight;
+  const width = resizeHost.clientWidth;
+  const height = resizeHost.clientHeight;
   if (width > 0 && height > 0) {
     lfInstance.resize(width, height);
+    return;
   }
 };
 
@@ -148,6 +160,13 @@ function shouldSkipShortcut(event?: KeyboardEvent) {
   if (isInputLike(event)) return true;
   return false;
 }
+
+const queueCanvasResize = () => {
+  resizeCanvas();
+  if (typeof window === 'undefined') return;
+  window.requestAnimationFrame(() => resizeCanvas());
+  setTimeout(() => resizeCanvas(), 120);
+};
 
 function ensureMeta(meta?: Record<string, any>) {
   const next: Record<string, any> = meta ? { ...meta } : {};
@@ -719,7 +738,14 @@ onMounted(() => {
         fontSize: 14
       }
     },
-    plugins: [Menu, Label, Snapshot, SelectionSelect, MiniMap, Control],
+    plugins: [
+      Menu,
+      ...(props.enableLabel ? [Label] : []),
+      Snapshot,
+      SelectionSelect,
+      MiniMap,
+      Control
+    ],
     pluginsOptions: {
       label: {
         isMultiple: false, // 每个节点只允许一个 label
@@ -988,8 +1014,19 @@ onMounted(() => {
   lfInstance.on('selection:drop', () => updateSelectedCount());
 
   nextTick(() => {
-    resizeCanvas();
+    queueCanvasResize();
   });
+  if (typeof ResizeObserver !== 'undefined') {
+    containerResizeObserver = new ResizeObserver(() => {
+      resizeCanvas();
+    });
+    if (flowHostRef.value) {
+      containerResizeObserver.observe(flowHostRef.value);
+    }
+    if (containerRef.value && containerRef.value !== flowHostRef.value) {
+      containerResizeObserver.observe(containerRef.value);
+    }
+  }
   window.addEventListener('resize', handleWindowResize);
 });
 
@@ -1025,6 +1062,8 @@ defineExpose({
 // 销毁 LogicFlow
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleWindowResize);
+  containerResizeObserver?.disconnect();
+  containerResizeObserver = null;
   lf.value?.destroy();
   lf.value = null;
   destroyLogicFlowInstance();
@@ -1046,12 +1085,13 @@ onBeforeUnmount(() => {
 .flow-container {
   flex: 1;
   min-width: 0;
+  min-height: 0;
   position: relative;
   overflow: hidden;
 }
 .container {
   width: 100%;
-  min-height: 300px;
+  min-height: 0;
   background: #fff;
   height: 100%;
 }

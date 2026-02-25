@@ -1,5 +1,6 @@
 <template>
   <div
+    ref="embedRootRef"
     class="yys-editor-embed"
     :class="{ 'preview-mode': mode === 'preview', 'edit-mode': mode === 'edit' }"
     :style="containerStyle"
@@ -7,16 +8,17 @@
     <!-- 编辑模式：完整 UI -->
     <template v-if="mode === 'edit'">
       <!-- 工具栏 -->
-      <Toolbar
-        v-if="showToolbar"
-        :is-embed="true"
-        :pinia-instance="localPinia"
-        @save="handleSave"
-        @cancel="handleCancel"
-      />
+      <div v-if="showToolbar" ref="toolbarHostRef" class="toolbar-host">
+        <Toolbar
+          :is-embed="true"
+          :pinia-instance="localPinia"
+          @save="handleSave"
+          @cancel="handleCancel"
+        />
+      </div>
 
       <!-- 主内容区 -->
-      <div class="editor-content">
+      <div class="editor-content" :style="editorContentStyle">
         <!-- 左侧组件库 -->
         <ComponentsPanel v-if="showComponentPanel" />
 
@@ -24,7 +26,8 @@
         <FlowEditor
           class="flow-editor-pane"
           ref="flowEditorRef"
-          height="100%"
+          :height="editorContentHeight"
+          :enable-label="false"
         />
       </div>
 
@@ -83,6 +86,58 @@ export interface EdgeData {
   sourceNodeId: string
   targetNodeId: string
   properties?: Record<string, any>
+}
+
+const isPlainObject = (input: unknown): input is Record<string, any> => (
+  !!input && typeof input === 'object' && !Array.isArray(input)
+)
+
+const sanitizeLabelProperty = (properties: unknown): Record<string, any> | undefined => {
+  if (!isPlainObject(properties)) {
+    return undefined
+  }
+  const nextProperties: Record<string, any> = { ...properties }
+  if (Array.isArray(nextProperties._label)) {
+    const normalizedLabels = nextProperties._label.filter((label: any) => (
+      isPlainObject(label) && (label.id != null || label.text != null || label.value != null || label.content != null)
+    ))
+    if (normalizedLabels.length === 0) {
+      delete nextProperties._label
+    } else {
+      nextProperties._label = normalizedLabels
+    }
+  }
+  return nextProperties
+}
+
+const sanitizeGraphData = (input?: GraphData | null): GraphData => {
+  if (!input || !Array.isArray(input.nodes) || !Array.isArray(input.edges)) {
+    return { nodes: [], edges: [] }
+  }
+
+  const nodes = input.nodes
+    .filter((node): node is NodeData => isPlainObject(node))
+    .map((node) => {
+      const nextNode: NodeData = { ...node }
+      const nextProperties = sanitizeLabelProperty(nextNode.properties)
+      if (nextProperties) {
+        nextNode.properties = nextProperties
+      }
+      return nextNode
+    })
+
+  const edges = input.edges
+    .filter((edge): edge is EdgeData => isPlainObject(edge))
+    .map((edge) => {
+      const nextEdge: EdgeData = { ...edge }
+      const nextProperties = sanitizeLabelProperty(nextEdge.properties)
+      if (nextProperties) {
+        nextEdge.properties = nextProperties
+      }
+      return nextEdge
+    })
+
+  return { nodes, edges }
 }
 
 export interface EditorConfig {
@@ -156,6 +211,10 @@ ensureElementPlusInstalled()
 const flowEditorRef = ref<InstanceType<typeof FlowEditor>>()
 const previewContainerRef = ref<HTMLElement | null>(null)
 const previewLf = ref<LogicFlow | null>(null)
+const embedRootRef = ref<HTMLElement | null>(null)
+const toolbarHostRef = ref<HTMLElement | null>(null)
+let embedResizeObserver: ResizeObserver | null = null
+const editorContentHeight = ref('100%')
 
 // Computed
 const effectiveCapability = computed<FlowCapabilityLevel>(() => {
@@ -174,10 +233,60 @@ const containerHeight = computed(() => {
   return typeof props.height === 'number' ? `${props.height}px` : props.height
 })
 
+const editorContentStyle = computed(() => ({
+  height: editorContentHeight.value
+}))
+
+const recalcEditContentHeight = () => {
+  if (props.mode !== 'edit') {
+    return
+  }
+  const root = embedRootRef.value
+  if (!root) {
+    return
+  }
+  const rootHeight = root.clientHeight
+  const toolbarHeight = props.showToolbar ? (toolbarHostRef.value?.offsetHeight ?? 0) : 0
+  const contentHeight = Math.max(0, rootHeight - toolbarHeight)
+  if (contentHeight > 0) {
+    editorContentHeight.value = `${contentHeight}px`
+  } else {
+    editorContentHeight.value = '100%'
+  }
+}
+
 const triggerEditorResize = () => {
   nextTick(() => {
-    (flowEditorRef.value as any)?.resizeCanvas?.()
+    recalcEditContentHeight()
+    const editor = flowEditorRef.value as any
+    editor?.resizeCanvas?.()
   })
+}
+
+const handleEmbedResize = () => {
+  if (props.mode === 'edit') {
+    recalcEditContentHeight()
+    triggerEditorResize()
+    return
+  }
+
+  if (props.mode === 'preview' && previewLf.value && previewContainerRef.value) {
+    const width = previewContainerRef.value.offsetWidth
+    const height = previewContainerRef.value.offsetHeight
+    previewLf.value.resize(width, height)
+  }
+}
+
+const setupEmbedResizeObserver = () => {
+  if (typeof ResizeObserver === 'undefined' || !embedRootRef.value) {
+    return
+  }
+
+  embedResizeObserver?.disconnect()
+  embedResizeObserver = new ResizeObserver(() => {
+    handleEmbedResize()
+  })
+  embedResizeObserver.observe(embedRootRef.value)
 }
 
 const destroyPreviewMode = () => {
@@ -217,7 +326,7 @@ const initPreviewMode = () => {
 
   // 渲染数据
   if (props.data) {
-    previewLf.value.render(props.data)
+    previewLf.value.render(sanitizeGraphData(props.data))
   }
 }
 
@@ -251,13 +360,14 @@ const getGraphData = (): GraphData | null => {
 }
 
 const setGraphData = (data: GraphData) => {
+  const safeData = sanitizeGraphData(data)
   if (props.mode === 'edit') {
     const lfInstance = getLogicFlowInstance()
     if (lfInstance) {
-      lfInstance.render(data)
+      lfInstance.render(safeData)
     }
   } else if (props.mode === 'preview' && previewLf.value) {
-    previewLf.value.render(data)
+    previewLf.value.render(safeData)
   }
 }
 
@@ -283,8 +393,10 @@ watch(() => props.mode, (newMode) => {
     }, 100)
   } else {
     destroyPreviewMode()
+    recalcEditContentHeight()
     triggerEditorResize()
   }
+  setupEmbedResizeObserver()
 })
 
 watch(
@@ -303,6 +415,7 @@ watch(
   [() => props.width, () => props.height, () => props.showToolbar, () => props.showComponentPanel],
   () => {
     if (props.mode === 'edit') {
+      recalcEditContentHeight()
       triggerEditorResize()
     }
   }
@@ -310,9 +423,11 @@ watch(
 
 // 初始化
 onMounted(() => {
+  setupEmbedResizeObserver()
   if (props.mode === 'preview') {
     initPreviewMode()
   } else if (props.mode === 'edit') {
+    recalcEditContentHeight()
     triggerEditorResize()
     // 编辑模式由 FlowEditor 组件初始化
     // 等待 FlowEditor 初始化完成后加载数据
@@ -320,6 +435,7 @@ onMounted(() => {
       if (props.data) {
         setGraphData(props.data)
       }
+      recalcEditContentHeight()
       triggerEditorResize()
     }, 500)
   }
@@ -327,6 +443,8 @@ onMounted(() => {
 
 // 清理
 onBeforeUnmount(() => {
+  embedResizeObserver?.disconnect()
+  embedResizeObserver = null
   destroyPreviewMode()
   destroyLogicFlowInstance()
 })
@@ -339,19 +457,27 @@ onBeforeUnmount(() => {
   background: #f5f5f5;
   overflow: hidden;
   position: relative;
+  min-height: 0;
 }
 
 .editor-content {
   display: flex;
   flex: 1;
   min-height: 0;
+  height: 0;
   overflow: hidden;
 }
 
 .flow-editor-pane {
+  display: flex;
   flex: 1;
   min-width: 0;
-  height: 100%;
+  min-height: 0;
+  align-self: stretch;
+}
+
+.toolbar-host {
+  flex: 0 0 auto;
 }
 
 .preview-mode {
