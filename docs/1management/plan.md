@@ -428,6 +428,13 @@ const handleCancel = () => {
 
 ## 📝 更新日志
 
+### 2026-02-25
+- ✅ 修复嵌入编辑器在 onmyoji-wiki 弹层中的初始化尺寸异常
+  - 编辑区域高度改为基于容器测量后计算
+  - FlowEditor 以宿主容器尺寸触发 resize
+- ✅ 修复资产选择器弹窗内图片比例异常
+  - 统一使用固定尺寸容器 + `background-size: contain` 保持比例
+
 ### 2026-02-20
 - ✅ 完成组件化改造
   - 创建 `YysEditorEmbed.vue` 嵌入式组件
