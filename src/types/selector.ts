@@ -20,4 +20,8 @@ export interface SelectorConfig<T = any> {
   searchable?: boolean
   searchFields?: string[]
   currentItem?: T | null
+  assetLibrary?: string
+  allowUserAssetUpload?: boolean
+  onDeleteUserAsset?: (item: T) => void
+  onUserAssetUploaded?: (item: T) => void
 }

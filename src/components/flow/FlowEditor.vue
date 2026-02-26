@@ -49,6 +49,14 @@
             </button>
           </div>
         </div>
+        <div v-if="groupRuleWarnings.length" class="control-row rule-row">
+          <div class="control-label">规则检查</div>
+          <div class="rule-list">
+            <div v-for="(warning, index) in groupRuleWarnings" :key="`${warning.groupId}-${warning.code}-${index}`" class="rule-item">
+              [{{ warning.groupId }}] {{ warning.message }}
+            </div>
+          </div>
+        </div>
       </div>
       <div class="container" ref="containerRef" :style="{ height: '100%' }"></div>
     </div>
@@ -81,6 +89,7 @@ import { useGlobalMessage } from '@/ts/useGlobalMessage';
 import { setLogicFlowInstance, destroyLogicFlowInstance } from '@/ts/useLogicFlow';
 import { normalizePropertiesWithStyle, normalizeNodeStyle, styleEquals } from '@/ts/nodeStyle';
 import { useCanvasSettings } from '@/ts/useCanvasSettings';
+import { validateGraphGroupRules, type GroupRuleWarning } from '@/utils/groupRules';
 
 type AlignType = 'left' | 'right' | 'top' | 'bottom' | 'hcenter' | 'vcenter';
 type DistributeType = 'horizontal' | 'vertical';
@@ -118,8 +127,10 @@ const { showMessage } = useGlobalMessage();
 // 当前选中节点
 const selectedNode = ref<any>(null);
 const copyBuffer = ref<GraphData | null>(null);
+const groupRuleWarnings = ref<GroupRuleWarning[]>([]);
 let nextPasteDistance = COPY_TRANSLATION;
 let containerResizeObserver: ResizeObserver | null = null;
+let groupRuleValidationTimer: ReturnType<typeof setTimeout> | null = null;
 
 const resolveResizeHost = () => {
   const container = containerRef.value;
@@ -482,6 +493,7 @@ function groupSelectedNodes(event?: KeyboardEvent) {
   models.forEach((model) => {
     updateNodeMeta(model, (meta) => ({ ...meta, groupId }));
   });
+  scheduleGroupRuleValidation();
   return false;
 }
 
@@ -499,6 +511,7 @@ function ungroupSelectedNodes(event?: KeyboardEvent) {
       return nextMeta;
     });
   });
+  scheduleGroupRuleValidation();
   return false;
 }
 
@@ -582,6 +595,25 @@ function updateSelectedCount(model?: GraphModel) {
   const lfInstance = lf.value;
   const graphModel = model ?? lfInstance?.graphModel;
   selectedCount.value = graphModel?.selectNodes.length ?? 0;
+}
+
+function refreshGroupRuleWarnings() {
+  const lfInstance = lf.value;
+  if (!lfInstance) {
+    groupRuleWarnings.value = [];
+    return;
+  }
+  const graphData = lfInstance.getGraphRawData() as GraphData;
+  groupRuleWarnings.value = validateGraphGroupRules(graphData);
+}
+
+function scheduleGroupRuleValidation(delay = 120) {
+  if (groupRuleValidationTimer) {
+    clearTimeout(groupRuleValidationTimer);
+  }
+  groupRuleValidationTimer = setTimeout(() => {
+    refreshGroupRuleWarnings();
+  }, delay);
 }
 
 function applySelectionSelect(enabled: boolean) {
@@ -967,6 +999,7 @@ onMounted(() => {
       // 标记这个节点是新创建的，避免被 normalizeAllNodes 重置
       (model as any)._isNewNode = true;
     }
+    scheduleGroupRuleValidation();
   });
 
   // 监听 DND 添加节点事件
@@ -978,10 +1011,12 @@ onMounted(() => {
       // 标记这个节点是新创建的
       (model as any)._isNewNode = true;
     }
+    scheduleGroupRuleValidation();
   });
 
   lfInstance.on(EventType.GRAPH_RENDERED, () => {
     normalizeAllNodes();
+    scheduleGroupRuleValidation(0);
   });
 
   // 监听节点点击事件，更新选中节点
@@ -1008,6 +1043,17 @@ onMounted(() => {
     }
     const model = lfInstance.getNodeModelById(nodeId);
     if (model) normalizeNodeModel(model);
+    scheduleGroupRuleValidation();
+  });
+
+  lfInstance.on(EventType.NODE_DELETE, () => {
+    scheduleGroupRuleValidation();
+  });
+  lfInstance.on(EventType.EDGE_ADD, () => {
+    scheduleGroupRuleValidation();
+  });
+  lfInstance.on(EventType.EDGE_DELETE, () => {
+    scheduleGroupRuleValidation();
   });
 
   lfInstance.on('selection:selected', () => updateSelectedCount());
@@ -1064,6 +1110,10 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', handleWindowResize);
   containerResizeObserver?.disconnect();
   containerResizeObserver = null;
+  if (groupRuleValidationTimer) {
+    clearTimeout(groupRuleValidationTimer);
+    groupRuleValidationTimer = null;
+  }
   lf.value?.destroy();
   lf.value = null;
   destroyLogicFlowInstance();
@@ -1117,6 +1167,23 @@ onBeforeUnmount(() => {
 }
 .control-row:last-child {
   margin-bottom: 0;
+}
+.rule-row {
+  align-items: flex-start;
+}
+.rule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 360px;
+}
+.rule-item {
+  color: #9a3412;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 6px;
+  padding: 4px 6px;
+  line-height: 1.4;
 }
 .control-label {
   font-weight: 600;

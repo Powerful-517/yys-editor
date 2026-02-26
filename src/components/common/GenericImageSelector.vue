@@ -4,6 +4,17 @@
       当前选择：{{ config.currentItem[config.itemRender.labelField] }}
     </span>
 
+    <div v-if="config.allowUserAssetUpload" class="user-asset-actions">
+      <input
+        ref="uploadInputRef"
+        type="file"
+        accept="image/*"
+        class="hidden-input"
+        @change="handleUploadAsset"
+      />
+      <el-button size="small" type="primary" @click="triggerUpload">上传我的素材</el-button>
+    </div>
+
     <!-- 搜索框 -->
     <div v-if="config.searchable !== false" style="display: flex; align-items: center;">
       <el-input
@@ -29,7 +40,7 @@
           <el-space wrap size="large">
             <div
               v-for="item in filteredItems(group)"
-              :key="item[config.itemRender.labelField]"
+              :key="item.id || item[config.itemRender.labelField]"
               style="display: flex; flex-direction: column; justify-content: center"
             >
               <el-button
@@ -45,6 +56,15 @@
               <span style="text-align: center; display: block;">
                 {{ item[config.itemRender.labelField] }}
               </span>
+              <el-button
+                v-if="item.__userAsset"
+                type="danger"
+                text
+                size="small"
+                @click.stop="removeUserAsset(item)"
+              >
+                删除
+              </el-button>
             </div>
           </el-space>
         </div>
@@ -54,9 +74,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { SelectorConfig, GroupConfig } from '@/types/selector'
 import { resolveAssetUrl } from '@/utils/assetUrl'
+import { createCustomAssetFromFile } from '@/utils/customAssets'
 
 const props = defineProps<{
   config: SelectorConfig
@@ -77,10 +98,20 @@ const searchText = ref('')
 const activeTab = ref('ALL')
 const imageSize = computed(() => props.config.itemRender.imageSize || 100)
 const imageField = computed(() => props.config.itemRender.imageField)
+const uploadInputRef = ref<HTMLInputElement | null>(null)
+const dataSource = ref<any[]>([])
+
+watch(
+  () => props.config.dataSource,
+  (value) => {
+    dataSource.value = Array.isArray(value) ? [...value] : []
+  },
+  { immediate: true, deep: true }
+)
 
 // 过滤逻辑
 const filteredItems = (group: GroupConfig) => {
-  let items = props.config.dataSource
+  let items = dataSource.value
 
   // 分组过滤
   if (group.name !== 'ALL') {
@@ -120,9 +151,52 @@ const handleSelect = (item: any) => {
 }
 
 const getItemImageUrl = (item: any) => resolveAssetUrl(item?.[imageField.value]) as string
+
+const triggerUpload = () => {
+  uploadInputRef.value?.click()
+}
+
+const handleUploadAsset = async (event: Event) => {
+  const target = event.target as HTMLInputElement | null
+  const file = target?.files?.[0]
+  if (!file || !props.config.assetLibrary) {
+    if (target) {
+      target.value = ''
+    }
+    return
+  }
+
+  try {
+    const createdAsset = await createCustomAssetFromFile(props.config.assetLibrary, file)
+    dataSource.value = [createdAsset, ...dataSource.value]
+    props.config.onUserAssetUploaded?.(createdAsset)
+  } finally {
+    if (target) {
+      target.value = ''
+    }
+  }
+}
+
+const removeUserAsset = (item: any) => {
+  if (!item?.id) {
+    return
+  }
+  props.config.onDeleteUserAsset?.(item)
+  dataSource.value = dataSource.value.filter((entry) => entry.id !== item.id)
+}
 </script>
 
 <style scoped>
+.user-asset-actions {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.hidden-input {
+  display: none;
+}
+
 .selector-button {
   padding: 0;
 }

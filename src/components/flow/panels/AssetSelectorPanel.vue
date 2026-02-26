@@ -5,6 +5,7 @@ import { getLogicFlowInstance } from '@/ts/useLogicFlow';
 import { SELECTOR_PRESETS } from '@/configs/selectorPresets';
 import type { SelectorConfig } from '@/types/selector';
 import { resolveAssetUrl, resolveAssetUrlsInDataSource } from '@/utils/assetUrl';
+import { deleteCustomAsset, listCustomAssets } from '@/utils/customAssets';
 
 const props = defineProps<{
   node: any;
@@ -40,10 +41,32 @@ const handleOpenSelector = () => {
     }
     : selectedAsset;
 
+  const customAssets = listCustomAssets(library);
+  const mergedDataSource = [
+    ...(preset.dataSource as any[]),
+    ...customAssets
+  ];
+  const mergedGroups = [
+    ...preset.groups,
+    { label: '我的素材', name: '__CUSTOM__', filter: (item: any) => !!item?.__userAsset }
+  ];
+
   const config: SelectorConfig = {
     ...preset,
-    dataSource: resolveAssetUrlsInDataSource(preset.dataSource as any[], imageField),
-    currentItem: normalizedSelectedAsset
+    groups: mergedGroups,
+    dataSource: resolveAssetUrlsInDataSource(mergedDataSource, imageField),
+    currentItem: normalizedSelectedAsset,
+    assetLibrary: library,
+    allowUserAssetUpload: true,
+    onDeleteUserAsset: (item: any) => {
+      if (!item?.id) {
+        return;
+      }
+      deleteCustomAsset(library, item.id);
+    },
+    onUserAssetUploaded: () => {
+      // 上传后的数据刷新由选择器内部完成，这里保留扩展钩子。
+    }
   };
 
   openGenericSelector(config, (selectedItem) => {
