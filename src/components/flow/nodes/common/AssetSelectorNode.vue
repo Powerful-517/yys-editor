@@ -2,6 +2,7 @@
 import { computed, ref, inject, onMounted, onBeforeUnmount } from 'vue';
 import { toTextStyle } from '@/ts/nodeStyle';
 import { useNodeAppearance } from '@/ts/useNodeAppearance';
+import { resolveAssetUrl } from '@/utils/assetUrl';
 
 const currentAsset = ref({ name: '未选择资产', avatar: '', library: 'shikigami' });
 const getNode = inject('getNode') as (() => any) | undefined;
@@ -47,6 +48,7 @@ const { containerStyle, textStyle } = useNodeAppearance({
 });
 
 const mergedContainerStyle = computed(() => ({ ...containerStyle.value, boxSizing: 'border-box' }));
+const normalizedAvatar = computed(() => resolveAssetUrl(currentAsset.value.avatar) as string);
 </script>
 
 <template>
@@ -54,7 +56,7 @@ const mergedContainerStyle = computed(() => ({ ...containerStyle.value, boxSizin
     <div class="zindex-badge">{{ zIndex }}</div>
     <img
       v-if="currentAsset.avatar"
-      :src="currentAsset.avatar"
+      :src="normalizedAvatar"
       :alt="currentAsset.name"
       class="asset-image"
       draggable="false"

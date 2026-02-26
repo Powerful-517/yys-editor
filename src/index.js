@@ -2,6 +2,7 @@
 import 'element-plus/dist/index.css'
 import 'vue3-draggable-resizable/dist/Vue3DraggableResizable.css'
 import YysEditorEmbed from './YysEditorEmbed.vue'
+export { setAssetBaseUrl, getAssetBaseUrl, resolveAssetUrl } from './utils/assetUrl'
 
 // 导出组件
 export { YysEditorEmbed }

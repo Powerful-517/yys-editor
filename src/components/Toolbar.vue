@@ -52,7 +52,7 @@
     <el-dialog v-if="!props.isEmbed" v-model="state.showFeedbackFormDialog" title="更新日志" width="60%">
       <span style="font-size: 24px;">备注阴阳师</span>
       <br/>
-      <img src="/assets/Other/Contact.png"
+      <img :src="contactImageUrl"
            style="cursor: pointer; vertical-align: bottom; width: 200px; height: auto;"/>
     </el-dialog>
 
@@ -124,6 +124,7 @@ import { getLogicFlowInstance } from "@/ts/useLogicFlow";
 import { useCanvasSettings } from '@/ts/useCanvasSettings';
 import { useSafeI18n } from '@/ts/useSafeI18n';
 import type { Pinia } from 'pinia';
+import { resolveAssetUrl } from '@/utils/assetUrl';
 
 const props = withDefaults(defineProps<{
   isEmbed?: boolean;
@@ -133,6 +134,7 @@ const props = withDefaults(defineProps<{
 });
 
 const filesStore = props.piniaInstance ? useFilesStore(props.piniaInstance) : useFilesStore();
+const contactImageUrl = resolveAssetUrl('/assets/Other/Contact.png') as string;
 const { showMessage } = useGlobalMessage();
 const { selectionEnabled, snapGridEnabled, snaplineEnabled } = useCanvasSettings();
 

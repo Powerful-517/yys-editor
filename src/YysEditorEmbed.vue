@@ -64,6 +64,7 @@ import {
   type FlowNodeRegistration,
   type FlowPlugin
 } from './flowRuntime'
+import { rewriteAssetUrlsDeep, setAssetBaseUrl } from '@/utils/assetUrl'
 
 // 类型定义
 export interface GraphData {
@@ -121,7 +122,7 @@ const sanitizeGraphData = (input?: GraphData | null): GraphData => {
       const nextNode: NodeData = { ...node }
       const nextProperties = sanitizeLabelProperty(nextNode.properties)
       if (nextProperties) {
-        nextNode.properties = nextProperties
+        nextNode.properties = rewriteAssetUrlsDeep(nextProperties)
       }
       return nextNode
     })
@@ -132,7 +133,7 @@ const sanitizeGraphData = (input?: GraphData | null): GraphData => {
       const nextEdge: EdgeData = { ...edge }
       const nextProperties = sanitizeLabelProperty(nextEdge.properties)
       if (nextProperties) {
-        nextEdge.properties = nextProperties
+        nextEdge.properties = rewriteAssetUrlsDeep(nextProperties)
       }
       return nextEdge
     })
@@ -161,6 +162,7 @@ const props = withDefaults(defineProps<{
   config?: EditorConfig
   plugins?: FlowPlugin[]
   nodeRegistrations?: FlowNodeRegistration[]
+  assetBaseUrl?: string
 }>(), {
   mode: 'edit',
   width: '100%',
@@ -383,6 +385,14 @@ watch(() => props.data, (newData) => {
     setGraphData(newData)
   }
 }, { deep: true })
+
+watch(
+  () => props.assetBaseUrl,
+  (value) => {
+    setAssetBaseUrl(value)
+  },
+  { immediate: true }
+)
 
 // 监听模式变化
 watch(() => props.mode, (newMode) => {

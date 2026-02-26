@@ -4,6 +4,7 @@ import { useDialogs } from '@/ts/useDialogs';
 import { getLogicFlowInstance } from '@/ts/useLogicFlow';
 import { SELECTOR_PRESETS } from '@/configs/selectorPresets';
 import type { SelectorConfig } from '@/types/selector';
+import { resolveAssetUrl, resolveAssetUrlsInDataSource } from '@/utils/assetUrl';
 
 const props = defineProps<{
   node: any;
@@ -30,15 +31,32 @@ const handleOpenSelector = () => {
     return;
   }
 
+  const imageField = preset.itemRender.imageField;
+  const selectedAsset = node.properties?.selectedAsset || null;
+  const normalizedSelectedAsset = selectedAsset && typeof selectedAsset === 'object'
+    ? {
+      ...selectedAsset,
+      [imageField]: resolveAssetUrl(selectedAsset?.[imageField])
+    }
+    : selectedAsset;
+
   const config: SelectorConfig = {
     ...preset,
-    currentItem: node.properties?.selectedAsset || null
+    dataSource: resolveAssetUrlsInDataSource(preset.dataSource as any[], imageField),
+    currentItem: normalizedSelectedAsset
   };
 
   openGenericSelector(config, (selectedItem) => {
+    const normalizedSelected = selectedItem && typeof selectedItem === 'object'
+      ? {
+        ...selectedItem,
+        [imageField]: resolveAssetUrl(selectedItem?.[imageField])
+      }
+      : selectedItem;
+
     lf.setProperties(node.id, {
       ...node.properties,
-      selectedAsset: selectedItem,
+      selectedAsset: normalizedSelected,
       assetLibrary: library
     });
   });

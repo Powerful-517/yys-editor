@@ -39,7 +39,7 @@
               >
                 <span
                   class="selector-image-frame"
-                  :style="`width: ${imageSize - 1}px; height: ${imageSize - 1}px; background-image: url('${item[config.itemRender.imageField]}');`"
+                  :style="`width: ${imageSize - 1}px; height: ${imageSize - 1}px; background-image: url('${getItemImageUrl(item)}');`"
                 />
               </el-button>
               <span style="text-align: center; display: block;">
@@ -56,6 +56,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { SelectorConfig, GroupConfig } from '@/types/selector'
+import { resolveAssetUrl } from '@/utils/assetUrl'
 
 const props = defineProps<{
   config: SelectorConfig
@@ -75,6 +76,7 @@ const show = computed({
 const searchText = ref('')
 const activeTab = ref('ALL')
 const imageSize = computed(() => props.config.itemRender.imageSize || 100)
+const imageField = computed(() => props.config.itemRender.imageField)
 
 // 过滤逻辑
 const filteredItems = (group: GroupConfig) => {
@@ -107,10 +109,17 @@ const filteredItems = (group: GroupConfig) => {
 }
 
 const handleSelect = (item: any) => {
-  emit('select', item)
+  const field = imageField.value
+  const normalizedItem = {
+    ...item,
+    [field]: resolveAssetUrl(item?.[field])
+  }
+  emit('select', normalizedItem)
   searchText.value = ''
   activeTab.value = 'ALL'
 }
+
+const getItemImageUrl = (item: any) => resolveAssetUrl(item?.[imageField.value]) as string
 </script>
 
 <style scoped>
