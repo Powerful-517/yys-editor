@@ -36,6 +36,13 @@ const componentGroups = [
         description: '可折叠的动态分组容器',
         data: {
           children: [],
+          groupMeta: {
+            version: 1,
+            groupKind: 'team',
+            groupName: '',
+            ruleEnabled: true,
+            ruleScope: ['shikigami-yuhun', 'shikigami-shikigami']
+          },
           collapsible: true,
           isCollapsed: false,
           width: 420,

@@ -55,17 +55,43 @@
             </button>
           </div>
         </div>
-        <div v-if="groupRuleWarnings.length" class="control-row rule-row">
-          <div class="control-label">规则检查</div>
-          <div class="rule-list">
-            <div v-for="(warning, index) in groupRuleWarnings" :key="`${warning.groupId}-${warning.code}-${index}`" class="rule-item">
-              [{{ warning.groupId }}] {{ warning.message }}
-            </div>
-          </div>
-        </div>
         </template>
       </div>
       <div class="container" ref="containerRef" :style="{ height: '100%' }"></div>
+      <div class="problems-dock" :class="{ 'problems-dock--open': problemsPanelOpen }">
+        <div class="problems-dock-bar">
+          <button class="problems-tab" type="button" @click="problemsPanelOpen = !problemsPanelOpen">
+            Problems
+            <span class="problems-badge">{{ groupRuleWarnings.length }}</span>
+          </button>
+        </div>
+        <div v-if="problemsPanelOpen" class="problems-panel">
+          <div class="problems-header">
+            <span>规则告警</span>
+            <span>{{ groupRuleWarnings.length }} 条</span>
+          </div>
+          <div v-if="!groupRuleWarnings.length" class="problems-empty">
+            当前没有告警
+          </div>
+          <div v-else class="problems-list">
+            <div
+              v-for="(warning, index) in groupRuleWarnings"
+              :key="warning.id || `${warning.groupId}-${warning.code}-${index}`"
+              class="problem-item"
+              role="button"
+              tabindex="0"
+              @click="locateProblemNode(warning)"
+              @keydown.enter.prevent="locateProblemNode(warning)"
+            >
+              <div class="problem-severity">{{ warning.severity.toUpperCase() }}</div>
+              <div class="problem-content">
+                <div class="problem-message">{{ warning.message }}</div>
+                <div class="problem-meta">{{ warning.groupName || warning.groupId }} · {{ warning.ruleId }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <!-- 右侧属性面板 -->
     <PropertyPanel :height="height" :node="selectedNode" :lf="lf" />
@@ -137,6 +163,7 @@ const { showMessage } = useGlobalMessage();
 const selectedNode = ref<any>(null);
 const groupRuleWarnings = ref<GroupRuleWarning[]>([]);
 const flowControlsCollapsed = ref(true);
+const problemsPanelOpen = ref(false);
 let containerResizeObserver: ResizeObserver | null = null;
 let groupRuleValidationTimer: ReturnType<typeof setTimeout> | null = null;
 let unsubscribeSharedGroupRules: (() => void) | null = null;
@@ -701,6 +728,31 @@ function scheduleGroupRuleValidation(delay = 120) {
   }, delay);
 }
 
+function locateProblemNode(warning: GroupRuleWarning) {
+  const lfInstance = lf.value as any;
+  if (!lfInstance) return;
+
+  const candidateIds = [...(warning.nodeIds || []), warning.groupId].filter((id) => !!id);
+  const targetId = candidateIds.find((id) => !!lfInstance.getNodeModelById(id));
+  if (!targetId) {
+    showMessage('warning', '未找到告警对应节点，可能已被删除');
+    return;
+  }
+
+  try {
+    lfInstance.clearSelectElements?.();
+    lfInstance.selectElementById?.(targetId, false, false);
+    lfInstance.focusOn?.(targetId);
+    const nodeData = lfInstance.getNodeDataById?.(targetId);
+    if (nodeData) {
+      selectedNode.value = nodeData;
+    }
+  } catch (error) {
+    console.error('定位告警节点失败:', error);
+    showMessage('error', '定位节点失败');
+  }
+}
+
 function applySelectionSelect(enabled: boolean) {
   const lfInstance = lf.value as any;
   if (!lfInstance) return;
@@ -1256,23 +1308,6 @@ onBeforeUnmount(() => {
 .control-row:last-child {
   margin-bottom: 0;
 }
-.rule-row {
-  align-items: flex-start;
-}
-.rule-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  max-width: 360px;
-}
-.rule-item {
-  color: #9a3412;
-  background: #fff7ed;
-  border: 1px solid #fed7aa;
-  border-radius: 6px;
-  padding: 4px 6px;
-  line-height: 1.4;
-}
 .control-label {
   font-weight: 600;
   color: #303133;
@@ -1306,6 +1341,126 @@ onBeforeUnmount(() => {
 }
 .control-hint {
   color: #909399;
+}
+.problems-dock {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 11;
+  pointer-events: none;
+}
+.problems-dock-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 10px;
+  background: rgba(250, 250, 250, 0.98);
+  border-top: 1px solid #dcdfe6;
+  pointer-events: auto;
+}
+.problems-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #dcdfe6;
+  background: #fff;
+  border-radius: 4px;
+  padding: 2px 10px;
+  height: 24px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #303133;
+}
+.problems-tab:hover {
+  background: #f5f7fa;
+}
+.problems-badge {
+  min-width: 18px;
+  height: 18px;
+  border-radius: 10px;
+  background: #fde68a;
+  color: #92400e;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+  padding: 0 4px;
+  box-sizing: border-box;
+}
+.problems-panel {
+  height: 220px;
+  background: rgba(255, 255, 255, 0.98);
+  border-top: 1px solid #dcdfe6;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+}
+.problems-header {
+  height: 32px;
+  padding: 0 12px;
+  border-bottom: 1px solid #ebeef5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #606266;
+}
+.problems-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #909399;
+  font-size: 13px;
+}
+.problems-list {
+  flex: 1;
+  overflow-y: auto;
+}
+.problem-item {
+  display: flex;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #f2f3f5;
+  cursor: pointer;
+}
+.problem-item:hover {
+  background: #f8fafc;
+}
+.problem-item:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 1px #93c5fd;
+  background: #eff6ff;
+}
+.problem-severity {
+  width: 56px;
+  height: 20px;
+  border-radius: 10px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #9a3412;
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.problem-content {
+  min-width: 0;
+}
+.problem-message {
+  color: #303133;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.problem-meta {
+  margin-top: 2px;
+  color: #909399;
+  font-size: 12px;
+  line-height: 1.3;
+  word-break: break-all;
 }
 .context-menu {
   position: fixed;

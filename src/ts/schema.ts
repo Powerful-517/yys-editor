@@ -56,6 +56,22 @@ export interface NodeMeta {
 export interface NodeProperties {
   style: NodeStyle;
   meta?: NodeMeta;
+  children?: string[];
+  groupMeta?: {
+    version: number;
+    groupKind: 'team' | 'shikigami';
+    groupName: string;
+    ruleEnabled: boolean;
+    ruleScope: string[];
+  };
+  assetLibrary?: string;
+  selectedAsset?: {
+    assetId: string;
+    library: string;
+    name?: string;
+    avatar?: string;
+    [key: string]: any;
+  } | null;
   image?: { url: string; fit?: 'fill'|'contain'|'cover' };
   text?: { content: string; rich?: boolean };
   vector?: {
@@ -81,6 +97,7 @@ export interface GraphNode {
   y?: number;
   width?: number;
   height?: number;
+  children?: string[];
   properties: NodeProperties;
 }
 

@@ -6,6 +6,7 @@ import { SELECTOR_PRESETS } from '@/configs/selectorPresets';
 import type { SelectorConfig } from '@/types/selector';
 import { resolveAssetUrl, resolveAssetUrlsInDataSource } from '@/utils/assetUrl';
 import { deleteCustomAsset, listCustomAssets } from '@/utils/customAssets';
+import { normalizeSelectedAssetRecord } from '@/utils/graphSchema';
 
 const props = defineProps<{
   node: any;
@@ -34,12 +35,13 @@ const handleOpenSelector = () => {
 
   const imageField = preset.itemRender.imageField;
   const selectedAsset = node.properties?.selectedAsset || null;
-  const normalizedSelectedAsset = selectedAsset && typeof selectedAsset === 'object'
+  const normalizedSelectedAssetRecord = normalizeSelectedAssetRecord(selectedAsset, library);
+  const normalizedSelectedAsset = normalizedSelectedAssetRecord
     ? {
-      ...selectedAsset,
-      [imageField]: resolveAssetUrl(selectedAsset?.[imageField])
+      ...normalizedSelectedAssetRecord,
+      [imageField]: resolveAssetUrl((selectedAsset as any)?.[imageField])
     }
-    : selectedAsset;
+    : null;
 
   const customAssets = listCustomAssets(library);
   const mergedDataSource = [
@@ -67,12 +69,13 @@ const handleOpenSelector = () => {
   };
 
   openGenericSelector(config, (selectedItem) => {
-    const normalizedSelected = selectedItem && typeof selectedItem === 'object'
+    const normalizedSelectedRecord = normalizeSelectedAssetRecord(selectedItem, library);
+    const normalizedSelected = normalizedSelectedRecord
       ? {
-        ...selectedItem,
-        [imageField]: resolveAssetUrl(selectedItem?.[imageField])
+        ...normalizedSelectedRecord,
+        [imageField]: resolveAssetUrl((selectedItem as any)?.[imageField])
       }
-      : selectedItem;
+      : null;
 
     lf.setProperties(node.id, {
       ...node.properties,

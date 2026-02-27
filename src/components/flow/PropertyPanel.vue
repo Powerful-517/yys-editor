@@ -6,6 +6,7 @@ import TextPanel from './panels/TextPanel.vue';
 import StylePanel from './panels/StylePanel.vue';
 import AssetSelectorPanel from './panels/AssetSelectorPanel.vue';
 import VectorPanel from './panels/VectorPanel.vue';
+import DynamicGroupPanel from './panels/DynamicGroupPanel.vue';
 import { ASSET_LIBRARIES } from '@/types/nodeTypes';
 import { getLogicFlowInstance } from '@/ts/useLogicFlow';
 
@@ -35,7 +36,8 @@ const panelMap: Record<string, any> = {
   imageNode: ImagePanel,
   textNode: TextPanel,
   assetSelector: AssetSelectorPanel,
-  vectorNode: VectorPanel
+  vectorNode: VectorPanel,
+  'dynamic-group': DynamicGroupPanel
 };
 
 const panelComponent = computed(() => panelMap[nodeType.value] || null);

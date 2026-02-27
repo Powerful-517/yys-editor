@@ -5,6 +5,7 @@ import {ElMessageBox} from "element-plus";
 import {useGlobalMessage} from "./useGlobalMessage";
 import {getLogicFlowInstance} from "./useLogicFlow";
 import {CURRENT_SCHEMA_VERSION, migrateToV1, RootDocument} from "./schema";
+import { normalizeGraphRawDataSchema } from '@/utils/graphSchema';
 
 const {showMessage} = useGlobalMessage();
 
@@ -117,7 +118,7 @@ export const useFilesStore = defineStore('files', () => {
             name: f?.name ?? f?.label ?? `File ${i + 1}`,
             visible: f?.visible ?? true,
             type: f?.type ?? 'FLOW',
-            graphRawData: (f?.graphRawData && typeof f.graphRawData === 'object') ? f.graphRawData : { nodes: [], edges: [] },
+            graphRawData: normalizeGraphRawDataSchema(f?.graphRawData),
             transform: f?.transform ?? {
                 SCALE_X: 1,
                 SCALE_Y: 1,
@@ -333,11 +334,12 @@ export const useFilesStore = defineStore('files', () => {
                             };
                         })
                     };
+                    const normalizedGraphData = normalizeGraphRawDataSchema(enrichedGraphData);
 
                     // 直接保存原始数据到 GraphRawData
                     const file = findById(targetId);
                     if (file) {
-                        file.graphRawData = enrichedGraphData;
+                        file.graphRawData = normalizedGraphData;
                         file.transform = transform;
                     }
                 }
