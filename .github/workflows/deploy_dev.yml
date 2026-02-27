@@ -21,7 +21,7 @@ jobs:
     - name: Install dependencies and build web app
       run: |
         npm install
-        VITE_APP_BASE_URL=/yys-editor-dev/ npm run build:app
+        VITE_APP_BASE_URL=/ npm run build:app
         
     - name: Deploy to temporary directory
       uses: appleboy/scp-action@v0.1.6
