@@ -20,6 +20,13 @@ export const NODE_REGISTRY: Record<NodeType, NodeTypeConfig> = {
     description: '椭圆容器，可设置背景和边框'
   },
 
+  [NodeType.DYNAMIC_GROUP]: {
+    type: NodeType.DYNAMIC_GROUP,
+    category: NodeCategory.LAYOUT,
+    label: '动态分组',
+    description: '支持折叠/收起与节点归组的容器'
+  },
+
   [NodeType.ASSET_SELECTOR]: {
     type: NodeType.ASSET_SELECTOR,
     category: NodeCategory.ASSET,

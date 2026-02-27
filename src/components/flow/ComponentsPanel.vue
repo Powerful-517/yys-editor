@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { getLogicFlowInstance } from '@/ts/useLogicFlow';
 
 // 使用嵌套结构定义组件分组
@@ -28,6 +27,26 @@ const componentGroups = [
           width: 150,
           height: 150,
           style: { background: '#fff', border: '2px solid black', borderRadius: '50%' }
+        }
+      },
+      {
+        id: 'dynamic-group',
+        name: '动态分组',
+        type: 'dynamic-group',
+        description: '可折叠的动态分组容器',
+        data: {
+          children: [],
+          collapsible: true,
+          isCollapsed: false,
+          width: 420,
+          height: 250,
+          collapsedWidth: 100,
+          collapsedHeight: 60,
+          radius: 6,
+          isRestrict: false,
+          autoResize: false,
+          transformWithContainer: false,
+          autoToFront: true
         }
       },
       {

@@ -77,11 +77,10 @@ import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import LogicFlow, { EventType } from '@logicflow/core';
 import type { Position, NodeData, EdgeData, BaseNodeModel, GraphModel, GraphData } from '@logicflow/core';
 import '@logicflow/core/lib/style/index.css';
-import { Menu, Label, Snapshot, SelectionSelect, MiniMap, Control } from '@logicflow/extension';
+import { Menu, Label, Snapshot, SelectionSelect, MiniMap, Control, DynamicGroup } from '@logicflow/extension';
 import '@logicflow/extension/lib/style/index.css';
 import '@logicflow/core/es/index.css';
 import '@logicflow/extension/es/index.css';
-import { translateEdgeData, translateNodeData } from '@logicflow/core/es/keyboard/shortcut';
 
 import { register } from '@logicflow/vue-node-registry';
 import PropertySelectNode from './nodes/yys/PropertySelectNode.vue';
@@ -104,7 +103,6 @@ type DistributeType = 'horizontal' | 'vertical';
 
 const MOVE_STEP = 2;
 const MOVE_STEP_LARGE = 10;
-const COPY_TRANSLATION = 40;
 const RIGHT_MOUSE_BUTTON = 2;
 const RIGHT_DRAG_THRESHOLD = 2;
 const RIGHT_DRAG_CONTEXTMENU_SUPPRESS_MS = 300;
@@ -113,7 +111,7 @@ const props = withDefaults(defineProps<{
   height?: string;
   enableLabel?: boolean;
 }>(), {
-  enableLabel: true
+  enableLabel: false
 });
 
 const flowHostRef = ref<HTMLElement | null>(null);
@@ -137,10 +135,8 @@ const { showMessage } = useGlobalMessage();
 
 // 当前选中节点
 const selectedNode = ref<any>(null);
-const copyBuffer = ref<GraphData | null>(null);
 const groupRuleWarnings = ref<GroupRuleWarning[]>([]);
 const flowControlsCollapsed = ref(true);
-let nextPasteDistance = COPY_TRANSLATION;
 let containerResizeObserver: ResizeObserver | null = null;
 let groupRuleValidationTimer: ReturnType<typeof setTimeout> | null = null;
 let unsubscribeSharedGroupRules: (() => void) | null = null;
@@ -150,6 +146,22 @@ let rightDragLastX = 0;
 let rightDragLastY = 0;
 let rightDragDistance = 0;
 let suppressContextMenuUntil = 0;
+
+function logClipboardDebug(stage: string, payload: Record<string, unknown> = {}) {
+  if (!import.meta.env.DEV) return;
+  const lfInstance = lf.value as any;
+  const graphModel = lfInstance?.graphModel;
+  const selectNodeIds: string[] = graphModel?.selectNodes?.map((node: BaseNodeModel) => node.id) ?? [];
+  const selectElementIds: string[] = graphModel?.selectElements
+    ? Array.from(graphModel.selectElements.keys())
+    : [];
+  console.info('[FlowClipboardDebug]', stage, {
+    selectedCount: selectedCount.value,
+    selectNodeIds,
+    selectElementIds,
+    ...payload
+  });
+}
 
 const resolveResizeHost = () => {
   const container = containerRef.value;
@@ -345,6 +357,48 @@ function normalizeAllNodes() {
   allNodes.forEach(node => {
     delete (node as any)._isNewNode;
   });
+}
+
+function sanitizeLabelInProperties(properties: Record<string, any> | undefined) {
+  if (!properties || !Object.prototype.hasOwnProperty.call(properties, '_label')) {
+    return properties;
+  }
+  const currentLabel = properties._label;
+  if (!Array.isArray(currentLabel)) {
+    return properties;
+  }
+  const cleaned = currentLabel.filter((item) => item && typeof item === 'object');
+  if (cleaned.length === currentLabel.length) {
+    return properties;
+  }
+  if (!cleaned.length) {
+    const { _label, ...rest } = properties;
+    return rest;
+  }
+  return {
+    ...properties,
+    _label: cleaned
+  };
+}
+
+function sanitizeGraphLabels() {
+  const graphModel = lf.value?.graphModel as any;
+  if (!graphModel) return;
+
+  const sanitizeModel = (model: any) => {
+    const props = model?.getProperties?.() ?? model?.properties;
+    if (!props) return;
+    const next = sanitizeLabelInProperties(props);
+    if (!next || next === props) return;
+    if (typeof model.setProperties === 'function') {
+      model.setProperties(next);
+      return;
+    }
+    model.properties = next;
+  };
+
+  (graphModel.nodes ?? []).forEach((model: any) => sanitizeModel(model));
+  (graphModel.edges ?? []).forEach((model: any) => sanitizeModel(model));
 }
 
 function updateNodeMeta(model: BaseNodeModel, updater: (meta: Record<string, any>) => Record<string, any>) {
@@ -610,59 +664,6 @@ function handleArrowMove(direction: 'left' | 'right' | 'up' | 'down', event?: Ke
   return false;
 }
 
-function remapGroupIds(nodes: GraphData['nodes']) {
-  const map = new Map<string, string>();
-  const seed = Date.now().toString(36);
-  nodes.forEach((node, index) => {
-    const meta = ensureMeta((node as any).properties?.meta);
-    if (meta.groupId) {
-      if (!map.has(meta.groupId)) {
-        map.set(meta.groupId, `group_${seed}_${index}`);
-      }
-      meta.groupId = map.get(meta.groupId);
-    }
-    (node as any).properties = { ...(node as any).properties, meta };
-  });
-}
-
-function handleCopy(event?: KeyboardEvent) {
-  if (shouldSkipShortcut(event)) return true;
-  const lfInstance = lf.value;
-  if (!lfInstance) return true;
-  const elements = lfInstance.getSelectElements(false);
-  if (!elements.nodes.length && !elements.edges.length) {
-    copyBuffer.value = null;
-    return true;
-  }
-  const nodes = elements.nodes.map((node) => translateNodeData(JSON.parse(JSON.stringify(node)), COPY_TRANSLATION));
-  const edges = elements.edges.map((edge) => translateEdgeData(JSON.parse(JSON.stringify(edge)), COPY_TRANSLATION));
-  remapGroupIds(nodes);
-  copyBuffer.value = { nodes, edges };
-  nextPasteDistance = COPY_TRANSLATION;
-  return false;
-}
-
-function handlePaste(event?: KeyboardEvent) {
-  if (shouldSkipShortcut(event)) return true;
-  const lfInstance = lf.value;
-  if (!lfInstance || !copyBuffer.value) return true;
-
-  lfInstance.clearSelectElements();
-  const added = lfInstance.addElements(copyBuffer.value, nextPasteDistance);
-  if (added) {
-    added.nodes.forEach((model) => {
-      normalizeNodeModel(model);
-      lfInstance.selectElementById(model.id, true);
-    });
-    added.edges.forEach((edge) => lfInstance.selectElementById(edge.id, true));
-    copyBuffer.value.nodes.forEach((node) => translateNodeData(node, COPY_TRANSLATION));
-    copyBuffer.value.edges.forEach((edge) => translateEdgeData(edge, COPY_TRANSLATION));
-    nextPasteDistance += COPY_TRANSLATION;
-    updateSelectedCount(lfInstance.graphModel);
-  }
-  return false;
-}
-
 function handleNodeDrag(args: { data: NodeData; deltaX: number; deltaY: number }) {
   const { data, deltaX, deltaY } = args;
   if (!deltaX && !deltaY) return;
@@ -856,6 +857,7 @@ onMounted(() => {
       }
     },
     plugins: [
+      DynamicGroup,
       Menu,
       ...(props.enableLabel ? [Label] : []),
       Snapshot,
@@ -884,8 +886,6 @@ onMounted(() => {
   const lfInstance = lf.value;
   if (!lfInstance) return;
 
-  lfInstance.keyboard.off(['cmd + c', 'ctrl + c']);
-  lfInstance.keyboard.off(['cmd + v', 'ctrl + v']);
   lfInstance.keyboard.off(['backspace']);
 
   const bindShortcut = (keys: string | string[], handler: (event?: KeyboardEvent) => boolean | void) => {
@@ -897,8 +897,6 @@ onMounted(() => {
   bindShortcut(['right'], (event) => handleArrowMove('right', event));
   bindShortcut(['up'], (event) => handleArrowMove('up', event));
   bindShortcut(['down'], (event) => handleArrowMove('down', event));
-  bindShortcut(['cmd + c', 'ctrl + c'], handleCopy);
-  bindShortcut(['cmd + v', 'ctrl + v'], handlePaste);
   bindShortcut(['cmd + g', 'ctrl + g'], groupSelectedNodes);
   bindShortcut(['cmd + u', 'ctrl + u'], ungroupSelectedNodes);
   bindShortcut(['cmd + l', 'ctrl + l'], toggleLockSelected);
@@ -928,21 +926,6 @@ onMounted(() => {
         text: '置于底层',
         callback(node: NodeData) {
           sendToBack(node.id);
-        }
-      },
-      {
-        text: '---' // 分隔线
-      },
-      {
-        text: '复制 (Ctrl+C)',
-        callback() {
-          handleCopy();
-        }
-      },
-      {
-        text: '粘贴 (Ctrl+V)',
-        callback() {
-          handlePaste();
         }
       },
       {
@@ -1005,11 +988,8 @@ onMounted(() => {
         }
       },
       {
-        text: '粘贴 (Ctrl+V)',
-        callback(data: Position) {
-          handlePaste();
-        }
-      }
+        text: '提示：使用 Ctrl+V 粘贴',
+      },
     ]
   });
 
@@ -1017,21 +997,6 @@ onMounted(() => {
   lfInstance.extension.menu.setMenuByType({
     type: 'lf:defaultSelectionMenu',
     menu: [
-      {
-        text: '复制 (Ctrl+C)',
-        callback() {
-          handleCopy();
-        }
-      },
-      {
-        text: '粘贴 (Ctrl+V)',
-        callback() {
-          handlePaste();
-        }
-      },
-      {
-        text: '---' // 分隔线
-      },
       {
         text: '组合 (Ctrl+G)',
         callback() {
@@ -1079,6 +1044,12 @@ onMounted(() => {
 
   // 监听所有可能的节点添加事件
   lfInstance.on(EventType.NODE_ADD, ({ data }) => {
+    if (!data?.id) {
+      logClipboardDebug('node:add-invalid-payload', {
+        payload: data ?? null
+      });
+      return;
+    }
     const model = lfInstance.getNodeModelById(data.id);
     if (model) {
       normalizeNodeModel(model);
@@ -1092,6 +1063,7 @@ onMounted(() => {
 
   // 监听 DND 添加节点事件
   lfInstance.on('node:dnd-add', ({ data }) => {
+    if (!data?.id) return;
     const model = lfInstance.getNodeModelById(data.id);
     if (model) {
       // 设置新节点的 zIndex 为 1000
@@ -1103,6 +1075,7 @@ onMounted(() => {
   });
 
   lfInstance.on(EventType.GRAPH_RENDERED, () => {
+    sanitizeGraphLabels();
     applySelectionSelect(selectionEnabled.value);
     normalizeAllNodes();
     scheduleGroupRuleValidation(0);
@@ -1145,8 +1118,16 @@ onMounted(() => {
     scheduleGroupRuleValidation();
   });
 
-  lfInstance.on('selection:selected', () => updateSelectedCount());
-  lfInstance.on('selection:drop', () => updateSelectedCount());
+  lfInstance.on('selection:selected', () => {
+    sanitizeGraphLabels();
+    updateSelectedCount();
+    logClipboardDebug('selection:selected');
+  });
+  lfInstance.on('selection:drop', () => {
+    sanitizeGraphLabels();
+    updateSelectedCount();
+    logClipboardDebug('selection:drop');
+  });
 
   nextTick(() => {
     queueCanvasResize();
