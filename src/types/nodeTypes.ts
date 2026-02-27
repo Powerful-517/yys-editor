@@ -13,6 +13,7 @@ export enum NodeType {
   // 布局容器类
   RECT = 'rect',
   ELLIPSE = 'ellipse',
+  DYNAMIC_GROUP = 'dynamic-group',
 
   // 图形资产类（统一入口，内部切换资产库）
   ASSET_SELECTOR = 'assetSelector',

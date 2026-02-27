@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onBeforeUnmount } from 'vue';
 import { useNodeAppearance } from '@/ts/useNodeAppearance';
 
 const vectorConfig = ref({
@@ -14,23 +14,57 @@ const vectorConfig = ref({
 });
 
 const nodeSize = ref({ width: 200, height: 200 });
+let syncRafId: number | null = null;
+let pendingVectorConfig: Record<string, any> | null = null;
+let pendingNodeSize: { width: number; height: number } | null = null;
+
+const flushPendingSync = () => {
+  if (pendingVectorConfig) {
+    Object.assign(vectorConfig.value, pendingVectorConfig);
+    pendingVectorConfig = null;
+  }
+  if (pendingNodeSize) {
+    nodeSize.value = pendingNodeSize;
+    pendingNodeSize = null;
+  }
+  syncRafId = null;
+};
+
+const scheduleSync = () => {
+  if (typeof requestAnimationFrame === 'undefined') {
+    flushPendingSync();
+    return;
+  }
+  if (syncRafId !== null) {
+    cancelAnimationFrame(syncRafId);
+  }
+  syncRafId = requestAnimationFrame(flushPendingSync);
+};
 
 const { containerStyle } = useNodeAppearance({
   onPropsChange(props, node) {
-    // 同步矢量配置
     if (props.vector) {
-      Object.assign(vectorConfig.value, props.vector);
+      pendingVectorConfig = { ...props.vector };
     }
-    // 同步节点尺寸
     if (node) {
-      nodeSize.value.width = node.width;
-      nodeSize.value.height = node.height;
+      pendingNodeSize = {
+        width: node.width,
+        height: node.height
+      };
     }
+    // 使用 requestAnimationFrame 防抖，减少快速缩放时的重复重绘
+    scheduleSync();
   }
 });
 
-// 生成唯一的 pattern ID
-const patternId = computed(() => `vector-pattern-${Math.random().toString(36).substr(2, 9)}`);
+onBeforeUnmount(() => {
+  if (syncRafId !== null && typeof cancelAnimationFrame !== 'undefined') {
+    cancelAnimationFrame(syncRafId);
+    syncRafId = null;
+  }
+});
+
+const patternId = `vector-pattern-${Math.random().toString(36).slice(2, 11)}`;
 
 // 生成 SVG 内容
 const svgContent = computed(() => {
@@ -64,7 +98,7 @@ const svgContent = computed(() => {
     <svg width="${nodeSize.value.width}" height="${nodeSize.value.height}"
          xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <pattern id="${patternId.value}"
+        <pattern id="${patternId}"
                  x="0" y="0"
                  width="${tileWidth}"
                  height="${tileHeight}"
@@ -72,7 +106,7 @@ const svgContent = computed(() => {
           ${shapeElement}
         </pattern>
       </defs>
-      <rect width="100%" height="100%" fill="url(#${patternId.value})" />
+      <rect width="100%" height="100%" fill="url(#${patternId})" />
     </svg>
   `;
 });

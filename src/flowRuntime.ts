@@ -1,5 +1,5 @@
 import type LogicFlow from '@logicflow/core'
-import { Menu, Label, Snapshot, SelectionSelect, MiniMap, Control } from '@logicflow/extension'
+import { Menu, Label, Snapshot, SelectionSelect, MiniMap, Control, DynamicGroup } from '@logicflow/extension'
 import { register } from '@logicflow/vue-node-registry'
 
 import ImageNode from './components/flow/nodes/common/ImageNode.vue'
@@ -27,8 +27,9 @@ const DEFAULT_FLOW_NODES: FlowNodeRegistration[] = [
 ]
 
 const FLOW_PLUGIN_PRESETS: Record<FlowCapabilityLevel, FlowPlugin[]> = {
-  'render-only': [Snapshot],
-  interactive: [Menu, Label, Snapshot, SelectionSelect, MiniMap, Control]
+  // 预览模式也需要 DynamicGroup，避免包含 dynamic-group 节点的图在只读渲染时报错
+  'render-only': [DynamicGroup, Snapshot],
+  interactive: [DynamicGroup, Menu, Label, Snapshot, SelectionSelect, MiniMap, Control]
 }
 
 export function getFlowPluginsByCapability(capability: FlowCapabilityLevel): FlowPlugin[] {
@@ -60,4 +61,3 @@ export function registerFlowNodes(lfInstance: LogicFlow, nodes?: FlowNodeRegistr
   const registrations = resolveFlowNodes(nodes)
   registrations.forEach((registration) => register(registration, lfInstance))
 }
-

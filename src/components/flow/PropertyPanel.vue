@@ -6,6 +6,7 @@ import TextPanel from './panels/TextPanel.vue';
 import StylePanel from './panels/StylePanel.vue';
 import AssetSelectorPanel from './panels/AssetSelectorPanel.vue';
 import VectorPanel from './panels/VectorPanel.vue';
+import DynamicGroupPanel from './panels/DynamicGroupPanel.vue';
 import { ASSET_LIBRARIES } from '@/types/nodeTypes';
 import { getLogicFlowInstance } from '@/ts/useLogicFlow';
 
@@ -35,7 +36,8 @@ const panelMap: Record<string, any> = {
   imageNode: ImagePanel,
   textNode: TextPanel,
   assetSelector: AssetSelectorPanel,
-  vectorNode: VectorPanel
+  vectorNode: VectorPanel,
+  'dynamic-group': DynamicGroupPanel
 };
 
 const panelComponent = computed(() => panelMap[nodeType.value] || null);
@@ -66,7 +68,10 @@ const currentAssetLibrary = computed({
     </div>
 
     <div v-if="!hasNodeSelected" class="no-selection">
-      <p>请选择一个节点以编辑其属性</p>
+      <div class="no-selection-text">
+        <p>请选择一个节点以编辑其属性</p>
+        <p class="no-selection-tip">素材入口：添加并选中 assetSelector 节点后，点击“选择资产”。</p>
+      </div>
     </div>
 
     <div v-else class="property-content">
@@ -153,6 +158,18 @@ const currentAssetLibrary = computed({
   font-size: 14px;
   padding: 20px;
   text-align: center;
+}
+
+.no-selection-text {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.no-selection-tip {
+  font-size: 12px;
+  color: #606266;
+  margin: 0;
 }
 
 .property-content {

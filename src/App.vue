@@ -180,6 +180,7 @@ watch(
         <div id="main-container" :style="{ height: contentHeight, overflow: 'auto' }">
           <FlowEditor
               :height="contentHeight"
+              :enable-label="false"
           />
         </div>
       </div>

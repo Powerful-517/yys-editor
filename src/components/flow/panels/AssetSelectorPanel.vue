@@ -5,6 +5,8 @@ import { getLogicFlowInstance } from '@/ts/useLogicFlow';
 import { SELECTOR_PRESETS } from '@/configs/selectorPresets';
 import type { SelectorConfig } from '@/types/selector';
 import { resolveAssetUrl, resolveAssetUrlsInDataSource } from '@/utils/assetUrl';
+import { deleteCustomAsset, listCustomAssets } from '@/utils/customAssets';
+import { normalizeSelectedAssetRecord } from '@/utils/graphSchema';
 
 const props = defineProps<{
   node: any;
@@ -33,26 +35,47 @@ const handleOpenSelector = () => {
 
   const imageField = preset.itemRender.imageField;
   const selectedAsset = node.properties?.selectedAsset || null;
-  const normalizedSelectedAsset = selectedAsset && typeof selectedAsset === 'object'
+  const normalizedSelectedAssetRecord = normalizeSelectedAssetRecord(selectedAsset, library);
+  const normalizedSelectedAsset = normalizedSelectedAssetRecord
     ? {
-      ...selectedAsset,
-      [imageField]: resolveAssetUrl(selectedAsset?.[imageField])
+      ...normalizedSelectedAssetRecord,
+      [imageField]: resolveAssetUrl((selectedAsset as any)?.[imageField])
     }
-    : selectedAsset;
+    : null;
+
+  const customAssets = listCustomAssets(library);
+  const mergedDataSource = [
+    ...(preset.dataSource as any[]),
+    ...customAssets
+  ];
+  const mergedGroups = [
+    ...preset.groups,
+    { label: '我的素材', name: '__CUSTOM__', filter: (item: any) => !!item?.__userAsset }
+  ];
 
   const config: SelectorConfig = {
     ...preset,
-    dataSource: resolveAssetUrlsInDataSource(preset.dataSource as any[], imageField),
-    currentItem: normalizedSelectedAsset
+    groups: mergedGroups,
+    dataSource: resolveAssetUrlsInDataSource(mergedDataSource, imageField),
+    currentItem: normalizedSelectedAsset,
+    assetLibrary: library,
+    allowUserAssetUpload: true,
+    onDeleteUserAsset: (item: any) => {
+      deleteCustomAsset(library, item);
+    },
+    onUserAssetUploaded: () => {
+      // 上传后的数据刷新由选择器内部完成，这里保留扩展钩子。
+    }
   };
 
   openGenericSelector(config, (selectedItem) => {
-    const normalizedSelected = selectedItem && typeof selectedItem === 'object'
+    const normalizedSelectedRecord = normalizeSelectedAssetRecord(selectedItem, library);
+    const normalizedSelected = normalizedSelectedRecord
       ? {
-        ...selectedItem,
-        [imageField]: resolveAssetUrl(selectedItem?.[imageField])
+        ...normalizedSelectedRecord,
+        [imageField]: resolveAssetUrl((selectedItem as any)?.[imageField])
       }
-      : selectedItem;
+      : null;
 
     lf.setProperties(node.id, {
       ...node.properties,

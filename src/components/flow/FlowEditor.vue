@@ -2,7 +2,13 @@
   <div class="editor-layout" :style="{ height }">
     <!-- 中间流程图区域 -->
     <div ref="flowHostRef" class="flow-container" :class="{ 'snapline-disabled': !snaplineEnabled }">
-      <div class="flow-controls">
+      <div class="flow-controls" :class="{ 'flow-controls--collapsed': flowControlsCollapsed }">
+        <div class="control-row control-header">
+          <button class="control-button" type="button" @click="flowControlsCollapsed = !flowControlsCollapsed">
+            {{ flowControlsCollapsed ? `显示画布控制${groupRuleWarnings.length ? `(${groupRuleWarnings.length})` : ''}` : '收起画布控制' }}
+          </button>
+        </div>
+        <template v-if="!flowControlsCollapsed">
         <div class="control-row toggles">
           <label class="control-toggle">
             <input type="checkbox" v-model="selectionEnabled" />
@@ -49,8 +55,43 @@
             </button>
           </div>
         </div>
+        </template>
       </div>
       <div class="container" ref="containerRef" :style="{ height: '100%' }"></div>
+      <div class="problems-dock" :class="{ 'problems-dock--open': problemsPanelOpen }">
+        <div class="problems-dock-bar">
+          <button class="problems-tab" type="button" @click="problemsPanelOpen = !problemsPanelOpen">
+            Problems
+            <span class="problems-badge">{{ groupRuleWarnings.length }}</span>
+          </button>
+        </div>
+        <div v-if="problemsPanelOpen" class="problems-panel">
+          <div class="problems-header">
+            <span>规则告警</span>
+            <span>{{ groupRuleWarnings.length }} 条</span>
+          </div>
+          <div v-if="!groupRuleWarnings.length" class="problems-empty">
+            当前没有告警
+          </div>
+          <div v-else class="problems-list">
+            <div
+              v-for="(warning, index) in groupRuleWarnings"
+              :key="warning.id || `${warning.groupId}-${warning.code}-${index}`"
+              class="problem-item"
+              role="button"
+              tabindex="0"
+              @click="locateProblemNode(warning)"
+              @keydown.enter.prevent="locateProblemNode(warning)"
+            >
+              <div class="problem-severity">{{ warning.severity.toUpperCase() }}</div>
+              <div class="problem-content">
+                <div class="problem-message">{{ warning.message }}</div>
+                <div class="problem-meta">{{ warning.groupName || warning.groupId }} · {{ warning.ruleId }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <!-- 右侧属性面板 -->
     <PropertyPanel :height="height" :node="selectedNode" :lf="lf" />
@@ -62,11 +103,10 @@ import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import LogicFlow, { EventType } from '@logicflow/core';
 import type { Position, NodeData, EdgeData, BaseNodeModel, GraphModel, GraphData } from '@logicflow/core';
 import '@logicflow/core/lib/style/index.css';
-import { Menu, Label, Snapshot, SelectionSelect, MiniMap, Control } from '@logicflow/extension';
+import { Menu, Label, Snapshot, SelectionSelect, MiniMap, Control, DynamicGroup } from '@logicflow/extension';
 import '@logicflow/extension/lib/style/index.css';
 import '@logicflow/core/es/index.css';
 import '@logicflow/extension/es/index.css';
-import { translateEdgeData, translateNodeData } from '@logicflow/core/es/keyboard/shortcut';
 
 import { register } from '@logicflow/vue-node-registry';
 import PropertySelectNode from './nodes/yys/PropertySelectNode.vue';
@@ -81,19 +121,24 @@ import { useGlobalMessage } from '@/ts/useGlobalMessage';
 import { setLogicFlowInstance, destroyLogicFlowInstance } from '@/ts/useLogicFlow';
 import { normalizePropertiesWithStyle, normalizeNodeStyle, styleEquals } from '@/ts/nodeStyle';
 import { useCanvasSettings } from '@/ts/useCanvasSettings';
+import { validateGraphGroupRules, type GroupRuleWarning } from '@/utils/groupRules';
+import { subscribeSharedGroupRulesConfig } from '@/utils/groupRulesConfigSource';
+import { getProblemTargetCandidateIds } from '@/utils/problemTarget';
 
 type AlignType = 'left' | 'right' | 'top' | 'bottom' | 'hcenter' | 'vcenter';
 type DistributeType = 'horizontal' | 'vertical';
 
 const MOVE_STEP = 2;
 const MOVE_STEP_LARGE = 10;
-const COPY_TRANSLATION = 40;
+const RIGHT_MOUSE_BUTTON = 2;
+const RIGHT_DRAG_THRESHOLD = 2;
+const RIGHT_DRAG_CONTEXTMENU_SUPPRESS_MS = 300;
 
 const props = withDefaults(defineProps<{
   height?: string;
   enableLabel?: boolean;
 }>(), {
-  enableLabel: true
+  enableLabel: false
 });
 
 const flowHostRef = ref<HTMLElement | null>(null);
@@ -117,9 +162,34 @@ const { showMessage } = useGlobalMessage();
 
 // 当前选中节点
 const selectedNode = ref<any>(null);
-const copyBuffer = ref<GraphData | null>(null);
-let nextPasteDistance = COPY_TRANSLATION;
+const groupRuleWarnings = ref<GroupRuleWarning[]>([]);
+const flowControlsCollapsed = ref(true);
+const problemsPanelOpen = ref(false);
 let containerResizeObserver: ResizeObserver | null = null;
+let groupRuleValidationTimer: ReturnType<typeof setTimeout> | null = null;
+let unsubscribeSharedGroupRules: (() => void) | null = null;
+let isRightDragging = false;
+let rightDragMoved = false;
+let rightDragLastX = 0;
+let rightDragLastY = 0;
+let rightDragDistance = 0;
+let suppressContextMenuUntil = 0;
+
+function logClipboardDebug(stage: string, payload: Record<string, unknown> = {}) {
+  if (!import.meta.env.DEV) return;
+  const lfInstance = lf.value as any;
+  const graphModel = lfInstance?.graphModel;
+  const selectNodeIds: string[] = graphModel?.selectNodes?.map((node: BaseNodeModel) => node.id) ?? [];
+  const selectElementIds: string[] = graphModel?.selectElements
+    ? Array.from(graphModel.selectElements.keys())
+    : [];
+  console.info('[FlowClipboardDebug]', stage, {
+    selectedCount: selectedCount.value,
+    selectNodeIds,
+    selectElementIds,
+    ...payload
+  });
+}
 
 const resolveResizeHost = () => {
   const container = containerRef.value;
@@ -144,6 +214,71 @@ const resizeCanvas = () => {
 const handleWindowResize = () => {
   resizeCanvas();
 };
+
+function handleRightDragMouseMove(event: MouseEvent) {
+  if (!isRightDragging) return;
+
+  const deltaX = event.clientX - rightDragLastX;
+  const deltaY = event.clientY - rightDragLastY;
+  rightDragLastX = event.clientX;
+  rightDragLastY = event.clientY;
+
+  if (deltaX === 0 && deltaY === 0) return;
+
+  rightDragDistance += Math.abs(deltaX) + Math.abs(deltaY);
+  if (!rightDragMoved && rightDragDistance >= RIGHT_DRAG_THRESHOLD) {
+    rightDragMoved = true;
+  }
+
+  if (rightDragMoved) {
+    lf.value?.translate(deltaX, deltaY);
+    event.preventDefault();
+  }
+}
+
+function stopRightDrag() {
+  if (!isRightDragging) return;
+
+  isRightDragging = false;
+  flowHostRef.value?.classList.remove('flow-container--panning');
+  window.removeEventListener('mousemove', handleRightDragMouseMove);
+  window.removeEventListener('mouseup', handleRightDragMouseUp);
+
+  if (rightDragMoved) {
+    suppressContextMenuUntil = Date.now() + RIGHT_DRAG_CONTEXTMENU_SUPPRESS_MS;
+  }
+}
+
+function handleRightDragMouseUp() {
+  stopRightDrag();
+}
+
+function handleCanvasMouseDown(event: MouseEvent) {
+  if (event.button !== RIGHT_MOUSE_BUTTON) return;
+
+  const target = event.target as HTMLElement | null;
+  if (target?.closest('.lf-menu')) return;
+  if (!containerRef.value?.contains(target)) return;
+
+  isRightDragging = true;
+  rightDragMoved = false;
+  rightDragDistance = 0;
+  rightDragLastX = event.clientX;
+  rightDragLastY = event.clientY;
+  suppressContextMenuUntil = 0;
+
+  flowHostRef.value?.classList.add('flow-container--panning');
+  window.addEventListener('mousemove', handleRightDragMouseMove);
+  window.addEventListener('mouseup', handleRightDragMouseUp);
+}
+
+function handleCanvasContextMenu(event: MouseEvent) {
+  if (Date.now() >= suppressContextMenuUntil) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+  suppressContextMenuUntil = 0;
+}
 
 function isInputLike(event?: KeyboardEvent) {
   const target = event?.target as HTMLElement | null;
@@ -250,6 +385,48 @@ function normalizeAllNodes() {
   allNodes.forEach(node => {
     delete (node as any)._isNewNode;
   });
+}
+
+function sanitizeLabelInProperties(properties: Record<string, any> | undefined) {
+  if (!properties || !Object.prototype.hasOwnProperty.call(properties, '_label')) {
+    return properties;
+  }
+  const currentLabel = properties._label;
+  if (!Array.isArray(currentLabel)) {
+    return properties;
+  }
+  const cleaned = currentLabel.filter((item) => item && typeof item === 'object');
+  if (cleaned.length === currentLabel.length) {
+    return properties;
+  }
+  if (!cleaned.length) {
+    const { _label, ...rest } = properties;
+    return rest;
+  }
+  return {
+    ...properties,
+    _label: cleaned
+  };
+}
+
+function sanitizeGraphLabels() {
+  const graphModel = lf.value?.graphModel as any;
+  if (!graphModel) return;
+
+  const sanitizeModel = (model: any) => {
+    const props = model?.getProperties?.() ?? model?.properties;
+    if (!props) return;
+    const next = sanitizeLabelInProperties(props);
+    if (!next || next === props) return;
+    if (typeof model.setProperties === 'function') {
+      model.setProperties(next);
+      return;
+    }
+    model.properties = next;
+  };
+
+  (graphModel.nodes ?? []).forEach((model: any) => sanitizeModel(model));
+  (graphModel.edges ?? []).forEach((model: any) => sanitizeModel(model));
 }
 
 function updateNodeMeta(model: BaseNodeModel, updater: (meta: Record<string, any>) => Record<string, any>) {
@@ -482,6 +659,7 @@ function groupSelectedNodes(event?: KeyboardEvent) {
   models.forEach((model) => {
     updateNodeMeta(model, (meta) => ({ ...meta, groupId }));
   });
+  scheduleGroupRuleValidation();
   return false;
 }
 
@@ -499,6 +677,7 @@ function ungroupSelectedNodes(event?: KeyboardEvent) {
       return nextMeta;
     });
   });
+  scheduleGroupRuleValidation();
   return false;
 }
 
@@ -509,59 +688,6 @@ function handleArrowMove(direction: 'left' | 'right' | 'up' | 'down', event?: Ke
     moveSelectedNodes(step, 0);
   } else {
     moveSelectedNodes(0, step);
-  }
-  return false;
-}
-
-function remapGroupIds(nodes: GraphData['nodes']) {
-  const map = new Map<string, string>();
-  const seed = Date.now().toString(36);
-  nodes.forEach((node, index) => {
-    const meta = ensureMeta((node as any).properties?.meta);
-    if (meta.groupId) {
-      if (!map.has(meta.groupId)) {
-        map.set(meta.groupId, `group_${seed}_${index}`);
-      }
-      meta.groupId = map.get(meta.groupId);
-    }
-    (node as any).properties = { ...(node as any).properties, meta };
-  });
-}
-
-function handleCopy(event?: KeyboardEvent) {
-  if (shouldSkipShortcut(event)) return true;
-  const lfInstance = lf.value;
-  if (!lfInstance) return true;
-  const elements = lfInstance.getSelectElements(false);
-  if (!elements.nodes.length && !elements.edges.length) {
-    copyBuffer.value = null;
-    return true;
-  }
-  const nodes = elements.nodes.map((node) => translateNodeData(JSON.parse(JSON.stringify(node)), COPY_TRANSLATION));
-  const edges = elements.edges.map((edge) => translateEdgeData(JSON.parse(JSON.stringify(edge)), COPY_TRANSLATION));
-  remapGroupIds(nodes);
-  copyBuffer.value = { nodes, edges };
-  nextPasteDistance = COPY_TRANSLATION;
-  return false;
-}
-
-function handlePaste(event?: KeyboardEvent) {
-  if (shouldSkipShortcut(event)) return true;
-  const lfInstance = lf.value;
-  if (!lfInstance || !copyBuffer.value) return true;
-
-  lfInstance.clearSelectElements();
-  const added = lfInstance.addElements(copyBuffer.value, nextPasteDistance);
-  if (added) {
-    added.nodes.forEach((model) => {
-      normalizeNodeModel(model);
-      lfInstance.selectElementById(model.id, true);
-    });
-    added.edges.forEach((edge) => lfInstance.selectElementById(edge.id, true));
-    copyBuffer.value.nodes.forEach((node) => translateNodeData(node, COPY_TRANSLATION));
-    copyBuffer.value.edges.forEach((edge) => translateEdgeData(edge, COPY_TRANSLATION));
-    nextPasteDistance += COPY_TRANSLATION;
-    updateSelectedCount(lfInstance.graphModel);
   }
   return false;
 }
@@ -582,6 +708,50 @@ function updateSelectedCount(model?: GraphModel) {
   const lfInstance = lf.value;
   const graphModel = model ?? lfInstance?.graphModel;
   selectedCount.value = graphModel?.selectNodes.length ?? 0;
+}
+
+function refreshGroupRuleWarnings() {
+  const lfInstance = lf.value;
+  if (!lfInstance) {
+    groupRuleWarnings.value = [];
+    return;
+  }
+  const graphData = lfInstance.getGraphRawData() as GraphData;
+  groupRuleWarnings.value = validateGraphGroupRules(graphData);
+}
+
+function scheduleGroupRuleValidation(delay = 120) {
+  if (groupRuleValidationTimer) {
+    clearTimeout(groupRuleValidationTimer);
+  }
+  groupRuleValidationTimer = setTimeout(() => {
+    refreshGroupRuleWarnings();
+  }, delay);
+}
+
+function locateProblemNode(warning: GroupRuleWarning) {
+  const lfInstance = lf.value as any;
+  if (!lfInstance) return;
+
+  const candidateIds = getProblemTargetCandidateIds(warning);
+  const targetId = candidateIds.find((id) => !!lfInstance.getNodeModelById(id));
+  if (!targetId) {
+    showMessage('warning', '未找到告警对应节点，可能已被删除');
+    return;
+  }
+
+  try {
+    lfInstance.clearSelectElements?.();
+    lfInstance.selectElementById?.(targetId, false, false);
+    lfInstance.focusOn?.(targetId);
+    const nodeData = lfInstance.getNodeDataById?.(targetId);
+    if (nodeData) {
+      selectedNode.value = nodeData;
+    }
+  } catch (error) {
+    console.error('定位告警节点失败:', error);
+    showMessage('error', '定位节点失败');
+  }
 }
 
 function applySelectionSelect(enabled: boolean) {
@@ -715,6 +885,7 @@ onMounted(() => {
   lf.value = new LogicFlow({
     container: containerRef.value,
     grid: { type: 'dot', size: 10 },
+    stopMoveGraph: true,
     allowResize: true,
     allowRotate: true,
     overlapMode: -1,
@@ -739,6 +910,7 @@ onMounted(() => {
       }
     },
     plugins: [
+      DynamicGroup,
       Menu,
       ...(props.enableLabel ? [Label] : []),
       Snapshot,
@@ -767,8 +939,6 @@ onMounted(() => {
   const lfInstance = lf.value;
   if (!lfInstance) return;
 
-  lfInstance.keyboard.off(['cmd + c', 'ctrl + c']);
-  lfInstance.keyboard.off(['cmd + v', 'ctrl + v']);
   lfInstance.keyboard.off(['backspace']);
 
   const bindShortcut = (keys: string | string[], handler: (event?: KeyboardEvent) => boolean | void) => {
@@ -780,8 +950,6 @@ onMounted(() => {
   bindShortcut(['right'], (event) => handleArrowMove('right', event));
   bindShortcut(['up'], (event) => handleArrowMove('up', event));
   bindShortcut(['down'], (event) => handleArrowMove('down', event));
-  bindShortcut(['cmd + c', 'ctrl + c'], handleCopy);
-  bindShortcut(['cmd + v', 'ctrl + v'], handlePaste);
   bindShortcut(['cmd + g', 'ctrl + g'], groupSelectedNodes);
   bindShortcut(['cmd + u', 'ctrl + u'], ungroupSelectedNodes);
   bindShortcut(['cmd + l', 'ctrl + l'], toggleLockSelected);
@@ -811,21 +979,6 @@ onMounted(() => {
         text: '置于底层',
         callback(node: NodeData) {
           sendToBack(node.id);
-        }
-      },
-      {
-        text: '---' // 分隔线
-      },
-      {
-        text: '复制 (Ctrl+C)',
-        callback() {
-          handleCopy();
-        }
-      },
-      {
-        text: '粘贴 (Ctrl+V)',
-        callback() {
-          handlePaste();
         }
       },
       {
@@ -888,11 +1041,8 @@ onMounted(() => {
         }
       },
       {
-        text: '粘贴 (Ctrl+V)',
-        callback(data: Position) {
-          handlePaste();
-        }
-      }
+        text: '提示：使用 Ctrl+V 粘贴',
+      },
     ]
   });
 
@@ -900,21 +1050,6 @@ onMounted(() => {
   lfInstance.extension.menu.setMenuByType({
     type: 'lf:defaultSelectionMenu',
     menu: [
-      {
-        text: '复制 (Ctrl+C)',
-        callback() {
-          handleCopy();
-        }
-      },
-      {
-        text: '粘贴 (Ctrl+V)',
-        callback() {
-          handlePaste();
-        }
-      },
-      {
-        text: '---' // 分隔线
-      },
       {
         text: '组合 (Ctrl+G)',
         callback() {
@@ -956,9 +1091,18 @@ onMounted(() => {
 
   registerNodes(lfInstance);
   setLogicFlowInstance(lfInstance);
+  applySelectionSelect(selectionEnabled.value);
+  containerRef.value?.addEventListener('mousedown', handleCanvasMouseDown);
+  containerRef.value?.addEventListener('contextmenu', handleCanvasContextMenu, true);
 
   // 监听所有可能的节点添加事件
   lfInstance.on(EventType.NODE_ADD, ({ data }) => {
+    if (!data?.id) {
+      logClipboardDebug('node:add-invalid-payload', {
+        payload: data ?? null
+      });
+      return;
+    }
     const model = lfInstance.getNodeModelById(data.id);
     if (model) {
       normalizeNodeModel(model);
@@ -967,10 +1111,12 @@ onMounted(() => {
       // 标记这个节点是新创建的，避免被 normalizeAllNodes 重置
       (model as any)._isNewNode = true;
     }
+    scheduleGroupRuleValidation();
   });
 
   // 监听 DND 添加节点事件
   lfInstance.on('node:dnd-add', ({ data }) => {
+    if (!data?.id) return;
     const model = lfInstance.getNodeModelById(data.id);
     if (model) {
       // 设置新节点的 zIndex 为 1000
@@ -978,10 +1124,14 @@ onMounted(() => {
       // 标记这个节点是新创建的
       (model as any)._isNewNode = true;
     }
+    scheduleGroupRuleValidation();
   });
 
   lfInstance.on(EventType.GRAPH_RENDERED, () => {
+    sanitizeGraphLabels();
+    applySelectionSelect(selectionEnabled.value);
     normalizeAllNodes();
+    scheduleGroupRuleValidation(0);
   });
 
   // 监听节点点击事件，更新选中节点
@@ -1008,10 +1158,29 @@ onMounted(() => {
     }
     const model = lfInstance.getNodeModelById(nodeId);
     if (model) normalizeNodeModel(model);
+    scheduleGroupRuleValidation();
   });
 
-  lfInstance.on('selection:selected', () => updateSelectedCount());
-  lfInstance.on('selection:drop', () => updateSelectedCount());
+  lfInstance.on(EventType.NODE_DELETE, () => {
+    scheduleGroupRuleValidation();
+  });
+  lfInstance.on(EventType.EDGE_ADD, () => {
+    scheduleGroupRuleValidation();
+  });
+  lfInstance.on(EventType.EDGE_DELETE, () => {
+    scheduleGroupRuleValidation();
+  });
+
+  lfInstance.on('selection:selected', () => {
+    sanitizeGraphLabels();
+    updateSelectedCount();
+    logClipboardDebug('selection:selected');
+  });
+  lfInstance.on('selection:drop', () => {
+    sanitizeGraphLabels();
+    updateSelectedCount();
+    logClipboardDebug('selection:drop');
+  });
 
   nextTick(() => {
     queueCanvasResize();
@@ -1028,6 +1197,9 @@ onMounted(() => {
     }
   }
   window.addEventListener('resize', handleWindowResize);
+  unsubscribeSharedGroupRules = subscribeSharedGroupRulesConfig(() => {
+    scheduleGroupRuleValidation(0);
+  });
 });
 
 watch(selectionEnabled, (enabled) => {
@@ -1064,6 +1236,15 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', handleWindowResize);
   containerResizeObserver?.disconnect();
   containerResizeObserver = null;
+  if (groupRuleValidationTimer) {
+    clearTimeout(groupRuleValidationTimer);
+    groupRuleValidationTimer = null;
+  }
+  unsubscribeSharedGroupRules?.();
+  unsubscribeSharedGroupRules = null;
+  containerRef.value?.removeEventListener('mousedown', handleCanvasMouseDown);
+  containerRef.value?.removeEventListener('contextmenu', handleCanvasContextMenu, true);
+  stopRightDrag();
   lf.value?.destroy();
   lf.value = null;
   destroyLogicFlowInstance();
@@ -1089,6 +1270,9 @@ onBeforeUnmount(() => {
   position: relative;
   overflow: hidden;
 }
+.flow-container--panning :deep(.lf-canvas-overlay) {
+  cursor: grabbing;
+}
 .container {
   width: 100%;
   min-height: 0;
@@ -1108,12 +1292,19 @@ onBeforeUnmount(() => {
   max-width: 460px;
   font-size: 12px;
 }
+.flow-controls--collapsed {
+  padding: 6px;
+  max-width: 220px;
+}
 .control-row {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 6px;
+}
+.control-header {
+  margin-bottom: 0;
 }
 .control-row:last-child {
   margin-bottom: 0;
@@ -1151,6 +1342,126 @@ onBeforeUnmount(() => {
 }
 .control-hint {
   color: #909399;
+}
+.problems-dock {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 11;
+  pointer-events: none;
+}
+.problems-dock-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 10px;
+  background: rgba(250, 250, 250, 0.98);
+  border-top: 1px solid #dcdfe6;
+  pointer-events: auto;
+}
+.problems-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #dcdfe6;
+  background: #fff;
+  border-radius: 4px;
+  padding: 2px 10px;
+  height: 24px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #303133;
+}
+.problems-tab:hover {
+  background: #f5f7fa;
+}
+.problems-badge {
+  min-width: 18px;
+  height: 18px;
+  border-radius: 10px;
+  background: #fde68a;
+  color: #92400e;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+  padding: 0 4px;
+  box-sizing: border-box;
+}
+.problems-panel {
+  height: 220px;
+  background: rgba(255, 255, 255, 0.98);
+  border-top: 1px solid #dcdfe6;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+}
+.problems-header {
+  height: 32px;
+  padding: 0 12px;
+  border-bottom: 1px solid #ebeef5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #606266;
+}
+.problems-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #909399;
+  font-size: 13px;
+}
+.problems-list {
+  flex: 1;
+  overflow-y: auto;
+}
+.problem-item {
+  display: flex;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #f2f3f5;
+  cursor: pointer;
+}
+.problem-item:hover {
+  background: #f8fafc;
+}
+.problem-item:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 1px #93c5fd;
+  background: #eff6ff;
+}
+.problem-severity {
+  width: 56px;
+  height: 20px;
+  border-radius: 10px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #9a3412;
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.problem-content {
+  min-width: 0;
+}
+.problem-message {
+  color: #303133;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.problem-meta {
+  margin-top: 2px;
+  color: #909399;
+  font-size: 12px;
+  line-height: 1.3;
+  word-break: break-all;
 }
 .context-menu {
   position: fixed;
