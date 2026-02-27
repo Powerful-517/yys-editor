@@ -105,6 +105,9 @@ type DistributeType = 'horizontal' | 'vertical';
 const MOVE_STEP = 2;
 const MOVE_STEP_LARGE = 10;
 const COPY_TRANSLATION = 40;
+const RIGHT_MOUSE_BUTTON = 2;
+const RIGHT_DRAG_THRESHOLD = 2;
+const RIGHT_DRAG_CONTEXTMENU_SUPPRESS_MS = 300;
 
 const props = withDefaults(defineProps<{
   height?: string;
@@ -141,6 +144,12 @@ let nextPasteDistance = COPY_TRANSLATION;
 let containerResizeObserver: ResizeObserver | null = null;
 let groupRuleValidationTimer: ReturnType<typeof setTimeout> | null = null;
 let unsubscribeSharedGroupRules: (() => void) | null = null;
+let isRightDragging = false;
+let rightDragMoved = false;
+let rightDragLastX = 0;
+let rightDragLastY = 0;
+let rightDragDistance = 0;
+let suppressContextMenuUntil = 0;
 
 const resolveResizeHost = () => {
   const container = containerRef.value;
@@ -165,6 +174,71 @@ const resizeCanvas = () => {
 const handleWindowResize = () => {
   resizeCanvas();
 };
+
+function handleRightDragMouseMove(event: MouseEvent) {
+  if (!isRightDragging) return;
+
+  const deltaX = event.clientX - rightDragLastX;
+  const deltaY = event.clientY - rightDragLastY;
+  rightDragLastX = event.clientX;
+  rightDragLastY = event.clientY;
+
+  if (deltaX === 0 && deltaY === 0) return;
+
+  rightDragDistance += Math.abs(deltaX) + Math.abs(deltaY);
+  if (!rightDragMoved && rightDragDistance >= RIGHT_DRAG_THRESHOLD) {
+    rightDragMoved = true;
+  }
+
+  if (rightDragMoved) {
+    lf.value?.translate(deltaX, deltaY);
+    event.preventDefault();
+  }
+}
+
+function stopRightDrag() {
+  if (!isRightDragging) return;
+
+  isRightDragging = false;
+  flowHostRef.value?.classList.remove('flow-container--panning');
+  window.removeEventListener('mousemove', handleRightDragMouseMove);
+  window.removeEventListener('mouseup', handleRightDragMouseUp);
+
+  if (rightDragMoved) {
+    suppressContextMenuUntil = Date.now() + RIGHT_DRAG_CONTEXTMENU_SUPPRESS_MS;
+  }
+}
+
+function handleRightDragMouseUp() {
+  stopRightDrag();
+}
+
+function handleCanvasMouseDown(event: MouseEvent) {
+  if (event.button !== RIGHT_MOUSE_BUTTON) return;
+
+  const target = event.target as HTMLElement | null;
+  if (target?.closest('.lf-menu')) return;
+  if (!containerRef.value?.contains(target)) return;
+
+  isRightDragging = true;
+  rightDragMoved = false;
+  rightDragDistance = 0;
+  rightDragLastX = event.clientX;
+  rightDragLastY = event.clientY;
+  suppressContextMenuUntil = 0;
+
+  flowHostRef.value?.classList.add('flow-container--panning');
+  window.addEventListener('mousemove', handleRightDragMouseMove);
+  window.addEventListener('mouseup', handleRightDragMouseUp);
+}
+
+function handleCanvasContextMenu(event: MouseEvent) {
+  if (Date.now() >= suppressContextMenuUntil) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+  suppressContextMenuUntil = 0;
+}
 
 function isInputLike(event?: KeyboardEvent) {
   const target = event?.target as HTMLElement | null;
@@ -757,6 +831,7 @@ onMounted(() => {
   lf.value = new LogicFlow({
     container: containerRef.value,
     grid: { type: 'dot', size: 10 },
+    stopMoveGraph: true,
     allowResize: true,
     allowRotate: true,
     overlapMode: -1,
@@ -998,6 +1073,9 @@ onMounted(() => {
 
   registerNodes(lfInstance);
   setLogicFlowInstance(lfInstance);
+  applySelectionSelect(selectionEnabled.value);
+  containerRef.value?.addEventListener('mousedown', handleCanvasMouseDown);
+  containerRef.value?.addEventListener('contextmenu', handleCanvasContextMenu, true);
 
   // 监听所有可能的节点添加事件
   lfInstance.on(EventType.NODE_ADD, ({ data }) => {
@@ -1025,6 +1103,7 @@ onMounted(() => {
   });
 
   lfInstance.on(EventType.GRAPH_RENDERED, () => {
+    applySelectionSelect(selectionEnabled.value);
     normalizeAllNodes();
     scheduleGroupRuleValidation(0);
   });
@@ -1129,6 +1208,9 @@ onBeforeUnmount(() => {
   }
   unsubscribeSharedGroupRules?.();
   unsubscribeSharedGroupRules = null;
+  containerRef.value?.removeEventListener('mousedown', handleCanvasMouseDown);
+  containerRef.value?.removeEventListener('contextmenu', handleCanvasContextMenu, true);
+  stopRightDrag();
   lf.value?.destroy();
   lf.value = null;
   destroyLogicFlowInstance();
@@ -1153,6 +1235,9 @@ onBeforeUnmount(() => {
   min-height: 0;
   position: relative;
   overflow: hidden;
+}
+.flow-container--panning :deep(.lf-canvas-overlay) {
+  cursor: grabbing;
 }
 .container {
   width: 100%;
