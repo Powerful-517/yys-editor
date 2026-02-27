@@ -18,10 +18,10 @@ jobs:
       with:
         node-version: '22'
         
-    - name: Install dependencies and build
+    - name: Install dependencies and build web app
       run: |
         npm install
-        npm run build
+        VITE_APP_BASE_URL=/yys-editor-dev/ npm run build:app
         
     - name: Deploy to temporary directory
       uses: appleboy/scp-action@v0.1.6
