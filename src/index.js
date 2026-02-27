@@ -5,6 +5,13 @@ import YysEditorEmbed from './YysEditorEmbed.vue'
 export { setAssetBaseUrl, getAssetBaseUrl, resolveAssetUrl } from './utils/assetUrl'
 export { DEFAULT_GROUP_RULES_CONFIG } from './configs/groupRules'
 export { validateGraphGroupRules } from './utils/groupRules'
+export {
+  GROUP_RULES_STORAGE_KEY,
+  readSharedGroupRulesConfig,
+  writeSharedGroupRulesConfig,
+  clearSharedGroupRulesConfig
+} from './utils/groupRulesConfigSource'
+export { CUSTOM_ASSET_STORAGE_KEY } from './utils/customAssets'
 
 // 导出组件
 export { YysEditorEmbed }

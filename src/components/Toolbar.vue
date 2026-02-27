@@ -6,6 +6,7 @@
       <el-button icon="View" type="success" @click="handlePreviewData">数据预览</el-button>
       <el-button icon="Share" type="primary" @click="prepareCapture">{{ t('prepareCapture') }}</el-button>
       <el-button icon="Setting" type="primary" @click="state.showWatermarkDialog = true">{{ t('setWatermark') }}</el-button>
+      <el-button icon="Picture" type="primary" plain @click="openAssetManager">素材管理</el-button>
       <el-button v-if="!props.isEmbed" type="info" @click="loadExample">{{ t('loadExample') }}</el-button>
       <el-button v-if="!props.isEmbed" type="info" @click="showUpdateLog">{{ t('updateLog') }}</el-button>
       <el-button v-if="!props.isEmbed" type="warning" @click="showFeedbackForm">{{ t('feedback') }}</el-button>
@@ -111,11 +112,62 @@
       </template>
     </el-dialog>
 
+    <!-- 素材管理对话框 -->
+    <el-dialog v-model="state.showAssetManagerDialog" title="素材管理" width="70%">
+      <div class="asset-manager-actions">
+        <input
+          ref="assetUploadInputRef"
+          type="file"
+          accept="image/*"
+          class="asset-upload-input"
+          @change="handleAssetManagerUpload"
+        />
+        <el-button size="small" type="primary" @click="triggerAssetManagerUpload">
+          上传当前分类素材
+        </el-button>
+      </div>
+
+      <el-tabs v-model="assetManagerLibrary" class="asset-manager-tabs">
+        <el-tab-pane
+          v-for="library in assetLibraries"
+          :key="library.id"
+          :label="library.label"
+          :name="library.id"
+        >
+          <div class="asset-manager-grid">
+            <div
+              v-for="item in getManagedAssets(library.id)"
+              :key="item.id || `${item.name}-${item.avatar}`"
+              class="asset-manager-item"
+            >
+              <div
+                class="asset-manager-image"
+                :style="{ backgroundImage: `url('${resolveAssetUrl(item.avatar)}')` }"
+              />
+              <div class="asset-manager-name">{{ item.name }}</div>
+              <el-button
+                size="small"
+                text
+                type="danger"
+                @click="removeManagedAsset(library.id, item)"
+              >
+                删除
+              </el-button>
+            </div>
+          </div>
+          <el-empty
+            v-if="getManagedAssets(library.id).length === 0"
+            :description="`暂无${library.label}`"
+          />
+        </el-tab-pane>
+      </el-tabs>
+    </el-dialog>
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { reactive, onMounted } from 'vue';
+import { reactive, onMounted, onBeforeUnmount, ref } from 'vue';
 import updateLogs from "../data/updateLog.json"
 import { useFilesStore } from "@/ts/useStore";
 import { ElMessageBox } from "element-plus";
@@ -123,8 +175,16 @@ import { useGlobalMessage } from "@/ts/useGlobalMessage";
 import { getLogicFlowInstance } from "@/ts/useLogicFlow";
 import { useCanvasSettings } from '@/ts/useCanvasSettings';
 import { useSafeI18n } from '@/ts/useSafeI18n';
+import { ASSET_LIBRARIES } from '@/types/nodeTypes';
 import type { Pinia } from 'pinia';
 import { resolveAssetUrl } from '@/utils/assetUrl';
+import {
+  createCustomAssetFromFile,
+  deleteCustomAsset,
+  listCustomAssets,
+  subscribeCustomAssetStore,
+  type CustomAssetItem
+} from '@/utils/customAssets';
 
 const props = withDefaults(defineProps<{
   isEmbed?: boolean;
@@ -156,8 +216,68 @@ const state = reactive({
   showUpdateLogDialog: false, // 控制更新日志对话框的显示状态
   showFeedbackFormDialog: false, // 控制反馈表单对话框的显示状态
   showDataPreviewDialog: false, // 控制数据预览对话框的显示状态
+  showAssetManagerDialog: false, // 控制素材管理对话框的显示状态
   previewDataContent: '', // 存储预览的数据内容
 });
+const assetLibraries = ASSET_LIBRARIES.map((item) => ({
+  id: item.id,
+  label: `${item.label}素材`
+}));
+const assetManagerLibrary = ref(assetLibraries[0]?.id || 'shikigami');
+const assetUploadInputRef = ref<HTMLInputElement | null>(null);
+const managedAssets = reactive<Record<string, CustomAssetItem[]>>({});
+assetLibraries.forEach((item) => {
+  managedAssets[item.id] = [];
+});
+let unsubscribeAssetStore: (() => void) | null = null;
+
+const refreshManagedAssets = (library?: string) => {
+  if (library) {
+    managedAssets[library] = listCustomAssets(library);
+    return;
+  }
+  assetLibraries.forEach((item) => {
+    managedAssets[item.id] = listCustomAssets(item.id);
+  });
+};
+
+const openAssetManager = () => {
+  refreshManagedAssets();
+  state.showAssetManagerDialog = true;
+};
+
+const getManagedAssets = (libraryId: string) => {
+  return managedAssets[libraryId] || [];
+};
+
+const triggerAssetManagerUpload = () => {
+  assetUploadInputRef.value?.click();
+};
+
+const handleAssetManagerUpload = async (event: Event) => {
+  const target = event.target as HTMLInputElement | null;
+  const file = target?.files?.[0];
+  if (!file) {
+    if (target) target.value = '';
+    return;
+  }
+
+  try {
+    await createCustomAssetFromFile(assetManagerLibrary.value, file);
+    refreshManagedAssets(assetManagerLibrary.value);
+    showMessage('success', '素材上传成功');
+  } catch (error) {
+    console.error('素材上传失败:', error);
+    showMessage('error', '素材上传失败');
+  } finally {
+    if (target) target.value = '';
+  }
+};
+
+const removeManagedAsset = (libraryId: string, item: CustomAssetItem) => {
+  deleteCustomAsset(libraryId, item);
+  refreshManagedAssets(libraryId);
+};
 
 // 重新渲染 LogicFlow 画布的通用方法
 const refreshLogicFlowCanvas = (message?: string) => {
@@ -224,6 +344,11 @@ const showUpdateLog = () => {
 };
 
 onMounted(() => {
+  refreshManagedAssets();
+  unsubscribeAssetStore = subscribeCustomAssetStore(() => {
+    refreshManagedAssets();
+  });
+
   if (props.isEmbed) {
     return;
   }
@@ -236,6 +361,11 @@ onMounted(() => {
     // 更新本地存储中的版本号为当前版本
     localStorage.setItem('appVersion', CURRENT_APP_VERSION);
   }
+});
+
+onBeforeUnmount(() => {
+  unsubscribeAssetStore?.();
+  unsubscribeAssetStore = null;
 });
 
 
@@ -540,5 +670,52 @@ const handleClose = (done) => {
   flex-basis: 120px;
   display: flex;
   gap: 8px;
+}
+
+.asset-manager-actions {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.asset-upload-input {
+  display: none;
+}
+
+.asset-manager-tabs {
+  min-height: 360px;
+}
+
+.asset-manager-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.asset-manager-item {
+  border: 1px solid #e4e7ed;
+  border-radius: 6px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.asset-manager-image {
+  width: 80px;
+  height: 80px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.asset-manager-name {
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  color: #303133;
+  word-break: break-all;
 }
 </style>

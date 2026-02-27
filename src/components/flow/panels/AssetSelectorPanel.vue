@@ -59,10 +59,7 @@ const handleOpenSelector = () => {
     assetLibrary: library,
     allowUserAssetUpload: true,
     onDeleteUserAsset: (item: any) => {
-      if (!item?.id) {
-        return;
-      }
-      deleteCustomAsset(library, item.id);
+      deleteCustomAsset(library, item);
     },
     onUserAssetUploaded: () => {
       // 上传后的数据刷新由选择器内部完成，这里保留扩展钩子。

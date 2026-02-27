@@ -74,10 +74,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import type { SelectorConfig, GroupConfig } from '@/types/selector'
 import { resolveAssetUrl } from '@/utils/assetUrl'
-import { createCustomAssetFromFile } from '@/utils/customAssets'
+import { createCustomAssetFromFile, listCustomAssets, subscribeCustomAssetStore } from '@/utils/customAssets'
 
 const props = defineProps<{
   config: SelectorConfig
@@ -100,14 +100,49 @@ const imageSize = computed(() => props.config.itemRender.imageSize || 100)
 const imageField = computed(() => props.config.itemRender.imageField)
 const uploadInputRef = ref<HTMLInputElement | null>(null)
 const dataSource = ref<any[]>([])
+let unsubscribeCustomAssets: (() => void) | null = null
+
+const refreshDataSource = () => {
+  const source = Array.isArray(props.config.dataSource) ? props.config.dataSource : []
+  const staticAssets = source.filter((item) => !item?.__userAsset)
+  const library = props.config.assetLibrary
+  if (!library) {
+    dataSource.value = [...source]
+    return
+  }
+  const customAssets = listCustomAssets(library)
+  dataSource.value = [...staticAssets, ...customAssets]
+}
 
 watch(
-  () => props.config.dataSource,
-  (value) => {
-    dataSource.value = Array.isArray(value) ? [...value] : []
+  () => [props.config.dataSource, props.config.assetLibrary],
+  () => {
+    refreshDataSource()
   },
   { immediate: true, deep: true }
 )
+
+watch(
+  () => props.modelValue,
+  (visible) => {
+    if (visible) {
+      refreshDataSource()
+    }
+  }
+)
+
+onMounted(() => {
+  unsubscribeCustomAssets = subscribeCustomAssetStore(() => {
+    if (props.modelValue) {
+      refreshDataSource()
+    }
+  })
+})
+
+onBeforeUnmount(() => {
+  unsubscribeCustomAssets?.()
+  unsubscribeCustomAssets = null
+})
 
 // 过滤逻辑
 const filteredItems = (group: GroupConfig) => {
@@ -168,8 +203,8 @@ const handleUploadAsset = async (event: Event) => {
 
   try {
     const createdAsset = await createCustomAssetFromFile(props.config.assetLibrary, file)
-    dataSource.value = [createdAsset, ...dataSource.value]
     props.config.onUserAssetUploaded?.(createdAsset)
+    refreshDataSource()
   } finally {
     if (target) {
       target.value = ''
@@ -178,11 +213,8 @@ const handleUploadAsset = async (event: Event) => {
 }
 
 const removeUserAsset = (item: any) => {
-  if (!item?.id) {
-    return
-  }
   props.config.onDeleteUserAsset?.(item)
-  dataSource.value = dataSource.value.filter((entry) => entry.id !== item.id)
+  refreshDataSource()
 }
 </script>
 

@@ -2,7 +2,13 @@
   <div class="editor-layout" :style="{ height }">
     <!-- 中间流程图区域 -->
     <div ref="flowHostRef" class="flow-container" :class="{ 'snapline-disabled': !snaplineEnabled }">
-      <div class="flow-controls">
+      <div class="flow-controls" :class="{ 'flow-controls--collapsed': flowControlsCollapsed }">
+        <div class="control-row control-header">
+          <button class="control-button" type="button" @click="flowControlsCollapsed = !flowControlsCollapsed">
+            {{ flowControlsCollapsed ? `显示画布控制${groupRuleWarnings.length ? `(${groupRuleWarnings.length})` : ''}` : '收起画布控制' }}
+          </button>
+        </div>
+        <template v-if="!flowControlsCollapsed">
         <div class="control-row toggles">
           <label class="control-toggle">
             <input type="checkbox" v-model="selectionEnabled" />
@@ -57,6 +63,7 @@
             </div>
           </div>
         </div>
+        </template>
       </div>
       <div class="container" ref="containerRef" :style="{ height: '100%' }"></div>
     </div>
@@ -90,6 +97,7 @@ import { setLogicFlowInstance, destroyLogicFlowInstance } from '@/ts/useLogicFlo
 import { normalizePropertiesWithStyle, normalizeNodeStyle, styleEquals } from '@/ts/nodeStyle';
 import { useCanvasSettings } from '@/ts/useCanvasSettings';
 import { validateGraphGroupRules, type GroupRuleWarning } from '@/utils/groupRules';
+import { subscribeSharedGroupRulesConfig } from '@/utils/groupRulesConfigSource';
 
 type AlignType = 'left' | 'right' | 'top' | 'bottom' | 'hcenter' | 'vcenter';
 type DistributeType = 'horizontal' | 'vertical';
@@ -128,9 +136,11 @@ const { showMessage } = useGlobalMessage();
 const selectedNode = ref<any>(null);
 const copyBuffer = ref<GraphData | null>(null);
 const groupRuleWarnings = ref<GroupRuleWarning[]>([]);
+const flowControlsCollapsed = ref(true);
 let nextPasteDistance = COPY_TRANSLATION;
 let containerResizeObserver: ResizeObserver | null = null;
 let groupRuleValidationTimer: ReturnType<typeof setTimeout> | null = null;
+let unsubscribeSharedGroupRules: (() => void) | null = null;
 
 const resolveResizeHost = () => {
   const container = containerRef.value;
@@ -1074,6 +1084,9 @@ onMounted(() => {
     }
   }
   window.addEventListener('resize', handleWindowResize);
+  unsubscribeSharedGroupRules = subscribeSharedGroupRulesConfig(() => {
+    scheduleGroupRuleValidation(0);
+  });
 });
 
 watch(selectionEnabled, (enabled) => {
@@ -1114,6 +1127,8 @@ onBeforeUnmount(() => {
     clearTimeout(groupRuleValidationTimer);
     groupRuleValidationTimer = null;
   }
+  unsubscribeSharedGroupRules?.();
+  unsubscribeSharedGroupRules = null;
   lf.value?.destroy();
   lf.value = null;
   destroyLogicFlowInstance();
@@ -1158,12 +1173,19 @@ onBeforeUnmount(() => {
   max-width: 460px;
   font-size: 12px;
 }
+.flow-controls--collapsed {
+  padding: 6px;
+  max-width: 220px;
+}
 .control-row {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 6px;
+}
+.control-header {
+  margin-bottom: 0;
 }
 .control-row:last-child {
   margin-bottom: 0;

@@ -1,4 +1,5 @@
-import { DEFAULT_GROUP_RULES_CONFIG, type GroupRulesConfig } from '@/configs/groupRules'
+import type { GroupRulesConfig } from '@/configs/groupRules'
+import { readSharedGroupRulesConfig } from '@/utils/groupRulesConfigSource'
 
 type GraphData = {
   nodes: any[]
@@ -101,13 +102,14 @@ const includesName = (list: string[], target: string): boolean => {
 
 export const validateGraphGroupRules = (
   graphData: GraphData,
-  config: GroupRulesConfig = DEFAULT_GROUP_RULES_CONFIG
+  config?: GroupRulesConfig
 ): GroupRuleWarning[] => {
+  const effectiveConfig = config || readSharedGroupRulesConfig()
   const groups = collectGroupAssets(graphData)
   const warnings: GroupRuleWarning[] = []
 
   groups.forEach((group) => {
-    config.shikigamiYuhunBlacklist.forEach((rule) => {
+    effectiveConfig.shikigamiYuhunBlacklist.forEach((rule) => {
       if (includesName(group.shikigamiNames, rule.shikigami) && includesName(group.yuhunNames, rule.yuhun)) {
         warnings.push({
           code: 'SHIKIGAMI_YUHUN_BLACKLIST',
@@ -118,7 +120,7 @@ export const validateGraphGroupRules = (
       }
     })
 
-    config.shikigamiConflictPairs.forEach((rule) => {
+    effectiveConfig.shikigamiConflictPairs.forEach((rule) => {
       if (includesName(group.shikigamiNames, rule.left) && includesName(group.shikigamiNames, rule.right)) {
         warnings.push({
           code: 'SHIKIGAMI_CONFLICT',
@@ -131,7 +133,7 @@ export const validateGraphGroupRules = (
 
     const hasShikigami = group.shikigamiNames.length > 0
     if (hasShikigami) {
-      const hasFireShikigami = group.shikigamiNames.some((name) => config.fireShikigamiWhitelist.includes(name))
+      const hasFireShikigami = group.shikigamiNames.some((name) => effectiveConfig.fireShikigamiWhitelist.includes(name))
       if (!hasFireShikigami) {
         warnings.push({
           code: 'MISSING_FIRE_SHIKIGAMI',
@@ -145,4 +147,3 @@ export const validateGraphGroupRules = (
 
   return warnings
 }
-
