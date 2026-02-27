@@ -1,6 +1,8 @@
 import {
   DEFAULT_GROUP_RULES_CONFIG,
+  type ExpressionRuleDefinition,
   type GroupRulesConfig,
+  type RuleVariableDefinition,
   type ShikigamiConflictRule,
   type ShikigamiYuhunBlacklistRule
 } from '@/configs/groupRules'
@@ -21,7 +23,9 @@ const cloneDefaultGroupRulesConfig = (): GroupRulesConfig => ({
   version: DEFAULT_GROUP_RULES_CONFIG.version,
   fireShikigamiWhitelist: [...DEFAULT_GROUP_RULES_CONFIG.fireShikigamiWhitelist],
   shikigamiYuhunBlacklist: DEFAULT_GROUP_RULES_CONFIG.shikigamiYuhunBlacklist.map((rule) => ({ ...rule })),
-  shikigamiConflictPairs: DEFAULT_GROUP_RULES_CONFIG.shikigamiConflictPairs.map((rule) => ({ ...rule }))
+  shikigamiConflictPairs: DEFAULT_GROUP_RULES_CONFIG.shikigamiConflictPairs.map((rule) => ({ ...rule })),
+  expressionRules: DEFAULT_GROUP_RULES_CONFIG.expressionRules.map((rule) => ({ ...rule })),
+  ruleVariables: DEFAULT_GROUP_RULES_CONFIG.ruleVariables.map((item) => ({ ...item }))
 })
 
 const normalizeStringList = (value: unknown, fallback: string[]): string[] => {
@@ -89,6 +93,64 @@ const normalizeConflictRules = (
     .filter((item): item is ShikigamiConflictRule => !!item)
 }
 
+const normalizeExpressionRules = (
+  value: unknown,
+  fallback: ExpressionRuleDefinition[]
+): ExpressionRuleDefinition[] => {
+  if (!Array.isArray(value)) {
+    return fallback.map((rule) => ({ ...rule }))
+  }
+  return value
+    .map((item) => {
+      if (!item || typeof item !== 'object') {
+        return null
+      }
+      const raw = item as Record<string, unknown>
+      const id = normalizeText(raw.id)
+      const condition = normalizeText(raw.condition)
+      const message = normalizeText(raw.message)
+      if (!id || !condition || !message) {
+        return null
+      }
+      const enabled = raw.enabled !== false
+      const severityRaw = normalizeText(raw.severity)
+      const severity = severityRaw === 'error' || severityRaw === 'info' ? severityRaw : 'warning'
+      const code = normalizeText(raw.code)
+      return {
+        id,
+        condition,
+        message,
+        enabled,
+        severity,
+        ...(code ? { code } : {})
+      }
+    })
+    .filter((item): item is ExpressionRuleDefinition => !!item)
+}
+
+const normalizeRuleVariables = (
+  value: unknown,
+  fallback: RuleVariableDefinition[]
+): RuleVariableDefinition[] => {
+  if (!Array.isArray(value)) {
+    return fallback.map((item) => ({ ...item }))
+  }
+  return value
+    .map((item) => {
+      if (!item || typeof item !== 'object') {
+        return null
+      }
+      const raw = item as Record<string, unknown>
+      const key = normalizeText(raw.key)
+      if (!key) {
+        return null
+      }
+      const value = typeof raw.value === 'string' ? raw.value : String(raw.value ?? '')
+      return { key, value }
+    })
+    .filter((item): item is RuleVariableDefinition => !!item)
+}
+
 const normalizeGroupRulesConfig = (input: unknown): GroupRulesConfig | null => {
   if (!input || typeof input !== 'object') {
     return null
@@ -105,7 +167,9 @@ const normalizeGroupRulesConfig = (input: unknown): GroupRulesConfig | null => {
     version,
     fireShikigamiWhitelist: normalizeStringList(raw.fireShikigamiWhitelist, fallback.fireShikigamiWhitelist),
     shikigamiYuhunBlacklist: normalizeBlacklistRules(raw.shikigamiYuhunBlacklist, fallback.shikigamiYuhunBlacklist),
-    shikigamiConflictPairs: normalizeConflictRules(raw.shikigamiConflictPairs, fallback.shikigamiConflictPairs)
+    shikigamiConflictPairs: normalizeConflictRules(raw.shikigamiConflictPairs, fallback.shikigamiConflictPairs),
+    expressionRules: normalizeExpressionRules(raw.expressionRules, fallback.expressionRules),
+    ruleVariables: normalizeRuleVariables(raw.ruleVariables, fallback.ruleVariables)
   }
 }
 

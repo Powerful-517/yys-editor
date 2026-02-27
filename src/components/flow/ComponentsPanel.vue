@@ -39,9 +39,7 @@ const componentGroups = [
           groupMeta: {
             version: 1,
             groupKind: 'team',
-            groupName: '',
-            ruleEnabled: true,
-            ruleScope: ['shikigami-yuhun', 'shikigami-shikigami']
+            ruleEnabled: true
           },
           collapsible: true,
           isCollapsed: false,

@@ -123,6 +123,7 @@ import { normalizePropertiesWithStyle, normalizeNodeStyle, styleEquals } from '@
 import { useCanvasSettings } from '@/ts/useCanvasSettings';
 import { validateGraphGroupRules, type GroupRuleWarning } from '@/utils/groupRules';
 import { subscribeSharedGroupRulesConfig } from '@/utils/groupRulesConfigSource';
+import { getProblemTargetCandidateIds } from '@/utils/problemTarget';
 
 type AlignType = 'left' | 'right' | 'top' | 'bottom' | 'hcenter' | 'vcenter';
 type DistributeType = 'horizontal' | 'vertical';
@@ -732,7 +733,7 @@ function locateProblemNode(warning: GroupRuleWarning) {
   const lfInstance = lf.value as any;
   if (!lfInstance) return;
 
-  const candidateIds = [...(warning.nodeIds || []), warning.groupId].filter((id) => !!id);
+  const candidateIds = getProblemTargetCandidateIds(warning);
   const targetId = candidateIds.find((id) => !!lfInstance.getNodeModelById(id));
   if (!targetId) {
     showMessage('warning', '未找到告警对应节点，可能已被删除');
