@@ -33,25 +33,9 @@ class VectorNodeModel extends HtmlNodeModel {
   resize(deltaX: number, deltaY: number) {
     const result = super.resize?.(deltaX, deltaY);
 
-    const nextWidth = this.width;
-    const nextHeight = this.height;
-
-    // 宽高无变化时跳过，避免高频缩放中的无效属性变更事件。
-    if (this.properties?.width === nextWidth && this.properties?.height === nextHeight) {
-      return result;
-    }
-
-    // 持久化宽高到 properties（单次提交，减少事件抖动）。
-    const setProperties = (this as any).setProperties as ((props: Record<string, any>) => void) | undefined;
-    if (setProperties) {
-      setProperties.call(this, {
-        width: nextWidth,
-        height: nextHeight
-      });
-    } else {
-      this.setProperty('width', nextWidth);
-      this.setProperty('height', nextHeight);
-    }
+    // 持久化宽高到 properties
+    this.setProperty('width', this.width);
+    this.setProperty('height', this.height);
 
     return result;
   }
