@@ -555,6 +555,48 @@ const addWatermarkToImage = (base64: string) => {
   });
 };
 
+const waitForNextPaint = () => {
+  return new Promise<void>((resolve) => {
+    if (typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') {
+      resolve();
+      return;
+    }
+    window.requestAnimationFrame(() => resolve());
+  });
+};
+
+const withDynamicGroupsHiddenForSnapshot = async <T>(
+  logicFlowInstance: any,
+  runner: () => Promise<T>,
+): Promise<T> => {
+  const graphModel = logicFlowInstance?.graphModel;
+  const dynamicGroupModels = (graphModel?.nodes ?? []).filter(
+    (node: any) => node?.type === 'dynamic-group',
+  );
+
+  if (!dynamicGroupModels.length) {
+    return runner();
+  }
+
+  const previousStates = dynamicGroupModels.map((model: any) => ({
+    model,
+    visible: model.visible,
+  }));
+
+  try {
+    previousStates.forEach(({ model }) => {
+      model.visible = false;
+    });
+    await waitForNextPaint();
+    return await runner();
+  } finally {
+    previousStates.forEach(({ model, visible }) => {
+      model.visible = visible;
+    });
+    await waitForNextPaint();
+  }
+};
+
 const captureLogicFlowSnapshot = async () => {
   const logicFlowInstance = getLogicFlowInstance() as any;
   if (!logicFlowInstance || typeof logicFlowInstance.getSnapshotBase64 !== 'function') {
@@ -562,15 +604,18 @@ const captureLogicFlowSnapshot = async () => {
     return null;
   }
 
-  const snapshotResult = await logicFlowInstance.getSnapshotBase64(
-    undefined,
-    undefined,
-    {
-      fileType: 'png',
-      backgroundColor: '#ffffff',
-      partial: false,
-      padding: 20,
-    },
+  const snapshotResult = await withDynamicGroupsHiddenForSnapshot(
+    logicFlowInstance,
+    () => logicFlowInstance.getSnapshotBase64(
+      undefined,
+      undefined,
+      {
+        fileType: 'png',
+        backgroundColor: '#ffffff',
+        partial: false,
+        padding: 20,
+      },
+    ),
   );
 
   const base64 = typeof snapshotResult === 'string' ? snapshotResult : snapshotResult?.data;
