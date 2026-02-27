@@ -111,12 +111,15 @@ const sanitizeLabelProperty = (properties: unknown): Record<string, any> | undef
   return nextProperties
 }
 
-const sanitizeGraphData = (input?: GraphData | null): GraphData => {
+const sanitizeGraphData = (
+  input?: GraphData | null,
+  options?: { hideDynamicGroups?: boolean }
+): GraphData => {
   if (!input || !Array.isArray(input.nodes) || !Array.isArray(input.edges)) {
     return { nodes: [], edges: [] }
   }
 
-  const nodes = input.nodes
+  const rawNodes = input.nodes
     .filter((node): node is NodeData => isPlainObject(node))
     .map((node) => {
       const nextNode: NodeData = { ...node }
@@ -126,6 +129,12 @@ const sanitizeGraphData = (input?: GraphData | null): GraphData => {
       }
       return nextNode
     })
+
+  const hiddenDynamicGroup = options?.hideDynamicGroups === true
+  const nodes = hiddenDynamicGroup
+    ? rawNodes.filter((node) => node.type !== 'dynamic-group')
+    : rawNodes
+  const nodeIdSet = new Set(nodes.map((node) => node.id))
 
   const edges = input.edges
     .filter((edge): edge is EdgeData => isPlainObject(edge))
@@ -137,6 +146,7 @@ const sanitizeGraphData = (input?: GraphData | null): GraphData => {
       }
       return nextEdge
     })
+    .filter((edge) => !hiddenDynamicGroup || (nodeIdSet.has(edge.sourceNodeId) && nodeIdSet.has(edge.targetNodeId)))
 
   return { nodes, edges }
 }
@@ -328,7 +338,7 @@ const initPreviewMode = () => {
 
   // 渲染数据
   if (props.data) {
-    previewLf.value.render(sanitizeGraphData(props.data))
+    previewLf.value.render(sanitizeGraphData(props.data, { hideDynamicGroups: true }))
   }
 }
 
@@ -362,7 +372,7 @@ const getGraphData = (): GraphData | null => {
 }
 
 const setGraphData = (data: GraphData) => {
-  const safeData = sanitizeGraphData(data)
+  const safeData = sanitizeGraphData(data, { hideDynamicGroups: props.mode === 'preview' })
   if (props.mode === 'edit') {
     const lfInstance = getLogicFlowInstance()
     if (lfInstance) {

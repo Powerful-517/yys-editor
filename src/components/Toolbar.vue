@@ -928,7 +928,7 @@ const handleImport = () => {
           const target = e.target as FileReader;
           const data = JSON.parse(target.result as string);
           filesStore.importData(data);
-          // refreshLogicFlowCanvas('LogicFlow 画布已重新渲染（导入数据）');
+          refreshLogicFlowCanvas('LogicFlow 画布已重新渲染（导入数据）');
         } catch (error) {
           console.error('Failed to import file', error);
           showMessage('error', '文件格式错误');
