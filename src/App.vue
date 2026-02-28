@@ -2,7 +2,7 @@
 import Toolbar from './components/Toolbar.vue';
 import ProjectExplorer from './components/ProjectExplorer.vue';
 import ComponentsPanel from './components/flow/ComponentsPanel.vue';
-import {computed, ref, onMounted, onUnmounted, reactive, watch} from "vue";
+import { onMounted, reactive, watch } from 'vue';
 import {useFilesStore} from "@/ts/useStore";
 import Vue3DraggableResizable from 'vue3-draggable-resizable';
 import {TabPaneName, TabsPaneContext} from "element-plus";
@@ -17,12 +17,6 @@ import { useGlobalMessage } from '@/ts/useGlobalMessage';
 
 const filesStore = useFilesStore();
 const { showMessage } = useGlobalMessage();
-
-const width = ref('100%');
-const height = ref('100vh');
-const toolbarHeight = 48; // 工具栏的高度
-const windowHeight = ref(window.innerHeight);
-const contentHeight = computed(() => `${windowHeight.value - toolbarHeight}px`);
 
 const normalizeGraphData = (data: any) => {
   if (data && Array.isArray((data as any).nodes) && Array.isArray((data as any).edges)) {
@@ -66,10 +60,6 @@ onMounted(() => {
   // 初始化自动保存功能
   filesStore.initializeWithPrompt();
   filesStore.setupAutoSave();
-});
-
-onUnmounted(() => {
-
 });
 
 // 1) 切换激活文件：仅当 id 变化时保存旧数据并渲染新数据
@@ -177,9 +167,9 @@ watch(
               :name="file.id"
           />
         </el-tabs>
-        <div id="main-container" :style="{ height: contentHeight, overflow: 'auto' }">
+        <div id="main-container">
           <FlowEditor
-              :height="contentHeight"
+              height="100%"
               :enable-label="false"
           />
         </div>
@@ -190,9 +180,20 @@ watch(
 </template>
 
 <style scoped>
+:global(html),
+:global(body),
+:global(#app) {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
 .container {
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .toolbar {
@@ -204,9 +205,11 @@ watch(
 
 .main-content {
   display: flex;
-  flex: 1; /* 占据剩余空间 */
-  overflow: hidden; /* 防止内容溢出 */
-  margin-top: 48px; /* 确保 main-content 在 Toolbar 下方 */
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding-top: 48px; /* toolbar 为 fixed，需要预留顶部空间 */
+  box-sizing: border-box;
 }
 
 .sidebar {
@@ -217,16 +220,33 @@ watch(
 }
 
 .workspace {
-  flex: 1; /* 占据剩余空间 */
-  overflow: hidden; /* 防止内容溢出 */
-  display: inline-block;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 #main-container {
   position: relative;
-  height: 100%; /* 确保内容区域占满父容器 */
-  overflow-y: auto; /* 允许内容滚动 */
-  min-height: 100vh; /* 允许容器扩展 */
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.main-content :deep(.components-panel) {
+  height: 100%;
+  min-height: 0;
+  margin-bottom: 0;
+  overflow-y: auto;
+}
+
+.main-content :deep(.property-panel) {
+  height: 100% !important;
+  min-height: 0;
+  overflow-y: auto;
 }
 </style>
 
