@@ -1,6 +1,6 @@
 import jsQR from 'jsqr'
 
-const DEFAULT_TEAM_CODE_SERVICE_URL = 'http://127.0.0.1:8788/api/team-code/convert'
+const DEFAULT_TEAM_CODE_SERVICE_URL = '/api/team-code/convert'
 
 export const TEAM_CODE_SERVICE_URL = (
   import.meta.env.VITE_TEAM_CODE_SERVICE_URL as string | undefined

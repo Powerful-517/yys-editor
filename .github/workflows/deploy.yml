@@ -18,6 +18,8 @@ jobs:
         node-version: '22'
         
     - name: Install dependencies and build web app
+      env:
+        VITE_TEAM_CODE_SERVICE_URL: ${{ vars.VITE_TEAM_CODE_SERVICE_URL }}
       run: |
         npm install
         VITE_APP_BASE_URL=/yys-editor/ npm run build:app
