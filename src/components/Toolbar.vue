@@ -1,7 +1,7 @@
 <template>
   <div class="toolbar" :class="{ 'toolbar--embed': props.isEmbed }">
     <div class="toolbar-actions">
-      <el-button icon="Upload" type="primary" @click="handleImport">{{ t('import') }}</el-button>
+      <el-button icon="Upload" type="primary" @click="openImportDialog">{{ t('import') }}</el-button>
       <el-button icon="Download" type="primary" @click="handleExport">{{ t('export') }}</el-button>
       <el-button icon="View" type="success" @click="handlePreviewData">数据预览</el-button>
       <el-button icon="Share" type="primary" @click="prepareCapture">{{ t('prepareCapture') }}</el-button>
@@ -109,6 +109,72 @@
         <span class="dialog-footer">
           <el-button @click="state.showDataPreviewDialog = false">关闭</el-button>
           <el-button type="primary" @click="copyDataToClipboard">复制到剪贴板</el-button>
+        </span>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="state.showImportDialog" title="导入数据" width="560px">
+      <el-form label-width="88px" class="import-form">
+        <el-form-item label="导入来源">
+          <el-radio-group v-model="importSource">
+            <el-radio-button label="json">JSON 文件</el-radio-button>
+            <el-radio-button label="teamCode">阵容码</el-radio-button>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item v-if="importSource === 'teamCode'" label="阵容码">
+          <el-input
+            v-model="teamCodeInput"
+            type="textarea"
+            :rows="7"
+            placeholder="请粘贴 #TA# 开头的阵容码"
+          />
+        </el-form-item>
+        <el-form-item v-if="importSource === 'teamCode'" label="二维码">
+          <div class="team-code-qr-actions">
+            <input
+              ref="teamCodeQrInputRef"
+              type="file"
+              accept="image/*"
+              class="asset-upload-input"
+              @change="handleTeamCodeQrImport"
+            />
+            <el-button
+              type="primary"
+              plain
+              :loading="state.decodingTeamCodeQr"
+              @click="triggerTeamCodeQrImport"
+            >
+              选择二维码图片
+            </el-button>
+            <span class="team-code-qr-tip">支持从截图或相册图片识别官方阵容码二维码</span>
+          </div>
+        </el-form-item>
+        <el-alert
+          v-if="importSource === 'teamCode'"
+          type="info"
+          :closable="false"
+          show-icon
+          title="支持粘贴阵容码字符串，或上传二维码图片自动识别。"
+        />
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="state.showImportDialog = false">取消</el-button>
+          <el-button
+            v-if="importSource === 'json'"
+            type="primary"
+            @click="triggerJsonFileImport"
+          >
+            选择 JSON 文件
+          </el-button>
+          <el-button
+            v-else
+            type="primary"
+            :loading="state.importingTeamCode"
+            @click="handleTeamCodeImport"
+          >
+            导入阵容码
+          </el-button>
         </span>
       </template>
     </el-dialog>
@@ -348,6 +414,7 @@ import {
   type ExpressionRuleDefinition,
   type RuleVariableDefinition
 } from '@/configs/groupRules';
+import { convertTeamCodeToRootDocument, decodeTeamCodeFromQrImage } from '@/utils/teamCodeService';
 
 const props = withDefaults(defineProps<{
   isEmbed?: boolean;
@@ -379,10 +446,16 @@ const state = reactive({
   showUpdateLogDialog: false, // 控制更新日志对话框的显示状态
   showFeedbackFormDialog: false, // 控制反馈表单对话框的显示状态
   showDataPreviewDialog: false, // 控制数据预览对话框的显示状态
+  showImportDialog: false, // 控制导入来源对话框
+  importingTeamCode: false, // 阵容码导入中
+  decodingTeamCodeQr: false, // 阵容码二维码识别中
   showAssetManagerDialog: false, // 控制素材管理对话框的显示状态
   showRuleManagerDialog: false, // 控制规则管理对话框的显示状态
   previewDataContent: '', // 存储预览的数据内容
 });
+const importSource = ref<'json' | 'teamCode'>('json');
+const teamCodeInput = ref('');
+const teamCodeQrInputRef = ref<HTMLInputElement | null>(null);
 const assetLibraries = ASSET_LIBRARIES.map((item) => ({
   id: item.id,
   label: `${item.label}素材`
@@ -914,7 +987,22 @@ const copyDataToClipboard = async () => {
   }
 };
 
-const handleImport = () => {
+const openImportDialog = () => {
+  importSource.value = 'json';
+  teamCodeInput.value = '';
+  state.showImportDialog = true;
+};
+
+const triggerJsonFileImport = () => {
+  state.showImportDialog = false;
+  handleJsonImport();
+};
+
+const triggerTeamCodeQrImport = () => {
+  teamCodeQrInputRef.value?.click();
+};
+
+const handleJsonImport = () => {
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = '.json';
@@ -936,8 +1024,54 @@ const handleImport = () => {
       };
       reader.readAsText(file);
     }
+    target.value = '';
   };
   input.click();
+};
+
+const handleTeamCodeImport = async () => {
+  const rawTeamCode = teamCodeInput.value.trim();
+  if (!rawTeamCode) {
+    showMessage('warning', '请先粘贴阵容码');
+    return;
+  }
+
+  state.importingTeamCode = true;
+  try {
+    const rootDocument = await convertTeamCodeToRootDocument(rawTeamCode);
+    filesStore.importData(rootDocument);
+    refreshLogicFlowCanvas('LogicFlow 画布已重新渲染（阵容码导入）');
+    state.showImportDialog = false;
+    teamCodeInput.value = '';
+    showMessage('success', '阵容码导入成功');
+  } catch (error: any) {
+    console.error('阵容码导入失败:', error);
+    showMessage('error', error?.message || '阵容码导入失败');
+  } finally {
+    state.importingTeamCode = false;
+  }
+};
+
+const handleTeamCodeQrImport = async (event: Event) => {
+  const target = event.target as HTMLInputElement | null;
+  const file = target?.files?.[0];
+  if (!file) {
+    if (target) target.value = '';
+    return;
+  }
+
+  state.decodingTeamCodeQr = true;
+  try {
+    const decodedTeamCode = await decodeTeamCodeFromQrImage(file);
+    teamCodeInput.value = decodedTeamCode;
+    showMessage('success', '二维码识别成功，已填入阵容码');
+  } catch (error: any) {
+    console.error('二维码识别失败:', error);
+    showMessage('error', error?.message || '二维码识别失败');
+  } finally {
+    state.decodingTeamCodeQr = false;
+    if (target) target.value = '';
+  }
 };
 
 const handleResetWorkspace = () => {
@@ -1219,6 +1353,22 @@ const handleClose = (done) => {
   display: flex;
   align-items: center;
   margin-bottom: 12px;
+}
+
+.import-form {
+  margin-top: 4px;
+}
+
+.team-code-qr-actions {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.team-code-qr-tip {
+  font-size: 12px;
+  color: #606266;
 }
 
 .asset-upload-input {
