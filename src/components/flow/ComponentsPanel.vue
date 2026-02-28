@@ -133,6 +133,8 @@ const componentGroups = [
           selectedAsset: null
         }
       },
+      // 暂时隐藏属性选择器，后续可直接取消注释恢复
+      /*
       {
         id: 'property-select',
         name: '属性选择器',
@@ -161,6 +163,7 @@ const componentGroups = [
           }
         }
       },
+      */
       {
         id: 'onmyoji-select',
         name: '阴阳师选择器',
