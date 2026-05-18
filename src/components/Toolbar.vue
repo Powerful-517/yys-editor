@@ -1,6 +1,9 @@
 <template>
   <div class="toolbar">
     <div>
+      <el-button class="new-project-link" type="success" icon="Promotion" @click="goToNewProject">
+        前往新版
+      </el-button>
       <el-button icon="Upload" type="primary" @click="handleImport">{{ t('import') }}</el-button>
       <el-button icon="Download" type="primary" @click="handleExport">{{ t('export') }}</el-button>
       <el-button icon="Share" type="primary" @click="prepareCapture">{{ t('prepareCapture') }}</el-button>
@@ -87,9 +90,14 @@ import {useGlobalMessage} from "@/ts/useGlobalMessage";
 
 const filesStore = useFilesStore();
 const { showMessage } = useGlobalMessage();
+const NEW_PROJECT_URL = 'https://fireschain.org/onmyoji-flow/';
 
 // 获取当前的 i18n 实例
 const {t} = useI18n();
+
+const goToNewProject = () => {
+  window.location.assign(NEW_PROJECT_URL);
+};
 
 // 定义响应式数据
 const state = reactive({
@@ -391,6 +399,11 @@ const handleClose = (done) => {
   align-items: center;
   padding: 0 8px;
   z-index: 100;
+}
+
+.new-project-link {
+  font-weight: 700;
+  box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.18);
 }
 
 .title {

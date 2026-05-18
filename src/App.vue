@@ -9,6 +9,9 @@ import {TabPaneName, TabsPaneContext} from "element-plus";
 import YysRank from "@/components/YysRank.vue";
 
 const filesStore = useFilesStore();
+const NEW_PROJECT_URL = 'https://fireschain.org/onmyoji-flow/';
+const REDIRECT_PROMPT_SESSION_KEY = 'yys-editor.new-project-redirect-prompted';
+const REDIRECT_PROMPT_DISABLED_KEY = 'yys-editor.new-project-redirect-disabled';
 
 const yysRef = ref(null);
 const width = ref('100%');
@@ -16,6 +19,37 @@ const height = ref('100vh');
 const toolbarHeight = 48; // 工具栏的高度
 const windowHeight = ref(window.innerHeight);
 const contentHeight = computed(() => `${windowHeight.value - toolbarHeight}px`);
+const showRedirectPrompt = ref(false);
+const dontShowRedirectPromptAgain = ref(false);
+
+const rememberRedirectPromptChoice = () => {
+  if (dontShowRedirectPromptAgain.value) {
+    window.localStorage.setItem(REDIRECT_PROMPT_DISABLED_KEY, 'true');
+  }
+};
+
+const showNewProjectRedirectPrompt = () => {
+  if (window.localStorage.getItem(REDIRECT_PROMPT_DISABLED_KEY) === 'true') {
+    return;
+  }
+
+  if (window.sessionStorage.getItem(REDIRECT_PROMPT_SESSION_KEY) === 'true') {
+    return;
+  }
+
+  window.sessionStorage.setItem(REDIRECT_PROMPT_SESSION_KEY, 'true');
+  showRedirectPrompt.value = true;
+};
+
+const goToNewProject = () => {
+  rememberRedirectPromptChoice();
+  window.location.assign(NEW_PROJECT_URL);
+};
+
+const stayOnLegacyProject = () => {
+  rememberRedirectPromptChoice();
+  showRedirectPrompt.value = false;
+};
 
 const onResizing = (x, y, width, height) => {
   width.value = width;
@@ -64,6 +98,7 @@ onMounted(() => {
   window.addEventListener('resize', () => {
     windowHeight.value = window.innerHeight;
   });
+  showNewProjectRedirectPrompt();
 });
 
 onUnmounted(() => {
@@ -112,6 +147,26 @@ const activeFileGroups = computed(() => {
         </el-tabs>
       </div>
     </div>
+    <el-dialog
+      v-model="showRedirectPrompt"
+      title="前往新版 onmyoji-flow"
+      width="420px"
+      :close-on-click-modal="false"
+      @close="rememberRedirectPromptChoice"
+    >
+      <p class="redirect-prompt-text">
+        yys-editor 已迁移到新项目 onmyoji-flow。新版会继续维护资源与功能，是否现在前往？
+      </p>
+      <el-checkbox v-model="dontShowRedirectPromptAgain">
+        以后不再提示
+      </el-checkbox>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="stayOnLegacyProject">继续使用旧版</el-button>
+          <el-button type="primary" @click="goToNewProject">前往新版</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -157,4 +212,9 @@ const activeFileGroups = computed(() => {
   max-width: 100%;
 }
 
+.redirect-prompt-text {
+  margin: 0 0 16px;
+  line-height: 1.7;
+  color: #303133;
+}
 </style>
