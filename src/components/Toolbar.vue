@@ -1,6 +1,15 @@
 <template>
   <div class="toolbar" :class="{ 'toolbar--embed': props.isEmbed }">
     <div class="toolbar-actions">
+      <el-button
+        v-if="!props.isEmbed"
+        class="new-project-link"
+        type="success"
+        icon="Promotion"
+        @click="goToNewProject"
+      >
+        前往新版
+      </el-button>
       <el-button icon="Upload" type="primary" @click="openImportDialog">{{ t('import') }}</el-button>
       <el-button icon="Download" type="primary" @click="handleExport">{{ t('export') }}</el-button>
       <el-button icon="View" type="success" @click="handlePreviewData">数据预览</el-button>
@@ -424,6 +433,7 @@ const props = withDefaults(defineProps<{
 });
 
 const filesStore = props.piniaInstance ? useFilesStore(props.piniaInstance) : useFilesStore();
+const NEW_PROJECT_URL = 'https://fireschain.org/onmyoji-flow/';
 const contactImageUrl = resolveAssetUrl('/assets/Other/Contact.png') as string;
 const { showMessage } = useGlobalMessage();
 const { selectionEnabled, snapGridEnabled, snaplineEnabled } = useCanvasSettings();
@@ -437,6 +447,10 @@ const { t } = useSafeI18n({
   updateLog: '更新日志',
   feedback: '问题反馈'
 });
+
+const goToNewProject = () => {
+  window.location.assign(NEW_PROJECT_URL);
+};
 
 // 定义响应式数据
 const state = reactive({
@@ -1313,6 +1327,11 @@ const handleClose = (done) => {
   flex: 1;
   min-width: 0;
   white-space: nowrap;
+}
+
+.new-project-link {
+  font-weight: 700;
+  box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.18);
 }
 
 .toolbar--embed {
